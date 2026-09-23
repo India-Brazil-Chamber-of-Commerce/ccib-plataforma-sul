@@ -1,30 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { Plus, Trash2, Loader2, Building2, CalendarDays, LayoutGrid, Users, ChevronDown, PhoneCall, Handshake, RefreshCw, ListChecks, Check, DownloadCloud, UploadCloud, Contact, MapPin, ImagePlus, Briefcase } from "lucide-react";
 
-/*
- * Camada de compatibilidade: substitui window.storage (API exclusiva dos artefatos do Claude)
- * por localStorage, mantendo a mesma interface async (get/set) usada por todo o componente.
- */
-const storage = {
-  async get(key) {
-    try {
-      const value = localStorage.getItem(key);
-      if (value === null) return null;
-      return { key, value };
-    } catch {
-      return null;
-    }
-  },
-  async set(key, value) {
-    try {
-      localStorage.setItem(key, value);
-      return { key, value };
-    } catch {
-      return null;
-    }
-  },
-};
-
 const STORAGE_MEMBERS = "ccib-sul-associados";
 const STORAGE_EVENTS = "ccib-sul-eventos";
 const STORAGE_MEETINGS = "ccib-sul-reunioes";
@@ -741,6 +717,58 @@ const SEED_MEETINGS = [
     origem: "teams",
     createdAt: Date.now(),
   },
+  {
+    id: "teams-c11",
+    nome: "INTERNO: Onboarding Compliance",
+    data: "2026-09-22",
+    horario: "09:00 – 10:00",
+    participantes: "Bianca Guimarães, Gabriela Amud, Bernardo, Gui Mota, Pedro Queiroz",
+    local: "Microsoft Teams",
+    responsavel: "bianca",
+    status: "confirmada",
+    notas: "Importado do Teams",
+    origem: "teams",
+    createdAt: Date.now(),
+  },
+  {
+    id: "teams-c12",
+    nome: "Reunião: CCIB Sul & Stars",
+    data: "2026-09-23",
+    horario: "17:00 – 17:40",
+    participantes: "Bianca Guimarães, Gustavo Bastos, Guilherme Quinta (Aceleradora Stars)",
+    local: "Microsoft Teams",
+    responsavel: "bianca",
+    status: "confirmada",
+    notas: "Importado do Teams",
+    origem: "teams",
+    createdAt: Date.now(),
+  },
+  {
+    id: "teams-c13",
+    nome: "INTERNO: Alinhamento Compliance (24/09)",
+    data: "2026-09-24",
+    horario: "08:00 – 09:00",
+    participantes: "Bianca Guimarães, Bernardo, Leonardo",
+    local: "Microsoft Teams",
+    responsavel: "bianca",
+    status: "confirmada",
+    notas: "Importado do Teams",
+    origem: "teams",
+    createdAt: Date.now(),
+  },
+  {
+    id: "teams-c14",
+    nome: "Comitê Aberto - AMCHAM",
+    data: "2026-09-25",
+    horario: "08:30 – 11:00",
+    participantes: "Gustavo Bastos, Bianca Guimarães",
+    local: "Microsoft Teams",
+    responsavel: "gustavo",
+    status: "confirmada",
+    notas: "Importado do Teams",
+    origem: "teams",
+    createdAt: Date.now(),
+  },
 ];
 
 function blankMeeting() {
@@ -798,6 +826,18 @@ const NOMES_MAPA_ASSOCIADOS = [
 
 const PERIODICIDADES = ["Mensal", "Trimestral", "Semestral", "Anual", "Outro"];
 
+const ESTADOS_CONHECIDOS = {
+  "Alexander Advogados": "SC",
+  "Andersen Ballão Advocacia": "PR",
+  "CSS": "PR",
+};
+
+const FORCE_MEMBER_UPDATES = {
+  "Alexander Advogados": { estado: "SC" },
+  "Andersen Ballão Advocacia": { estado: "PR" },
+  "CSS": { estado: "PR" },
+};
+
 const SEED_MEMBERS = NOMES_MAPA_ASSOCIADOS.map((nome, i) => ({
   id: `seed-m-${i}`,
   nome,
@@ -806,7 +846,7 @@ const SEED_MEMBERS = NOMES_MAPA_ASSOCIADOS.map((nome, i) => ({
   periodicidade: "",
   valor: "",
   taxaSucesso: "",
-  estado: "",
+  estado: ESTADOS_CONHECIDOS[nome] || "",
   responsavel: "ambos",
   status: "ativo",
   contato: "",
@@ -1210,7 +1250,7 @@ export default function CCIBSulAssociados() {
   const persistMembers = useCallback(async (next) => {
     setSaving(true);
     try {
-      await storage.set(STORAGE_MEMBERS, JSON.stringify(next));
+      await window.storage.set(STORAGE_MEMBERS, JSON.stringify(next), true);
     } catch (e) {
       console.error("Falha ao salvar associados", e);
       setLoadError("Não foi possível salvar as empresas. Tente novamente.");
@@ -1222,7 +1262,7 @@ export default function CCIBSulAssociados() {
   const persistEvents = useCallback(async (next) => {
     setSaving(true);
     try {
-      await storage.set(STORAGE_EVENTS, JSON.stringify(next));
+      await window.storage.set(STORAGE_EVENTS, JSON.stringify(next), true);
     } catch (e) {
       console.error("Falha ao salvar eventos", e);
       setLoadError("Não foi possível salvar os eventos. Tente novamente.");
@@ -1234,7 +1274,7 @@ export default function CCIBSulAssociados() {
   const persistMeetings = useCallback(async (next) => {
     setSaving(true);
     try {
-      await storage.set(STORAGE_MEETINGS, JSON.stringify(next));
+      await window.storage.set(STORAGE_MEETINGS, JSON.stringify(next), true);
     } catch (e) {
       console.error("Falha ao salvar reuniões", e);
       setLoadError("Não foi possível salvar as reuniões. Tente novamente.");
@@ -1246,7 +1286,7 @@ export default function CCIBSulAssociados() {
   const persistPartners = useCallback(async (next) => {
     setSaving(true);
     try {
-      await storage.set(STORAGE_PARTNERS, JSON.stringify(next));
+      await window.storage.set(STORAGE_PARTNERS, JSON.stringify(next), true);
     } catch (e) {
       console.error("Falha ao salvar parceiros", e);
       setLoadError("Não foi possível salvar os parceiros. Tente novamente.");
@@ -1258,7 +1298,7 @@ export default function CCIBSulAssociados() {
   const persistRotina = useCallback(async (next) => {
     setSaving(true);
     try {
-      await storage.set(STORAGE_ROTINA, JSON.stringify(next));
+      await window.storage.set(STORAGE_ROTINA, JSON.stringify(next), true);
     } catch (e) {
       console.error("Falha ao salvar rotina", e);
       setLoadError("Não foi possível salvar a rotina. Tente novamente.");
@@ -1270,7 +1310,7 @@ export default function CCIBSulAssociados() {
   const persistContacts = useCallback(async (next) => {
     setSaving(true);
     try {
-      await storage.set(STORAGE_CONTACTS, JSON.stringify(next));
+      await window.storage.set(STORAGE_CONTACTS, JSON.stringify(next), true);
     } catch (e) {
       console.error("Falha ao salvar contatos", e);
       setLoadError("Não foi possível salvar os contatos. Tente novamente.");
@@ -1282,7 +1322,7 @@ export default function CCIBSulAssociados() {
   const persistServices = useCallback(async (next) => {
     setSaving(true);
     try {
-      await storage.set(STORAGE_SERVICES, JSON.stringify(next));
+      await window.storage.set(STORAGE_SERVICES, JSON.stringify(next), true);
     } catch (e) {
       console.error("Falha ao salvar serviços", e);
       setLoadError("Não foi possível salvar os serviços. Tente novamente.");
@@ -1293,7 +1333,7 @@ export default function CCIBSulAssociados() {
 
   const safeGet = async (key, shared) => {
     try {
-      return await storage.get(key);
+      return await window.storage.get(key, shared);
     } catch (e) {
       return null;
     }
@@ -1308,9 +1348,21 @@ export default function CCIBSulAssociados() {
       const existingMemberNames = new Set(baseMembers.map((m) => m.nome));
       const missingMemberSeeds = ENSURE_MEMBERS.filter((s) => !existingMemberNames.has(s.nome));
       const mergedMembers = missingMemberSeeds.length > 0 ? [...baseMembers, ...missingMemberSeeds] : baseMembers;
-      setMembers(mergedMembers);
-      if (parsedM.length === 0 || missingMemberSeeds.length > 0) {
-        await persistMembers(mergedMembers);
+      let forcedChangedMembers = false;
+      const withForcedMembers = mergedMembers.map((m) => {
+        const force = FORCE_MEMBER_UPDATES[m.nome];
+        if (!force) return m;
+        const patch = {};
+        Object.keys(force).forEach((k) => {
+          if (m[k] !== force[k]) patch[k] = force[k];
+        });
+        if (Object.keys(patch).length === 0) return m;
+        forcedChangedMembers = true;
+        return { ...m, ...patch };
+      });
+      setMembers(withForcedMembers);
+      if (parsedM.length === 0 || missingMemberSeeds.length > 0 || forcedChangedMembers) {
+        await persistMembers(withForcedMembers);
       }
     } catch (e) {
       console.error("Falha ao carregar associados (provavelmente ainda não há dados salvos)", e);
@@ -1508,25 +1560,172 @@ export default function CCIBSulAssociados() {
     updateMeetings((meetings || []).map((m) => (m.id === id ? { ...m, ...patch } : m)));
   const removeMeeting = (id) => updateMeetings((meetings || []).filter((m) => m.id !== id));
 
-  /*
-   * Integrações externas (Teams/HubSpot) — DESABILITADAS fora do ambiente Claude.
-   * Os botões continuam visíveis na interface, mas mostram aviso informativo.
-   * Para reativar, será necessário implementar OAuth próprio com Microsoft e HubSpot.
-   */
-  const INTEGRATION_DISABLED_MSG = "Integração disponível apenas dentro do Claude. Para uso independente, configure OAuth com Microsoft/HubSpot.";
-
   const syncTeamsCalendar = async () => {
-    setSyncError(INTEGRATION_DISABLED_MSG);
+    setSyncingTeams(true);
+    setSyncError(null);
+    try {
+      const now = new Date();
+      const y = now.getFullYear();
+      const mo = now.getMonth();
+      const startDate = new Date(y, mo, 1).toISOString().slice(0, 10);
+      const endDate = new Date(y, mo + 1, 0).toISOString().slice(0, 10);
+
+      const response = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-6",
+          max_tokens: 1000,
+          messages: [
+            {
+              role: "user",
+              content: `Liste todos os compromissos/reuniões do meu calendário do Microsoft 365 / Outlook / Teams entre ${startDate} e ${endDate} (inclusive). Responda APENAS com um array JSON, sem markdown, sem explicação, sem texto antes ou depois. Cada item deve ter exatamente este formato: {"nome": "título do compromisso", "data": "AAAA-MM-DD", "horario": "HH:MM – HH:MM ou vazio se não souber", "local": "local ou link da reunião, ou vazio", "participantes": "nomes ou e-mails separados por vírgula, ou vazio"}. Se não houver nenhum compromisso no período, responda [].`,
+            },
+          ],
+          mcp_servers: [
+            {
+              type: "url",
+              url: "https://microsoft365.mcp.claude.com/mcp",
+              name: "microsoft365",
+            },
+          ],
+        }),
+      });
+
+      const data = await response.json();
+
+      const textResponse = (data.content || [])
+        .filter((item) => item.type === "text")
+        .map((item) => item.text)
+        .join("\n");
+
+      const cleaned = textResponse.replace(/```json|```/g, "").trim();
+      const jsonStart = cleaned.indexOf("[");
+      const jsonEnd = cleaned.lastIndexOf("]");
+      const jsonSlice = jsonStart >= 0 && jsonEnd >= 0 ? cleaned.slice(jsonStart, jsonEnd + 1) : cleaned;
+      const parsedEvents = JSON.parse(jsonSlice);
+
+      const existingKeys = new Set((meetings || []).map((m) => `${m.nome}__${m.data}`));
+      const novasReunioes = parsedEvents
+        .filter((ev) => ev && ev.nome && !existingKeys.has(`${ev.nome}__${ev.data || ""}`))
+        .map((ev) => ({
+          id: `teams-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          nome: ev.nome || "",
+          data: ev.data || "",
+          horario: ev.horario || "",
+          participantes: ev.participantes || "",
+          local: ev.local || "",
+          responsavel: "ambos",
+          status: "confirmada",
+          notas: "Importado do Teams/Outlook",
+          origem: "teams",
+          createdAt: Date.now(),
+        }));
+
+      if (novasReunioes.length > 0) {
+        updateMeetings([...(meetings || []), ...novasReunioes]);
+      }
+      setLastSyncedAt(new Date());
+    } catch (e) {
+      console.error("Falha ao sincronizar com o Teams", e);
+      setSyncError("Não foi possível sincronizar com o Teams/Outlook agora. Tente novamente.");
+    } finally {
+      setSyncingTeams(false);
+    }
   };
 
-  // Auto-sync do Teams desabilitado fora do Claude (era um useEffect que chamava syncTeamsCalendar)
+  useEffect(() => {
+    if (tab === "reunioes" && !hasAutoSyncedTeams.current && meetings !== null) {
+      hasAutoSyncedTeams.current = true;
+      syncTeamsCalendar();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab, meetings]);
+
+  const callMcpForJson = async (prompt, serverUrl, serverName) => {
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-6",
+        max_tokens: 1000,
+        messages: [{ role: "user", content: prompt }],
+        mcp_servers: [{ type: "url", url: serverUrl, name: serverName }],
+      }),
+    });
+    const data = await response.json();
+    const textResponse = (data.content || [])
+      .filter((item) => item.type === "text")
+      .map((item) => item.text)
+      .join("\n");
+    const cleaned = textResponse.replace(/```json|```/g, "").trim();
+    const jsonStart = cleaned.indexOf("[");
+    const jsonEnd = cleaned.lastIndexOf("]");
+    const jsonSlice = jsonStart >= 0 && jsonEnd >= 0 ? cleaned.slice(jsonStart, jsonEnd + 1) : cleaned;
+    return JSON.parse(jsonSlice);
+  };
 
   const pullDealsFromHubspot = async () => {
-    setHubspotError(INTEGRATION_DISABLED_MSG);
+    setHubspotBusy("pull-deals");
+    setHubspotError(null);
+    setHubspotMessage(null);
+    try {
+      const prompt = `Usando o HubSpot conectado, liste todos os meus negócios (deals) no CRM. Para cada um, retorne: nome (nome do negócio, ou da empresa associada se o negócio não tiver nome próprio), valor (amount formatado como texto, ex: "R$ 1.200,00", ou vazio se não houver), etapa (nome da etapa/dealstage) e status_sugerido (use exatamente "ativo" se a etapa for closed won/ganho, "inativo" se for closed lost/perdido, e "prospeccao" para qualquer outra etapa em andamento). Responda APENAS com um array JSON, sem markdown, sem texto antes ou depois, neste formato: [{"nome": "...", "valor": "... ou vazio", "etapa": "... ou vazio", "status_sugerido": "ativo, prospeccao ou inativo"}]. Se não houver negócios, responda [].`;
+      const pulled = await callMcpForJson(prompt, "https://mcp.hubspot.com/anthropic", "hubspot");
+      const existingNames = new Set((members || []).map((m) => m.nome));
+      const validStatus = new Set(Object.keys(STATUS_MEMBER));
+      const novas = pulled
+        .filter((d) => d && d.nome && !existingNames.has(d.nome))
+        .map((d) => ({
+          ...blankMember(),
+          id: `hubspot-deal-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          nome: d.nome,
+          valor: d.valor || "",
+          tipoVinculo: d.etapa ? `Negócio HubSpot (${d.etapa})` : "Negócio HubSpot",
+          status: validStatus.has(d.status_sugerido) ? d.status_sugerido : "prospeccao",
+          notas: "Importado do HubSpot (negócio)",
+        }));
+      if (novas.length > 0) {
+        updateMembers([...(members || []), ...novas]);
+      }
+      setHubspotMessage(`${novas.length} negócio${novas.length === 1 ? "" : "s"} importado${novas.length === 1 ? "" : "s"} do HubSpot para Empresas.`);
+    } catch (e) {
+      console.error("Falha ao puxar negócios do HubSpot", e);
+      setHubspotError("Não foi possível puxar os negócios do HubSpot agora.");
+    } finally {
+      setHubspotBusy(null);
+    }
   };
 
   const pullContactsFromHubspot = async () => {
-    setHubspotError(INTEGRATION_DISABLED_MSG);
+    setHubspotBusy("pull-contacts");
+    setHubspotError(null);
+    setHubspotMessage(null);
+    try {
+      const prompt = `Usando o HubSpot conectado, liste meus contatos no CRM. Para cada um, retorne: nome (nome completo), empresa (nome da empresa associada, se houver), email, telefone e cargo (jobtitle), quando disponíveis. Responda APENAS com um array JSON, sem markdown, sem texto antes ou depois, neste formato: [{"nome": "...", "empresa": "... ou vazio", "email": "... ou vazio", "telefone": "... ou vazio", "cargo": "... ou vazio"}]. Se não houver contatos, responda [].`;
+      const pulled = await callMcpForJson(prompt, "https://mcp.hubspot.com/anthropic", "hubspot");
+      const existingKeys = new Set((contacts || []).map((c) => `${c.nome}__${c.email || ""}`));
+      const novos = pulled
+        .filter((c) => c && c.nome && !existingKeys.has(`${c.nome}__${c.email || ""}`))
+        .map((c) => ({
+          ...blankContact(),
+          id: `hubspot-contact-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          nome: c.nome,
+          empresa: c.empresa || "",
+          email: c.email || "",
+          telefone: c.telefone || "",
+          cargo: c.cargo || "",
+        }));
+      if (novos.length > 0) {
+        updateContacts([...(contacts || []), ...novos]);
+      }
+      setHubspotMessage(`${novos.length} contato${novos.length === 1 ? "" : "s"} importado${novos.length === 1 ? "" : "s"} do HubSpot.`);
+    } catch (e) {
+      console.error("Falha ao puxar contatos do HubSpot", e);
+      setHubspotError("Não foi possível puxar os contatos do HubSpot agora.");
+    } finally {
+      setHubspotBusy(null);
+    }
   };
 
   const updatePartners = (next) => {
@@ -2006,7 +2205,6 @@ export default function CCIBSulAssociados() {
                 { label: "Total de empresas", value: members.length },
                 { label: "Ativos", value: ativos, accent: "#0E7C3A" },
                 { label: "Em prospecção", value: prospeccao, accent: "#B8752E" },
-                { label: "Inativos", value: inativos, accent: "#8992A6" },
               ].map((s, i) => (
                 <div
                   key={s.label}
