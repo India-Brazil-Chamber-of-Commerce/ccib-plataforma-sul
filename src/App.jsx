@@ -639,7 +639,7 @@ export default function App() {
             )}
             <div>
               <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontWeight: 500, fontSize: 9, letterSpacing: "0.16em", textTransform: "uppercase", color: "#FF9933" }}>CCIB · Regional Sul</div>
-              <h1 style={{ fontFamily: "'Fraunces', serif", fontWeight: 600, fontSize: 20, color: "#FFFFFF", margin: 0, lineHeight: 1.2 }}>Plataforma Regional Sul</h1>
+              <h1 style={{ fontFamily: "'Fraunces', serif", fontWeight: 600, fontSize: 20, color: "#FFFFFF", margin: 0, lineHeight: 1.2 }}>Plataforma CCIB Regional Sul</h1>
             </div>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
