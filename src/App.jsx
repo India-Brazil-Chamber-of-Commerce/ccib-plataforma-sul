@@ -836,7 +836,7 @@ export default function App() {
       </div>
 
       <div style={{ maxWidth: 1020, margin: "40px auto 0", fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, color: "#8992A6", textAlign: "center" }}>
-        Painel compartilhado · visível para Bianca e Gustavo
+        Plataforma Regional Sul · CCIB 2026
       </div>
       </div>
       </div>
