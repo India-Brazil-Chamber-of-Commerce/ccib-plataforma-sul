@@ -127,6 +127,11 @@ export const NOMES_MAPA_ASSOCIADOS = [
   "Galiotto",
   "Taurus",
   "Suvalan",
+];
+
+// Empresas importadas do HubSpot. Entram como prospects e são acrescentadas
+// também para quem já tem dados salvos (ver ENSURE_MEMBERS), sem substituir nada.
+export const NOMES_HUBSPOT_PROSPECCAO = [
   "GreenField International",
   "Try Brazil",
   "Konei Group",
@@ -223,6 +228,23 @@ export const SEED_MEMBERS = NOMES_MAPA_ASSOCIADOS.map((nome, i) => ({
   createdAt: Date.now() - (NOMES_MAPA_ASSOCIADOS.length - i) * 1000,
 }));
 
+export const EMPRESAS_HUBSPOT_PROSPECCAO = NOMES_HUBSPOT_PROSPECCAO.map((nome, i) => ({
+  id: `seed-hs-${i}`,
+  nome,
+  modalidade: "",
+  tipoVinculo: "",
+  periodicidade: "",
+  valor: "",
+  taxaSucesso: "",
+  estado: ESTADOS_CONHECIDOS[nome] || "",
+  responsavel: "ambos",
+  status: "prospeccao",
+  contato: "",
+  dataAdesao: "",
+  notas: "Importado do HubSpot",
+  createdAt: Date.now(),
+}));
+
 export const ENSURE_MEMBERS = [
   {
     id: "seed-m-nunesfarma",
@@ -256,4 +278,5 @@ export const ENSURE_MEMBERS = [
     notas: "",
     createdAt: Date.now(),
   },
+  ...EMPRESAS_HUBSPOT_PROSPECCAO,
 ];

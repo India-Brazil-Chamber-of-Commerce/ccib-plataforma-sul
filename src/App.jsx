@@ -150,8 +150,10 @@ export default function App() {
       const r = await safeGet(STORAGE_MEMBERS, true);
       const parsedM = r && r.value ? JSON.parse(r.value) : [];
       const baseMembers = parsedM.length > 0 ? parsedM : SEED_MEMBERS;
-      const existingMemberNames = new Set(baseMembers.map((m) => m.nome));
-      const missingMemberSeeds = ENSURE_MEMBERS.filter((s) => !existingMemberNames.has(s.nome));
+      // Compara nomes sem diferenciar maiúsculas e espaços, para não duplicar empresas já cadastradas
+      const normalizeName = (nome) => (nome || "").trim().toLowerCase();
+      const existingMemberNames = new Set(baseMembers.map((m) => normalizeName(m.nome)));
+      const missingMemberSeeds = ENSURE_MEMBERS.filter((s) => !existingMemberNames.has(normalizeName(s.nome)));
       const mergedMembers = missingMemberSeeds.length > 0 ? [...baseMembers, ...missingMemberSeeds] : baseMembers;
       let forcedChangedMembers = false;
       const withForcedMembers = mergedMembers.map((m) => {
