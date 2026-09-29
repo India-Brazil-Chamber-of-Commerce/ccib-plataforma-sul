@@ -1,0 +1,40 @@
+# Publica a plataforma na Vercel a cada push na main (plano gratuito).
+# Configuração: crie um token em https://vercel.com/account/tokens e cadastre-o
+# no repositório em Settings > Secrets and variables > Actions, com o nome VERCEL_TOKEN.
+name: Deploy na Vercel
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-vercel
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Instala a Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Vincula ao projeto (cria na primeira execução)
+        run: vercel link --yes --project ccib-plataforma-sul --token="$VERCEL_TOKEN"
+
+      - name: Baixa as configurações do projeto
+        run: vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
+
+      - name: Build
+        run: vercel build --prod --token="$VERCEL_TOKEN"
+
+      - name: Publica
+        run: vercel deploy --prebuilt --prod --token="$VERCEL_TOKEN"
