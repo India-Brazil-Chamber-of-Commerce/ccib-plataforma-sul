@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { Loader2, Building2, CalendarDays, LayoutGrid, Users, Contact, Briefcase } from "lucide-react";
 import { STORAGE_MEMBERS, STORAGE_EVENTS, STORAGE_MEETINGS, STORAGE_PARTNERS, STORAGE_CONTACTS, STORAGE_SERVICES, ESTADOS, STATUS_MEMBER } from "./constants";
-import { SEED_SERVICES, FORCE_SERVICE_UPDATES, SEED_CONTACTS, SEED_EVENTS, FORCE_EVENT_UPDATES, FORCE_MEMBER_UPDATES, SEED_MEMBERS, ENSURE_MEMBERS } from "./data/seeds";
+import { SEED_SERVICES, FORCE_SERVICE_UPDATES, SEED_CONTACTS, SEED_EVENTS, REMOVED_EVENTS, FORCE_EVENT_UPDATES, FORCE_MEMBER_UPDATES, SEED_MEMBERS, ENSURE_MEMBERS } from "./data/seeds";
 import { SEED_MEETINGS } from "./data/seedMeetings";
 import { blankContact, blankService, blankMeeting, blankPartner, blankMember, blankEvent } from "./lib/factories";
 import { useGoogleFonts } from "./lib/useGoogleFonts";
@@ -163,7 +163,10 @@ export default function App() {
     }
     try {
       const r = await safeGet(STORAGE_EVENTS, true);
-      const parsed = r && r.value ? JSON.parse(r.value) : [];
+      const parsedRaw = r && r.value ? JSON.parse(r.value) : [];
+      // Apaga só os eventos removidos a pedido (por id ou nome exato); os demais ficam intactos
+      const parsed = parsedRaw.filter((e) => !REMOVED_EVENTS.ids.includes(e.id) && !REMOVED_EVENTS.nomes.includes(e.nome));
+      const removedEvents = parsed.length !== parsedRaw.length;
       const existingNames = new Set(parsed.map((e) => e.nome));
       const missingSeeds = SEED_EVENTS.filter((s) => !existingNames.has(s.nome));
       const withSeeds = missingSeeds.length > 0 ? [...parsed, ...missingSeeds] : parsed;
@@ -189,7 +192,7 @@ export default function App() {
         return e;
       });
       setEvents(withAutoStatusE);
-      if (missingSeeds.length > 0 || autoChangedE || forcedChanged) {
+      if (missingSeeds.length > 0 || autoChangedE || forcedChanged || removedEvents) {
         await persistEvents(withAutoStatusE);
       }
     } catch (e) {

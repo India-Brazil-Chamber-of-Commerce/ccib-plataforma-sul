@@ -1,6 +1,5 @@
 import imgWebinarMarthaBeckerCriseNaoTemHora from "../assets/eventos/webinar-martha-becker-crise-nao-tem-hora.jpg";
 import imgExpoIndustria2026 from "../assets/eventos/expo-industria-2026.jpg";
-import imgAraucariaGlobalConexoesParaOMundo from "../assets/eventos/araucaria-global-conexoes-para-o-mundo.jpg";
 import imgFniSc from "../assets/eventos/fni-sc.jpg";
 import imgHappyHourIrip from "../assets/eventos/happy-hour-irip.jpg";
 import imgSaoJoseDasNacoes from "../assets/eventos/sao-jose-das-nacoes.webp";
@@ -53,18 +52,6 @@ export const SEED_EVENTS = [
     createdAt: Date.now(),
   },
   {
-    id: "seed-e-araucaria",
-    nome: "Araucária Global - Conexões para o Mundo",
-    data: "2026-09-21",
-    horario: "08:00 – 12:00",
-    local: "AECIAR - Av. das Araucárias, 5005, Chapada, Araucária/PR",
-    tipo: "Feira/Exposição",
-    status: "confirmado",
-    descricao: "Evento de conexões internacionais promovido pela AECIAR, PEIEX e Sebrae, preparando Araucária para novas oportunidades de exportação e comércio exterior.",
-    registro: "https://drive.google.com/file/d/1JdfQlItBraNpLtFkmDXxj0YJTANk-6Iv/view?usp=sharing",
-    createdAt: Date.now(),
-  },
-  {
     id: "seed-e-4",
     nome: "Expo + Indústria 2026",
     data: "2026-08-26",
@@ -102,15 +89,18 @@ export const SEED_EVENTS = [
   },
 ];
 
+// Eventos removidos a pedido. São apagados também dos dados já salvos nos navegadores.
+export const REMOVED_EVENTS = {
+  ids: ["seed-e-araucaria"],
+  nomes: ["Araucária Global - Conexões para o Mundo"],
+};
+
 export const FORCE_EVENT_UPDATES = {
   "Webinar Martha Becker | Crise não tem hora": {
     registro: imgWebinarMarthaBeckerCriseNaoTemHora,
   },
   "Expo + Indústria 2026": {
     registro: imgExpoIndustria2026,
-  },
-  "Araucária Global - Conexões para o Mundo": {
-    registro: imgAraucariaGlobalConexoesParaOMundo,
   },
   "FNI SC": {
     registro: imgFniSc,
