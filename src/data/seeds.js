@@ -3,6 +3,7 @@ import imgExpoIndustria2026 from "../assets/eventos/expo-industria-2026.jpg";
 import imgAraucariaGlobalConexoesParaOMundo from "../assets/eventos/araucaria-global-conexoes-para-o-mundo.jpg";
 import imgFniSc from "../assets/eventos/fni-sc.jpg";
 import imgHappyHourIrip from "../assets/eventos/happy-hour-irip.jpg";
+import imgSaoJoseDasNacoes from "../assets/eventos/sao-jose-das-nacoes.webp";
 
 export const SEED_SERVICES = [
   {
@@ -39,6 +40,18 @@ export const SEED_CONTACTS = [
 ];
 
 export const SEED_EVENTS = [
+  {
+    id: "seed-e-sao-jose-das-nacoes",
+    nome: "São José das Nações - Perspectivas globais, oportunidades locais",
+    data: "2026-10-26",
+    horario: "19:00 – 22:00",
+    local: "ACIAP São José dos Pinhais - Rua Joaquim Nabuco, 1869, São José dos Pinhais/PR",
+    tipo: "Webinar/Seminário",
+    status: "planejado",
+    descricao: "Encontro promovido pelo SEBRAE, por meio do PEIEX, em parceria com a ACIAP São José dos Pinhais, para empresas que desejam conhecer novas possibilidades e dar os primeiros passos rumo ao mercado internacional. Programação: experiências reais de empresas que já atravessaram fronteiras, desafios e oportunidades do comércio exterior e iniciativas e instituições que apoiam a internacionalização. Vagas limitadas, com inscrição.",
+    registro: imgSaoJoseDasNacoes,
+    createdAt: Date.now(),
+  },
   {
     id: "seed-e-araucaria",
     nome: "Araucária Global - Conexões para o Mundo",
