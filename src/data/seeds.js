@@ -38,10 +38,6 @@ export const SEED_CONTACTS = [
   { id: "seed-c-12", nome: "Aaryaman Baid", empresa: "Poly Medicure", cargo: "Senior Manager - Corporate Strategy", email: "aaryaman.baid@polymedicure.com", telefone: "91 11 33550700", createdAt: Date.now() },
 ];
 
-export const SEED_ROTINA_TASKS = [
-  { id: "rot-1", text: "Atualizar reuniões a seguir" },
-];
-
 export const SEED_EVENTS = [
   {
     id: "seed-e-araucaria",

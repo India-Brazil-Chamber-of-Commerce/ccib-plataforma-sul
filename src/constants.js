@@ -6,7 +6,6 @@ export const STORAGE_MEETINGS = "ccib-sul-reunioes";
 
 export const STORAGE_PARTNERS = "ccib-sul-parceiros";
 
-export const STORAGE_ROTINA = "ccib-sul-rotina";
 
 export const STORAGE_CONTACTS = "ccib-sul-contatos";
 

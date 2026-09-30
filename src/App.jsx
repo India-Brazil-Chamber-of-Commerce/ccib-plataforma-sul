@@ -1,14 +1,13 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
-import { Loader2, Building2, CalendarDays, LayoutGrid, Users, ListChecks, Contact, Briefcase } from "lucide-react";
-import { STORAGE_MEMBERS, STORAGE_EVENTS, STORAGE_MEETINGS, STORAGE_PARTNERS, STORAGE_ROTINA, STORAGE_CONTACTS, STORAGE_SERVICES, ESTADOS, STATUS_MEMBER } from "./constants";
-import { SEED_SERVICES, FORCE_SERVICE_UPDATES, SEED_CONTACTS, SEED_ROTINA_TASKS, SEED_EVENTS, FORCE_EVENT_UPDATES, FORCE_MEMBER_UPDATES, SEED_MEMBERS, ENSURE_MEMBERS } from "./data/seeds";
+import { Loader2, Building2, CalendarDays, LayoutGrid, Users, Contact, Briefcase } from "lucide-react";
+import { STORAGE_MEMBERS, STORAGE_EVENTS, STORAGE_MEETINGS, STORAGE_PARTNERS, STORAGE_CONTACTS, STORAGE_SERVICES, ESTADOS, STATUS_MEMBER } from "./constants";
+import { SEED_SERVICES, FORCE_SERVICE_UPDATES, SEED_CONTACTS, SEED_EVENTS, FORCE_EVENT_UPDATES, FORCE_MEMBER_UPDATES, SEED_MEMBERS, ENSURE_MEMBERS } from "./data/seeds";
 import { SEED_MEETINGS } from "./data/seedMeetings";
 import { blankContact, blankService, blankMeeting, blankPartner, blankMember, blankEvent } from "./lib/factories";
 import { useGoogleFonts } from "./lib/useGoogleFonts";
 import LOGO_URL from "./assets/logo-ccib.png";
 import { storage } from "./lib/storage";
 import { callMcpForJson, MCP_HUBSPOT, MCP_MICROSOFT_365 } from "./lib/claude";
-import RotinaTab from "./tabs/RotinaTab";
 import VisaoGeralTab from "./tabs/VisaoGeralTab";
 import EmpresasTab from "./tabs/EmpresasTab";
 import ServicosTab from "./tabs/ServicosTab";
@@ -50,8 +49,6 @@ export default function App() {
   const [services, setServices] = useState(null);
   const [serviceFilterTipo, setServiceFilterTipo] = useState("todos");
   const [expandedServices, setExpandedServices] = useState(new Set());
-  const [rotina, setRotina] = useState(null);
-  const [newRotinaText, setNewRotinaText] = useState("");
 
   const persistMembers = useCallback(async (next) => {
     setSaving(true);
@@ -96,18 +93,6 @@ export default function App() {
     } catch (e) {
       console.error("Falha ao salvar parceiros", e);
       setLoadError("Não foi possível salvar os parceiros. Tente novamente.");
-    } finally {
-      setSaving(false);
-    }
-  }, []);
-
-  const persistRotina = useCallback(async (next) => {
-    setSaving(true);
-    try {
-      await storage.set(STORAGE_ROTINA, JSON.stringify(next), true);
-    } catch (e) {
-      console.error("Falha ao salvar rotina", e);
-      setLoadError("Não foi possível salvar a rotina. Tente novamente.");
     } finally {
       setSaving(false);
     }
@@ -242,23 +227,6 @@ export default function App() {
       setPartners([]);
     }
     try {
-      const r = await safeGet(STORAGE_ROTINA, true);
-      const parsed = r && r.value ? JSON.parse(r.value) : { tasks: [], completions: {} };
-      const tasks = parsed.tasks || [];
-      const completions = parsed.completions || {};
-      const existingTexts = new Set(tasks.map((t) => t.text));
-      const missingSeeds = SEED_ROTINA_TASKS.filter((s) => !existingTexts.has(s.text));
-      const mergedTasks = missingSeeds.length > 0 ? [...tasks, ...missingSeeds] : tasks;
-      const mergedRotina = { tasks: mergedTasks, completions };
-      setRotina(mergedRotina);
-      if (missingSeeds.length > 0 || !r || !r.value) {
-        await persistRotina(mergedRotina);
-      }
-    } catch (e) {
-      console.error("Falha ao carregar rotina (provavelmente ainda não há dados salvos)", e);
-      setRotina({ tasks: SEED_ROTINA_TASKS, completions: {} });
-    }
-    try {
       const r = await safeGet(STORAGE_CONTACTS, true);
       const parsedContacts = r && r.value ? JSON.parse(r.value) : [];
       const existingEmails = new Set(parsedContacts.map((c) => c.email));
@@ -298,7 +266,7 @@ export default function App() {
       console.error("Falha ao carregar serviços (provavelmente ainda não há dados salvos)", e);
       setServices(SEED_SERVICES);
     }
-  }, [persistMembers, persistEvents, persistMeetings, persistPartners, persistRotina, persistContacts, persistServices]);
+  }, [persistMembers, persistEvents, persistMeetings, persistPartners, persistContacts, persistServices]);
 
   useEffect(() => {
     loadData();
@@ -500,35 +468,6 @@ export default function App() {
     updatePartners((partners || []).map((p) => (p.id === id ? { ...p, ...patch } : p)));
   const removePartner = (id) => updatePartners((partners || []).filter((p) => p.id !== id));
 
-  const updateRotina = (next) => {
-    setRotina(next);
-    persistRotina(next);
-  };
-  const addRotinaTask = () => {
-    const text = newRotinaText.trim();
-    if (!text || !rotina) return;
-    const novaTask = { id: `rot-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`, text };
-    updateRotina({ ...rotina, tasks: [...rotina.tasks, novaTask] });
-    setNewRotinaText("");
-  };
-  const removeRotinaTask = (id) => {
-    if (!rotina) return;
-    const { [id]: _removed, ...restCompletions } = rotina.completions;
-    updateRotina({ tasks: rotina.tasks.filter((t) => t.id !== id), completions: restCompletions });
-  };
-  const toggleRotinaToday = (id) => {
-    if (!rotina) return;
-    const todayStr = new Date().toISOString().slice(0, 10);
-    const isDoneToday = rotina.completions[id] === todayStr;
-    const nextCompletions = { ...rotina.completions };
-    if (isDoneToday) {
-      delete nextCompletions[id];
-    } else {
-      nextCompletions[id] = todayStr;
-    }
-    updateRotina({ ...rotina, completions: nextCompletions });
-  };
-
   const updateContacts = (next) => {
     setContacts(next);
     persistContacts(next);
@@ -571,7 +510,7 @@ export default function App() {
     return [...new Set(partners.map((p) => p.tipoParceria).filter(Boolean))];
   }, [partners]);
 
-  const loading = members === null || events === null || meetings === null || partners === null || rotina === null || contacts === null || services === null;
+  const loading = members === null || events === null || meetings === null || partners === null || contacts === null || services === null;
 
   if (loading) {
     return (
@@ -624,7 +563,6 @@ export default function App() {
     { id: "contatos", label: "Contatos", icon: Contact },
     { id: "reunioes", label: "Reuniões", icon: Users },
     { id: "eventos", label: "Eventos", icon: CalendarDays },
-    { id: "rotina", label: "Rotina", icon: ListChecks },
   ];
 
   return (
@@ -734,17 +672,6 @@ export default function App() {
       </div>
 
       <div style={{ maxWidth: 1020, margin: "0 auto" }}>
-        {tab === "rotina" && (
-          <RotinaTab
-            addRotinaTask={addRotinaTask}
-            newRotinaText={newRotinaText}
-            removeRotinaTask={removeRotinaTask}
-            rotina={rotina}
-            setNewRotinaText={setNewRotinaText}
-            toggleRotinaToday={toggleRotinaToday}
-          />
-        )}
-
         {tab === "visao" && (
           <VisaoGeralTab
             ativos={ativos}
