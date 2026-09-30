@@ -34,7 +34,8 @@ export default function App() {
   const [expandedMembers, setExpandedMembers] = useState(new Set());
   const [expandedPartners, setExpandedPartners] = useState(new Set());
   const [expandedMeetings, setExpandedMeetings] = useState(new Set());
-  const [calMonth, setCalMonth] = useState(() => { const n = new Date(); return { year: n.getFullYear(), month: n.getMonth() }; });
+  // Agenda de reuniões: a partir de qual semana (0 = esta) e quantas semanas mostrar
+  const [meetingWeeks, setMeetingWeeks] = useState({ offset: 0, count: 2 });
   const [selectedMeetingId, setSelectedMeetingId] = useState(null);
   const [expandedEvents, setExpandedEvents] = useState(new Set());
   const [syncingTeams, setSyncingTeams] = useState(false);
@@ -360,8 +361,13 @@ export default function App() {
   const addMeeting = (status) => {
     const novo = blankMeeting();
     if (status) novo.status = status;
+    // Nasce com a data de hoje e já aberta para edição, para aparecer na agenda da semana
+    const hoje = new Date();
+    novo.data = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, "0")}-${String(hoje.getDate()).padStart(2, "0")}`;
     updateMeetings([...(meetings || []), novo]);
     setExpandedMeetings((prev) => new Set([...prev, novo.id]));
+    setMeetingWeeks((w) => ({ offset: 0, count: Math.max(w.count, 2) }));
+    setSelectedMeetingId(novo.id);
   };
   const patchMeeting = (id, patch) =>
     updateMeetings((meetings || []).map((m) => (m.id === id ? { ...m, ...patch } : m)));
@@ -809,13 +815,13 @@ export default function App() {
         {tab === "reunioes" && (
           <ReunioesTab
             addMeeting={addMeeting}
-            calMonth={calMonth}
             lastSyncedAt={lastSyncedAt}
+            meetingWeeks={meetingWeeks}
             meetings={meetings}
             patchMeeting={patchMeeting}
             removeMeeting={removeMeeting}
             selectedMeetingId={selectedMeetingId}
-            setCalMonth={setCalMonth}
+            setMeetingWeeks={setMeetingWeeks}
             setSelectedMeetingId={setSelectedMeetingId}
             syncError={syncError}
             syncTeamsCalendar={syncTeamsCalendar}
