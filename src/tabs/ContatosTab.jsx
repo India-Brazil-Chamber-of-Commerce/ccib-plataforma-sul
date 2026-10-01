@@ -30,7 +30,7 @@ export default function ContatosTab({
         />
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 18, alignItems: "center", justifyContent: "space-between" }}>
           <input
-            placeholder="Buscar por nome, empresa ou cargo..."
+            placeholder="Buscar por nome, empresa, setor ou cargo..."
             value={contactSearch}
             onChange={(e) => setContactSearch(e.target.value)}
             style={{ ...filterInputStyle, flex: "1 1 300px" }}
@@ -49,10 +49,11 @@ export default function ContatosTab({
         </div>
 
         {(() => {
+          const setorSuggestions = [...new Set((contacts || []).map((c) => c.setor).filter(Boolean))].sort();
           const q = contactSearch.trim().toLowerCase();
           const filtered = (contacts || []).filter((c) => {
             if (!q) return true;
-            return c.nome.toLowerCase().includes(q) || (c.empresa || "").toLowerCase().includes(q) || (c.cargo || "").toLowerCase().includes(q);
+            return c.nome.toLowerCase().includes(q) || (c.empresa || "").toLowerCase().includes(q) || (c.cargo || "").toLowerCase().includes(q) || (c.setor || "").toLowerCase().includes(q);
           }).sort((a, b) => a.nome.localeCompare(b.nome));
 
           if (filtered.length === 0) {
@@ -69,7 +70,7 @@ export default function ContatosTab({
               <div
                 style={{
                   display: "grid",
-                  gridTemplateColumns: "1fr 1fr 1.2fr 1.4fr 0.8fr 36px",
+                  gridTemplateColumns: "1fr 1fr 0.7fr 1.1fr 1.3fr 0.8fr 36px",
                   gap: 0,
                   padding: "9px 14px",
                   background: "#0B2545",
@@ -78,6 +79,7 @@ export default function ContatosTab({
               >
                 <span style={{ ...labelStyle, marginBottom: 0, color: "rgba(255,255,255,0.7)" }}>Nome</span>
                 <span style={{ ...labelStyle, marginBottom: 0, color: "rgba(255,255,255,0.7)" }}>Empresa</span>
+                <span style={{ ...labelStyle, marginBottom: 0, color: "rgba(255,255,255,0.7)" }}>Setor</span>
                 <span style={{ ...labelStyle, marginBottom: 0, color: "rgba(255,255,255,0.7)" }}>Cargo</span>
                 <span style={{ ...labelStyle, marginBottom: 0, color: "rgba(255,255,255,0.7)" }}>E-mail</span>
                 <span style={{ ...labelStyle, marginBottom: 0, color: "rgba(255,255,255,0.7)" }}>Telefone</span>
@@ -94,7 +96,7 @@ export default function ContatosTab({
                       className="ccib-row"
                       style={{
                         display: "grid",
-                        gridTemplateColumns: "1fr 1fr 1.2fr 1.4fr 0.8fr 36px",
+                        gridTemplateColumns: "1fr 1fr 0.7fr 1.1fr 1.3fr 0.8fr 36px",
                         gap: 0,
                         padding: "10px 14px",
                         cursor: "pointer",
@@ -108,6 +110,15 @@ export default function ContatosTab({
                       </span>
                       <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 11.5, color: "#566175", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", paddingRight: 8 }}>
                         {c.empresa || "—"}
+                      </span>
+                      <span style={{ paddingRight: 8, overflow: "hidden", whiteSpace: "nowrap" }}>
+                        {c.setor ? (
+                          <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 10.5, color: "#0E7C3A", background: "#0E7C3A14", borderRadius: 20, padding: "2px 9px" }}>
+                            {c.setor}
+                          </span>
+                        ) : (
+                          <span style={{ fontSize: 12, color: "#8992A6" }}>—</span>
+                        )}
                       </span>
                       <span style={{ fontSize: 12, color: "#8992A6", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", paddingRight: 8 }}>
                         {c.cargo || "—"}
@@ -140,6 +151,18 @@ export default function ContatosTab({
                             />
                             <datalist id={`contact-empresas-${c.id}`}>
                               {memberNameSuggestions.map((s) => <option key={s} value={s} />)}
+                            </datalist>
+                          </Field>
+                          <Field label="Setor">
+                            <input
+                              className="ccib-input" style={inputStyle}
+                              list={`contact-setores-${c.id}`}
+                              value={c.setor || ""}
+                              placeholder="Ex.: Saúde"
+                              onChange={(e) => patchContact(c.id, { setor: e.target.value })}
+                            />
+                            <datalist id={`contact-setores-${c.id}`}>
+                              {setorSuggestions.map((s) => <option key={s} value={s} />)}
                             </datalist>
                           </Field>
                           <Field label="Cargo">

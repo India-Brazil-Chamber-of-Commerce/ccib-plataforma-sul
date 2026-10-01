@@ -8,6 +8,7 @@ export function blankContact() {
     email: "",
     telefone: "",
     cargo: "",
+    setor: "",
     createdAt: Date.now(),
   };
 }

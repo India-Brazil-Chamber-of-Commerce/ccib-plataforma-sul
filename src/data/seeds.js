@@ -24,18 +24,18 @@ export const FORCE_SERVICE_UPDATES = {
 };
 
 export const SEED_CONTACTS = [
-  { id: "seed-c-1", nome: "Nipun Jain", empresa: "PHARMCHEM/IPHEX", cargo: "Chairman IPHEX", email: "nipun@phrmchem.net", telefone: "91 98108 20562", createdAt: Date.now() },
-  { id: "seed-c-2", nome: "Balwinder Singh Sethi", empresa: "Mankind Pharma", cargo: "Senior President - International Business", email: "balwinder.sethi@mankindpharma.com", telefone: "971 523 822 226", createdAt: Date.now() },
-  { id: "seed-c-3", nome: "Sheetal Arora", empresa: "Mankind Pharma", cargo: "CEO", email: "sheetalarora@mankindpharma.com", telefone: "011 46846700", createdAt: Date.now() },
-  { id: "seed-c-4", nome: "Partha Sengupta", empresa: "Mankind Pharma", cargo: "President & Head", email: "partha.sengupta@mankindpharma.com", telefone: "91 9871122280", createdAt: Date.now() },
-  { id: "seed-c-5", nome: "Shubham Bhargava", empresa: "Mankind Pharma", cargo: "Manager International Business", email: "shubham.bhargava@mankindag.com", telefone: "91 919871045689", createdAt: Date.now() },
-  { id: "seed-c-6", nome: "Dr. Nimisha Singh", empresa: "Mankind Pharma", cargo: "Deputy Manager - International Business", email: "nimisha.singh@mankindpharma.com", telefone: "91 9879210396", createdAt: Date.now() },
-  { id: "seed-c-7", nome: "Soniyaa Malik Arora", empresa: "Apollo Hospitals Indraprastha", cargo: "Deputy Manager - International Patient Services", email: "sonia_a@apollohospitals.com", telefone: "91 9650610581", createdAt: Date.now() },
-  { id: "seed-c-8", nome: "Dr. Gaurav Katyal", empresa: "Apollo Hospitals Indraprastha", cargo: "COO", email: "drgaurav_k@apollohospitals.com", telefone: "91 9873217415", createdAt: Date.now() },
-  { id: "seed-c-9", nome: "Manoj Kumar", empresa: "Artemis Hospitals", cargo: "CMO - International & Domestic", email: "manoj.kumar@artemishospitals.com", telefone: "91 9871586852", createdAt: Date.now() },
-  { id: "seed-c-10", nome: "Dr. Shyam Sunder Mahansaria", empresa: "Artemis Hospitals", cargo: "Sr. Consultant - Liver Transplant & Gastro Intestinal Surgery", email: "shyams.mahansaria@artemishospitals.com", telefone: "91 9540 9468 36", createdAt: Date.now() },
-  { id: "seed-c-11", nome: "Dr. Giriraj Singh Bora", empresa: "Artemis Hospitals", cargo: "Chief - Liver Transplant & Sr. Consultant", email: "giriraj.bora@artemishospitals.com", telefone: "91 9873 7089 79", createdAt: Date.now() },
-  { id: "seed-c-12", nome: "Aaryaman Baid", empresa: "Poly Medicure", cargo: "Senior Manager - Corporate Strategy", email: "aaryaman.baid@polymedicure.com", telefone: "91 11 33550700", createdAt: Date.now() },
+  { id: "seed-c-1", nome: "Nipun Jain", empresa: "PHARMCHEM/IPHEX", cargo: "Chairman IPHEX", email: "nipun@phrmchem.net", telefone: "91 98108 20562", setor: "Saúde", createdAt: Date.now() },
+  { id: "seed-c-2", nome: "Balwinder Singh Sethi", empresa: "Mankind Pharma", cargo: "Senior President - International Business", email: "balwinder.sethi@mankindpharma.com", telefone: "971 523 822 226", setor: "Saúde", createdAt: Date.now() },
+  { id: "seed-c-3", nome: "Sheetal Arora", empresa: "Mankind Pharma", cargo: "CEO", email: "sheetalarora@mankindpharma.com", telefone: "011 46846700", setor: "Saúde", createdAt: Date.now() },
+  { id: "seed-c-4", nome: "Partha Sengupta", empresa: "Mankind Pharma", cargo: "President & Head", email: "partha.sengupta@mankindpharma.com", telefone: "91 9871122280", setor: "Saúde", createdAt: Date.now() },
+  { id: "seed-c-5", nome: "Shubham Bhargava", empresa: "Mankind Pharma", cargo: "Manager International Business", email: "shubham.bhargava@mankindag.com", telefone: "91 919871045689", setor: "Saúde", createdAt: Date.now() },
+  { id: "seed-c-6", nome: "Dr. Nimisha Singh", empresa: "Mankind Pharma", cargo: "Deputy Manager - International Business", email: "nimisha.singh@mankindpharma.com", telefone: "91 9879210396", setor: "Saúde", createdAt: Date.now() },
+  { id: "seed-c-7", nome: "Soniyaa Malik Arora", empresa: "Apollo Hospitals Indraprastha", cargo: "Deputy Manager - International Patient Services", email: "sonia_a@apollohospitals.com", telefone: "91 9650610581", setor: "Saúde", createdAt: Date.now() },
+  { id: "seed-c-8", nome: "Dr. Gaurav Katyal", empresa: "Apollo Hospitals Indraprastha", cargo: "COO", email: "drgaurav_k@apollohospitals.com", telefone: "91 9873217415", setor: "Saúde", createdAt: Date.now() },
+  { id: "seed-c-9", nome: "Manoj Kumar", empresa: "Artemis Hospitals", cargo: "CMO - International & Domestic", email: "manoj.kumar@artemishospitals.com", telefone: "91 9871586852", setor: "Saúde", createdAt: Date.now() },
+  { id: "seed-c-10", nome: "Dr. Shyam Sunder Mahansaria", empresa: "Artemis Hospitals", cargo: "Sr. Consultant - Liver Transplant & Gastro Intestinal Surgery", email: "shyams.mahansaria@artemishospitals.com", telefone: "91 9540 9468 36", setor: "Saúde", createdAt: Date.now() },
+  { id: "seed-c-11", nome: "Dr. Giriraj Singh Bora", empresa: "Artemis Hospitals", cargo: "Chief - Liver Transplant & Sr. Consultant", email: "giriraj.bora@artemishospitals.com", telefone: "91 9873 7089 79", setor: "Saúde", createdAt: Date.now() },
+  { id: "seed-c-12", nome: "Aaryaman Baid", empresa: "Poly Medicure", cargo: "Senior Manager - Corporate Strategy", email: "aaryaman.baid@polymedicure.com", telefone: "91 11 33550700", setor: "Saúde", createdAt: Date.now() },
 ];
 
 export const SEED_EVENTS = [

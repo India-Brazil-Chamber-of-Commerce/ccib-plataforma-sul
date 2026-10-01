@@ -237,9 +237,16 @@ export default function App() {
       const parsedContacts = r && r.value ? JSON.parse(r.value) : [];
       const existingEmails = new Set(parsedContacts.map((c) => c.email));
       const missingContactSeeds = SEED_CONTACTS.filter((s) => !existingEmails.has(s.email));
-      const mergedContacts = missingContactSeeds.length > 0 ? [...parsedContacts, ...missingContactSeeds] : parsedContacts;
+      const mergedRaw = missingContactSeeds.length > 0 ? [...parsedContacts, ...missingContactSeeds] : parsedContacts;
+      // Contatos salvos antes de existir a coluna Setor ficam como "Saúde" (só quando o campo ainda não existe)
+      let setorAdded = false;
+      const mergedContacts = mergedRaw.map((c) => {
+        if (c.setor !== undefined) return c;
+        setorAdded = true;
+        return { ...c, setor: "Saúde" };
+      });
       setContacts(mergedContacts);
-      if (missingContactSeeds.length > 0) {
+      if (missingContactSeeds.length > 0 || setorAdded) {
         await persistContacts(mergedContacts);
       }
     } catch (e) {
