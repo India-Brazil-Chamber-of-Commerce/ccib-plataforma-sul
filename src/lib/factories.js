@@ -1,5 +1,3 @@
-import { TIPOS_SERVICO } from "../constants";
-
 export function blankContact() {
   return {
     id: `c-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
@@ -9,19 +7,6 @@ export function blankContact() {
     telefone: "",
     cargo: "",
     setor: "",
-    createdAt: Date.now(),
-  };
-}
-
-export function blankService(servico) {
-  return {
-    id: `serv-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-    empresa: "",
-    servico: servico || TIPOS_SERVICO[0],
-    data: "",
-    valor: "",
-    status: "ativo",
-    notas: "",
     createdAt: Date.now(),
   };
 }

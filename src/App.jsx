@@ -1,16 +1,15 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
-import { Loader2, Building2, CalendarDays, LayoutGrid, Users, Contact, Briefcase } from "lucide-react";
-import { STORAGE_MEMBERS, STORAGE_EVENTS, STORAGE_MEETINGS, STORAGE_PARTNERS, STORAGE_CONTACTS, STORAGE_SERVICES, ESTADOS, STATUS_MEMBER } from "./constants";
-import { SEED_SERVICES, FORCE_SERVICE_UPDATES, SEED_CONTACTS, SEED_EVENTS, REMOVED_EVENTS, FORCE_EVENT_UPDATES, FORCE_MEMBER_UPDATES, SEED_MEMBERS, ENSURE_MEMBERS } from "./data/seeds";
+import { Loader2, Building2, CalendarDays, LayoutGrid, Users, Contact } from "lucide-react";
+import { STORAGE_MEMBERS, STORAGE_EVENTS, STORAGE_MEETINGS, STORAGE_PARTNERS, STORAGE_CONTACTS, ESTADOS, STATUS_MEMBER } from "./constants";
+import { SEED_CONTACTS, SEED_EVENTS, REMOVED_EVENTS, FORCE_EVENT_UPDATES, FORCE_MEMBER_UPDATES, SEED_MEMBERS, ENSURE_MEMBERS } from "./data/seeds";
 import { SEED_MEETINGS, REMOVED_MEETINGS } from "./data/seedMeetings";
-import { blankContact, blankService, blankMeeting, blankPartner, blankMember, blankEvent } from "./lib/factories";
+import { blankContact, blankMeeting, blankPartner, blankMember, blankEvent } from "./lib/factories";
 import { useGoogleFonts } from "./lib/useGoogleFonts";
 import LOGO_URL from "./assets/logo-ccib.png";
 import { storage } from "./lib/storage";
 import { callMcpForJson, MCP_HUBSPOT, MCP_MICROSOFT_365 } from "./lib/claude";
 import VisaoGeralTab from "./tabs/VisaoGeralTab";
 import EmpresasTab from "./tabs/EmpresasTab";
-import ServicosTab from "./tabs/ServicosTab";
 import ContatosTab from "./tabs/ContatosTab";
 import ReunioesTab from "./tabs/ReunioesTab";
 import EventosTab from "./tabs/EventosTab";
@@ -46,9 +45,6 @@ export default function App() {
   const [contacts, setContacts] = useState(null);
   const [contactSearch, setContactSearch] = useState("");
   const [expandedContacts, setExpandedContacts] = useState(new Set());
-  const [services, setServices] = useState(null);
-  const [serviceFilterTipo, setServiceFilterTipo] = useState("todos");
-  const [expandedServices, setExpandedServices] = useState(new Set());
 
   const persistMembers = useCallback(async (next) => {
     setSaving(true);
@@ -105,18 +101,6 @@ export default function App() {
     } catch (e) {
       console.error("Falha ao salvar contatos", e);
       setLoadError("Não foi possível salvar os contatos. Tente novamente.");
-    } finally {
-      setSaving(false);
-    }
-  }, []);
-
-  const persistServices = useCallback(async (next) => {
-    setSaving(true);
-    try {
-      await storage.set(STORAGE_SERVICES, JSON.stringify(next), true);
-    } catch (e) {
-      console.error("Falha ao salvar serviços", e);
-      setLoadError("Não foi possível salvar os serviços. Tente novamente.");
     } finally {
       setSaving(false);
     }
@@ -253,33 +237,7 @@ export default function App() {
       console.error("Falha ao carregar contatos (provavelmente ainda não há dados salvos)", e);
       setContacts(SEED_CONTACTS);
     }
-    try {
-      const r = await safeGet(STORAGE_SERVICES, true);
-      const parsed = r && r.value ? JSON.parse(r.value) : [];
-      const existingKeys = new Set(parsed.map((s) => `${s.empresa}__${s.servico}`));
-      const missingSeeds = SEED_SERVICES.filter((s) => !existingKeys.has(`${s.empresa}__${s.servico}`));
-      const withSeeds = missingSeeds.length > 0 ? [...parsed, ...missingSeeds] : parsed;
-      let forcedChangedServices = false;
-      const withForcedUpdates = withSeeds.map((s) => {
-        const force = FORCE_SERVICE_UPDATES[`${s.empresa}__${s.servico}`];
-        if (!force) return s;
-        const patch = {};
-        Object.keys(force).forEach((k) => {
-          if (s[k] !== force[k]) patch[k] = force[k];
-        });
-        if (Object.keys(patch).length === 0) return s;
-        forcedChangedServices = true;
-        return { ...s, ...patch };
-      });
-      setServices(withForcedUpdates);
-      if (missingSeeds.length > 0 || forcedChangedServices) {
-        await persistServices(withForcedUpdates);
-      }
-    } catch (e) {
-      console.error("Falha ao carregar serviços (provavelmente ainda não há dados salvos)", e);
-      setServices(SEED_SERVICES);
-    }
-  }, [persistMembers, persistEvents, persistMeetings, persistPartners, persistContacts, persistServices]);
+  }, [persistMembers, persistEvents, persistMeetings, persistPartners, persistContacts]);
 
   useEffect(() => {
     loadData();
@@ -490,19 +448,6 @@ export default function App() {
     updateContacts((contacts || []).map((c) => (c.id === id ? { ...c, ...patch } : c)));
   const removeContact = (id) => updateContacts((contacts || []).filter((c) => c.id !== id));
 
-  const updateServices = (next) => {
-    setServices(next);
-    persistServices(next);
-  };
-  const addService = (servico) => {
-    const novo = blankService(servico);
-    updateServices([...(services || []), novo]);
-    setExpandedServices((prev) => new Set([...prev, novo.id]));
-  };
-  const patchService = (id, patch) =>
-    updateServices((services || []).map((s) => (s.id === id ? { ...s, ...patch } : s)));
-  const removeService = (id) => updateServices((services || []).filter((s) => s.id !== id));
-
   const modalidadeSuggestions = useMemo(() => {
     if (!members) return [];
     return [...new Set(members.map((m) => m.modalidade).filter(Boolean))];
@@ -523,7 +468,7 @@ export default function App() {
     return [...new Set(partners.map((p) => p.tipoParceria).filter(Boolean))];
   }, [partners]);
 
-  const loading = members === null || events === null || meetings === null || partners === null || contacts === null || services === null;
+  const loading = members === null || events === null || meetings === null || partners === null || contacts === null;
 
   if (loading) {
     return (
@@ -572,7 +517,6 @@ export default function App() {
   const TABS = [
     { id: "visao", label: "Visão Geral", icon: LayoutGrid },
     { id: "associados", label: "Empresas", icon: Building2 },
-    { id: "servicos", label: "Serviços", icon: Briefcase },
     { id: "contatos", label: "Contatos", icon: Contact },
     { id: "reunioes", label: "Reuniões", icon: Users },
     { id: "eventos", label: "Eventos", icon: CalendarDays },
@@ -717,20 +661,6 @@ export default function App() {
             setMemberSearch={setMemberSearch}
             tipoVinculoSuggestions={tipoVinculoSuggestions}
             toggleMemberExpand={toggleMemberExpand}
-          />
-        )}
-
-        {tab === "servicos" && (
-          <ServicosTab
-            addService={addService}
-            expandedServices={expandedServices}
-            memberNameSuggestions={memberNameSuggestions}
-            patchService={patchService}
-            removeService={removeService}
-            serviceFilterTipo={serviceFilterTipo}
-            services={services}
-            setExpandedServices={setExpandedServices}
-            setServiceFilterTipo={setServiceFilterTipo}
           />
         )}
 

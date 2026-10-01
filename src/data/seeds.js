@@ -4,25 +4,6 @@ import imgFniSc from "../assets/eventos/fni-sc.jpg";
 import imgHappyHourIrip from "../assets/eventos/happy-hour-irip.jpg";
 import imgSaoJoseDasNacoes from "../assets/eventos/sao-jose-das-nacoes.webp";
 
-export const SEED_SERVICES = [
-  {
-    id: "serv-seed-1",
-    empresa: "Construfit",
-    servico: "Solução de Controvérsias",
-    data: "2026-08-28",
-    valor: "",
-    status: "ativo",
-    notas: "",
-    createdAt: Date.now(),
-  },
-];
-
-export const FORCE_SERVICE_UPDATES = {
-  "Construfit__Solução de Controvérsias": {
-    data: "2026-08-28",
-  },
-};
-
 export const SEED_CONTACTS = [
   { id: "seed-c-1", nome: "Nipun Jain", empresa: "PHARMCHEM/IPHEX", cargo: "Chairman IPHEX", email: "nipun@phrmchem.net", telefone: "91 98108 20562", setor: "Saúde", createdAt: Date.now() },
   { id: "seed-c-2", nome: "Balwinder Singh Sethi", empresa: "Mankind Pharma", cargo: "Senior President - International Business", email: "balwinder.sethi@mankindpharma.com", telefone: "971 523 822 226", setor: "Saúde", createdAt: Date.now() },

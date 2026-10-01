@@ -6,12 +6,7 @@ export const STORAGE_MEETINGS = "ccib-sul-reunioes";
 
 export const STORAGE_PARTNERS = "ccib-sul-parceiros";
 
-
 export const STORAGE_CONTACTS = "ccib-sul-contatos";
-
-export const STORAGE_SERVICES = "ccib-sul-servicos";
-
-export const TIPOS_SERVICO = ["Solução de Controvérsias", "Relatório de Mercado", "Lista de Empresas"];
 
 export const ESTADOS = ["PR", "SC", "RS", "Outro"];
 
