@@ -389,19 +389,6 @@ export const SEED_MEETINGS = [
     createdAt: Date.now(),
   },
   {
-    id: "teams-c1",
-    nome: "Araucaria Global",
-    data: "2026-09-21",
-    horario: "08:00 – 12:00",
-    participantes: "Gustavo Bastos, Bianca Guimarães",
-    local: "AECIAR, Araucária/PR",
-    responsavel: "ambos",
-    status: "agendada",
-    notas: "Importado do Teams (marcado como tentativo no calendário)",
-    origem: "teams",
-    createdAt: Date.now(),
-  },
-  {
     id: "teams-c2",
     nome: "INTERNO: Reunião de Equipe (21/09)",
     data: "2026-09-21",
@@ -733,3 +720,9 @@ export const SEED_MEETINGS = [
     createdAt: Date.now(),
   },
 ];
+
+// Reuniões removidas a pedido. São apagadas também dos dados já salvos nos navegadores.
+export const REMOVED_MEETINGS = {
+  ids: ["teams-c1"],
+  nomes: ["Araucaria Global"],
+};
