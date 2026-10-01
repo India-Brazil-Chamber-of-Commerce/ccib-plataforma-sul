@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { Loader2, Building2, CalendarDays, LayoutGrid, Users, Contact } from "lucide-react";
 import { STORAGE_MEMBERS, STORAGE_EVENTS, STORAGE_MEETINGS, STORAGE_PARTNERS, STORAGE_CONTACTS, ESTADOS, STATUS_MEMBER } from "./constants";
-import { SEED_CONTACTS, SEED_EVENTS, REMOVED_EVENTS, FORCE_EVENT_UPDATES, FORCE_MEMBER_UPDATES, SEED_MEMBERS, ENSURE_MEMBERS } from "./data/seeds";
+import { SEED_CONTACTS, SEED_EVENTS, REMOVED_EVENTS, FORCE_EVENT_UPDATES, FORCE_MEMBER_UPDATES, APPEND_MEMBER_NOTES, SEED_MEMBERS, ENSURE_MEMBERS } from "./data/seeds";
 import { SEED_MEETINGS, REMOVED_MEETINGS } from "./data/seedMeetings";
 import { blankContact, blankMeeting, blankPartner, blankMember, blankEvent } from "./lib/factories";
 import { useGoogleFonts } from "./lib/useGoogleFonts";
@@ -137,9 +137,16 @@ export default function App() {
         forcedChangedMembers = true;
         return { ...m, ...patch };
       });
-      setMembers(withForcedMembers);
-      if (parsedM.length === 0 || missingMemberSeeds.length > 0 || forcedChangedMembers) {
-        await persistMembers(withForcedMembers);
+      let appendedNotes = false;
+      const withNotes = withForcedMembers.map((m) => {
+        const extra = APPEND_MEMBER_NOTES[m.nome];
+        if (!extra || (m.notas || "").includes(extra)) return m;
+        appendedNotes = true;
+        return { ...m, notas: m.notas ? `${m.notas} | ${extra}` : extra };
+      });
+      setMembers(withNotes);
+      if (parsedM.length === 0 || missingMemberSeeds.length > 0 || forcedChangedMembers || appendedNotes) {
+        await persistMembers(withNotes);
       }
     } catch (e) {
       console.error("Falha ao carregar associados (provavelmente ainda não há dados salvos)", e);

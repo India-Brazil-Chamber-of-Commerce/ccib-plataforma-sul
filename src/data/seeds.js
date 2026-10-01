@@ -191,6 +191,12 @@ export const FORCE_MEMBER_UPDATES = {
   "CSS": { estado: "PR" },
 };
 
+// Textos acrescentados ao final das notas de uma empresa (sem apagar o que já está escrito).
+// Só entram uma vez: se o texto já estiver nas notas, nada muda.
+export const APPEND_MEMBER_NOTES = {
+  "Construfit": "Serviço contratado: Solução de Controvérsias (28/08/2026)",
+};
+
 export const SEED_MEMBERS = NOMES_MAPA_ASSOCIADOS.map((nome, i) => ({
   id: `seed-m-${i}`,
   nome,
