@@ -21,6 +21,18 @@ export const SEED_CONTACTS = [
 
 export const SEED_EVENTS = [
   {
+    id: "seed-e-cafe-das-nacoes",
+    nome: "Café das Nações - Rodada Business sobre o Acordo Mercosul - UE",
+    data: "2026-10-21",
+    horario: "08:00",
+    local: "AECIC",
+    tipo: "Webinar/Seminário",
+    status: "planejado",
+    descricao: "Café das Nações: rodada business sobre o Acordo Mercosul - União Europeia.",
+    registro: "",
+    createdAt: Date.now(),
+  },
+  {
     id: "seed-e-sao-jose-das-nacoes",
     nome: "São José das Nações - Perspectivas globais, oportunidades locais",
     data: "2026-10-26",
