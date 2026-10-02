@@ -4,11 +4,10 @@ import { formatDate, getDisplayImageUrl } from "../lib/format";
 import { SectionTitle } from "../components/ui";
 import mapaRegiaoSul from "../assets/mapa-regiao-sul.webp";
 
-// Posição de cada número sobre o mapa (em % da imagem), logo abaixo da sigla do estado
 const MAPA_UFS = [
-  { uf: "PR", nome: "Paraná", cor: "#E8964F", left: 54, top: 27 },
-  { uf: "SC", nome: "Santa Catarina", cor: "#6F8F68", left: 69, top: 50.5 },
-  { uf: "RS", nome: "Rio Grande do Sul", cor: "#5E7FA6", left: 43, top: 76 },
+  { uf: "PR", nome: "Paraná", cor: "#E8964F" },
+  { uf: "SC", nome: "Santa Catarina", cor: "#6F8F68" },
+  { uf: "RS", nome: "Rio Grande do Sul", cor: "#5E7FA6" },
 ];
 
 function MapaAssociados({ members }) {
@@ -17,22 +16,8 @@ function MapaAssociados({ members }) {
   const semUf = ativos.filter((m) => !MAPA_UFS.some((e) => e.uf === m.estado)).length;
   return (
     <div style={{ border: "1px solid #E3E6EC", borderRadius: 12, padding: "24px 28px", marginBottom: 32, display: "flex", gap: 32, alignItems: "center", flexWrap: "wrap" }}>
-      <div style={{ position: "relative", width: 260, maxWidth: "100%", flexShrink: 0, margin: "0 auto" }}>
+      <div style={{ width: 260, maxWidth: "100%", flexShrink: 0, margin: "0 auto" }}>
         <img src={mapaRegiaoSul} alt="Mapa da Região Sul: Paraná, Santa Catarina e Rio Grande do Sul" style={{ width: "100%", display: "block" }} />
-        {MAPA_UFS.map((e) => (
-          <span
-            key={e.uf}
-            title={`${porUf[e.uf]} associado${porUf[e.uf] === 1 ? "" : "s"} ativo${porUf[e.uf] === 1 ? "" : "s"} em ${e.nome}`}
-            style={{
-              position: "absolute", left: `${e.left}%`, top: `${e.top}%`, transform: "translate(-50%, -50%)",
-              background: "#FFFFFF", color: "#0B2545", border: `2px solid ${e.cor}`, borderRadius: 20,
-              padding: "2px 10px", fontFamily: "'Fraunces', serif", fontWeight: 600, fontSize: 15,
-              boxShadow: "0 2px 6px rgba(11,37,69,0.15)", whiteSpace: "nowrap",
-            }}
-          >
-            {porUf[e.uf]}
-          </span>
-        ))}
       </div>
       <div style={{ flex: "1 1 240px" }}>
         <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 10.5, letterSpacing: "0.08em", textTransform: "uppercase", color: "#8992A6", marginBottom: 6 }}>
