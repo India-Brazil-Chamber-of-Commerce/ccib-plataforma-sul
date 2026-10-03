@@ -758,6 +758,19 @@ export const SEED_MEETINGS = [
     origem: "teams",
     createdAt: Date.now(),
   },
+  {
+    id: "teams-auto-20261102-reuniao-de-equipe",
+    nome: "INTERNO: Reunião de Equipe (02/11)",
+    data: "2026-11-02",
+    horario: "09:00 – 11:00",
+    participantes: "Equipe CCIB",
+    local: "Microsoft Teams",
+    responsavel: "ambos",
+    status: "confirmada",
+    notas: "Importado do Teams (rotina diária)",
+    origem: "teams",
+    createdAt: Date.now(),
+  },
 ];
 
 // Reuniões removidas a pedido. São apagadas também dos dados já salvos nos navegadores.
