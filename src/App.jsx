@@ -530,11 +530,6 @@ export default function App() {
     .sort((a, b) => (a.data || "9999").localeCompare(b.data || "9999"))
     .slice(0, 5);
 
-  const pastEvents = events
-    .filter((e) => e.status === "realizado")
-    .sort((a, b) => (b.data || "0000").localeCompare(a.data || "0000"))
-    .slice(0, 5);
-
   // Associados ativos por estado (mesma base do mapa); "Outro" reúne outros estados e quem está sem estado
   const membrosAtivos = members.filter((m) => m.status === "ativo");
   const ufsSul = ESTADOS.filter((uf) => uf !== "Outro");
@@ -667,7 +662,6 @@ export default function App() {
             ativos={ativos}
             byEstado={byEstado}
             members={members}
-            pastEvents={pastEvents}
             upcomingEvents={upcomingEvents}
             upcomingMeetings={upcomingMeetings}
           />
