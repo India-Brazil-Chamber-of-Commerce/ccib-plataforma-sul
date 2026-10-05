@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
-import { Loader2, Building2, CalendarDays, LayoutGrid, Users, Contact } from "lucide-react";
+import { Loader2, Building2, CalendarDays, LayoutGrid, Users, Contact, FolderKanban } from "lucide-react";
 import { STORAGE_MEMBERS, STORAGE_EVENTS, STORAGE_MEETINGS, STORAGE_PARTNERS, STORAGE_CONTACTS, ESTADOS, STATUS_MEMBER } from "./constants";
 import { SEED_CONTACTS, SEED_EVENTS, REMOVED_EVENTS, FORCE_EVENT_UPDATES, FORCE_MEMBER_UPDATES, APPEND_MEMBER_NOTES, MERGE_MEMBERS, NEGOCIOS_HUBSPOT, SEED_MEMBERS, ENSURE_MEMBERS } from "./data/seeds";
 import { SEED_MEETINGS, REMOVED_MEETINGS } from "./data/seedMeetings";
@@ -8,6 +8,7 @@ import { useGoogleFonts } from "./lib/useGoogleFonts";
 import LOGO_URL from "./assets/logo-ccib.png";
 import { storage } from "./lib/storage";
 import { callMcpForJson, MCP_HUBSPOT, MCP_MICROSOFT_365 } from "./lib/claude";
+import ProjetosTab from "./tabs/ProjetosTab";
 import VisaoGeralTab from "./tabs/VisaoGeralTab";
 import EmpresasTab from "./tabs/EmpresasTab";
 import ContatosTab from "./tabs/ContatosTab";
@@ -578,6 +579,7 @@ export default function App() {
     { id: "contatos", label: "Contatos", icon: Contact },
     { id: "reunioes", label: "Reuniões", icon: Users },
     { id: "eventos", label: "Eventos", icon: CalendarDays },
+    { id: "projetos", label: "Projetos", icon: FolderKanban },
   ];
 
   return (
@@ -687,6 +689,8 @@ export default function App() {
       </div>
 
       <div style={{ maxWidth: 1020, margin: "0 auto" }}>
+        {tab === "projetos" && <ProjetosTab />}
+
         {tab === "visao" && (
           <VisaoGeralTab
             ativos={ativos}

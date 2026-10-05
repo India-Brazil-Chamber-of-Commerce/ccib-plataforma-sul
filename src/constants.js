@@ -8,6 +8,8 @@ export const STORAGE_PARTNERS = "ccib-sul-parceiros";
 
 export const STORAGE_CONTACTS = "ccib-sul-contatos";
 
+export const STORAGE_PROJECTS = "ccib-sul-projetos";
+
 export const ESTADOS = ["PR", "SC", "RS", "Outro"];
 
 export const RESPONSAVEIS = [
@@ -54,3 +56,10 @@ export const STATUS_PARTNER = {
 };
 
 export const PERIODICIDADES = ["Mensal", "Trimestral", "Semestral", "Anual", "Outro"];
+
+export const STATUS_PROJETO = {
+  ideia: { label: "Ideia", color: "#8992A6" },
+  planejamento: { label: "Em planejamento", color: "#B8752E" },
+  andamento: { label: "Em andamento", color: "#2F6FB0" },
+  concluido: { label: "Concluído", color: "#0E7C3A" },
+};

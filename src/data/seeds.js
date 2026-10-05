@@ -400,3 +400,20 @@ export const NEGOCIOS_HUBSPOT = [
   { empresa: "Universidade Positivo", situacao: "perdido", etapa: "Negócio perdido", valor: "US$ 2.100", data: "2025-10-09" },
   { empresa: "Cotton Baby", situacao: "perdido", etapa: "Negócio perdido", valor: "", data: "2025-06-17" },
 ];
+
+// Projetos da Regional Sul. Entram uma vez (por id) e depois podem ser editados livremente na aba Projetos.
+export const SEED_PROJECTS = [
+  {
+    id: "seed-p-fazendo-negocios-india-sc",
+    nome: "Evento Fazendo Negócios com a Índia - Edição Santa Catarina",
+    descricao: "",
+    status: "planejamento",
+    responsavel: "ambos",
+    estado: "SC",
+    dataPrevista: "",
+    parceiros: "",
+    etapas: [],
+    notas: "",
+    createdAt: Date.now(),
+  },
+];
