@@ -535,10 +535,14 @@ export default function App() {
     .sort((a, b) => (b.data || "0000").localeCompare(a.data || "0000"))
     .slice(0, 5);
 
-  const byEstado = ESTADOS.map((uf) => ({
-    uf,
-    count: members.filter((m) => m.estado === uf).length,
-  }));
+  // Associados ativos por estado (mesma base do mapa); "Outro" reúne outros estados e quem está sem estado
+  const membrosAtivos = members.filter((m) => m.status === "ativo");
+  const ufsSul = ESTADOS.filter((uf) => uf !== "Outro");
+  const byEstado = ESTADOS.map((uf) => {
+    const daUf = (m) => (uf === "Outro" ? !ufsSul.includes(m.estado) : m.estado === uf);
+    const lista = membrosAtivos.filter(daUf).map((m) => m.nome).sort((x, y) => x.localeCompare(y, "pt-BR"));
+    return { uf, count: lista.length, nomes: lista, prospects: members.filter((m) => m.status === "prospeccao" && daUf(m)).length };
+  });
 
   const ativos = members.filter((m) => m.status === "ativo").length;
   const prospeccao = members.filter((m) => m.status === "prospeccao").length;

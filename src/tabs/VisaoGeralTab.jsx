@@ -119,23 +119,34 @@ export default function VisaoGeralTab({
           <div>
             <SectionTitle>Empresas por estado</SectionTitle>
 
-            {byEstado.map((e) => (
-              <div key={e.uf} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-                <span style={{ width: 40, fontFamily: "'IBM Plex Mono', monospace", fontSize: 12, color: "#8992A6" }}>
-                  {e.uf}
-                </span>
-                <div style={{ flex: 1, background: "#F6F7F9", borderRadius: 4, height: 6, overflow: "hidden" }}>
-                  <div
-                    style={{
-                      width: members.length ? `${(e.count / members.length) * 100}%` : "0%",
-                      background: "#0B2545",
-                      height: "100%",
-                    }}
-                  />
+            <div style={{ fontSize: 12, color: "#8992A6", marginTop: -8, marginBottom: 14 }}>Associados ativos</div>
+            {byEstado.filter((e) => e.uf !== "Outro" || e.count > 0).map((e) => (
+              <div key={e.uf} style={{ marginBottom: 14 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <span style={{ width: 40, fontFamily: "'IBM Plex Mono', monospace", fontSize: 12, color: "#8992A6" }}>
+                    {e.uf}
+                  </span>
+                  <div style={{ flex: 1, background: "#F6F7F9", borderRadius: 4, height: 6, overflow: "hidden" }}>
+                    <div
+                      style={{
+                        width: ativos ? `${(e.count / ativos) * 100}%` : "0%",
+                        background: "#0B2545",
+                        height: "100%",
+                      }}
+                    />
+                  </div>
+                  <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 12, color: "#1B2438", width: 20, textAlign: "right" }}>
+                    {e.count}
+                  </span>
                 </div>
-                <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 12, color: "#1B2438", width: 20, textAlign: "right" }}>
-                  {e.count}
-                </span>
+                {e.nomes.length > 0 && (
+                  <div style={{ marginLeft: 50, marginTop: 4, fontSize: 12, color: "#566175", lineHeight: 1.5 }}>{e.nomes.join(", ")}</div>
+                )}
+                {e.prospects > 0 && (
+                  <div style={{ marginLeft: 50, marginTop: 2, fontSize: 11, color: "#8992A6" }}>
+                    + {e.prospects} em prospecção
+                  </div>
+                )}
               </div>
             ))}
           </div>
