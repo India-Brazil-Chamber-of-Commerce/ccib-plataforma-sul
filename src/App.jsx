@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { Loader2, Building2, CalendarDays, LayoutGrid, Users, Contact } from "lucide-react";
 import { STORAGE_MEMBERS, STORAGE_EVENTS, STORAGE_MEETINGS, STORAGE_PARTNERS, STORAGE_CONTACTS, ESTADOS, STATUS_MEMBER } from "./constants";
-import { SEED_CONTACTS, SEED_EVENTS, REMOVED_EVENTS, FORCE_EVENT_UPDATES, FORCE_MEMBER_UPDATES, APPEND_MEMBER_NOTES, SEED_MEMBERS, ENSURE_MEMBERS } from "./data/seeds";
+import { SEED_CONTACTS, SEED_EVENTS, REMOVED_EVENTS, FORCE_EVENT_UPDATES, FORCE_MEMBER_UPDATES, APPEND_MEMBER_NOTES, MERGE_MEMBERS, SEED_MEMBERS, ENSURE_MEMBERS } from "./data/seeds";
 import { SEED_MEETINGS, REMOVED_MEETINGS } from "./data/seedMeetings";
 import { blankContact, blankMeeting, blankPartner, blankMember, blankEvent } from "./lib/factories";
 import { useGoogleFonts } from "./lib/useGoogleFonts";
@@ -145,9 +145,31 @@ export default function App() {
         appendedNotes = true;
         return { ...m, notas: m.notas ? `${m.notas} | ${extra}` : extra };
       });
-      setMembers(withNotes);
-      if (parsedM.length === 0 || missingMemberSeeds.length > 0 || forcedChangedMembers || appendedNotes) {
-        await persistMembers(withNotes);
+      // Junta cadastros duplicados (ex.: "NF" é a Nunesfarma) sem perder dados de nenhum dos dois
+      let mergedDuplicates = false;
+      let withMerged = withNotes;
+      Object.entries(MERGE_MEMBERS).forEach(([from, to]) => {
+        const src = withMerged.find((m) => normalizeName(m.nome) === normalizeName(from));
+        if (!src) return;
+        mergedDuplicates = true;
+        const dst = withMerged.find((m) => normalizeName(m.nome) === normalizeName(to));
+        if (!dst) {
+          withMerged = withMerged.map((m) => (m === src ? { ...m, nome: to } : m));
+          return;
+        }
+        const patch = {};
+        Object.keys(src).forEach((k) => {
+          if (k === "id" || k === "nome" || k === "notas" || k === "createdAt") return;
+          if (!dst[k] && src[k]) patch[k] = src[k];
+        });
+        if (src.notas && !(dst.notas || "").includes(src.notas)) {
+          patch.notas = dst.notas ? `${dst.notas} | ${src.notas}` : src.notas;
+        }
+        withMerged = withMerged.filter((m) => m !== src).map((m) => (m === dst ? { ...m, ...patch } : m));
+      });
+      setMembers(withMerged);
+      if (parsedM.length === 0 || missingMemberSeeds.length > 0 || forcedChangedMembers || appendedNotes || mergedDuplicates) {
+        await persistMembers(withMerged);
       }
     } catch (e) {
       console.error("Falha ao carregar associados (provavelmente ainda não há dados salvos)", e);

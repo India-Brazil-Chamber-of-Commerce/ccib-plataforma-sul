@@ -235,6 +235,12 @@ export const APPEND_MEMBER_NOTES = {
   "Construfit": "Serviço contratado: Solução de Controvérsias (28/08/2026)",
 };
 
+// Empresas cadastradas duas vezes com nomes diferentes: o primeiro nome é juntado ao segundo.
+// Campos vazios do cadastro que fica são completados com os dados do outro, e as notas são somadas.
+export const MERGE_MEMBERS = {
+  "NF": "Nunesfarma",
+};
+
 export const SEED_MEMBERS = NOMES_MAPA_ASSOCIADOS.map((nome, i) => ({
   id: `seed-m-${i}`,
   nome,
