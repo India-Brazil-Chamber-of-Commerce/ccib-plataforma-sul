@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { Loader2, Building2, CalendarDays, LayoutGrid, Users, Contact } from "lucide-react";
 import { STORAGE_MEMBERS, STORAGE_EVENTS, STORAGE_MEETINGS, STORAGE_PARTNERS, STORAGE_CONTACTS, ESTADOS, STATUS_MEMBER } from "./constants";
-import { SEED_CONTACTS, SEED_EVENTS, REMOVED_EVENTS, FORCE_EVENT_UPDATES, FORCE_MEMBER_UPDATES, APPEND_MEMBER_NOTES, MERGE_MEMBERS, SEED_MEMBERS, ENSURE_MEMBERS } from "./data/seeds";
+import { SEED_CONTACTS, SEED_EVENTS, REMOVED_EVENTS, FORCE_EVENT_UPDATES, FORCE_MEMBER_UPDATES, APPEND_MEMBER_NOTES, MERGE_MEMBERS, NEGOCIOS_HUBSPOT, SEED_MEMBERS, ENSURE_MEMBERS } from "./data/seeds";
 import { SEED_MEETINGS, REMOVED_MEETINGS } from "./data/seedMeetings";
 import { blankContact, blankMeeting, blankPartner, blankMember, blankEvent } from "./lib/factories";
 import { useGoogleFonts } from "./lib/useGoogleFonts";
@@ -26,7 +26,6 @@ export default function App() {
   const [saving, setSaving] = useState(false);
   const [loadError, setLoadError] = useState(null);
   const [memberFilterEstado, setMemberFilterEstado] = useState("todos");
-  const [memberFilterStatus, setMemberFilterStatus] = useState("todos");
   const [eventFilterStatus, setEventFilterStatus] = useState("todos");
   const [memberSearch, setMemberSearch] = useState("");
   const [expandedMembers, setExpandedMembers] = useState(new Set());
@@ -167,9 +166,39 @@ export default function App() {
         }
         withMerged = withMerged.filter((m) => m !== src).map((m) => (m === dst ? { ...m, ...patch } : m));
       });
-      setMembers(withMerged);
-      if (parsedM.length === 0 || missingMemberSeeds.length > 0 || forcedChangedMembers || appendedNotes || mergedDuplicates) {
-        await persistMembers(withMerged);
+      // Aplica os negócios do HubSpot uma única vez por empresa (marca negocioSincronizado)
+      let dealsApplied = false;
+      let withDeals = withMerged;
+      NEGOCIOS_HUBSPOT.forEach((d) => {
+        const alvo = withDeals.find((m) => normalizeName(m.nome) === normalizeName(d.empresa));
+        if (!alvo) {
+          dealsApplied = true;
+          withDeals = [...withDeals, {
+            ...blankMember(),
+            id: `hs-deal-${normalizeName(d.empresa).replace(/[^a-z0-9]+/g, "-")}`,
+            nome: d.empresa,
+            responsavel: "gustavo",
+            status: d.situacao,
+            etapaNegocio: d.etapa,
+            valorNegocio: d.valor,
+            dataNegocio: d.data,
+            negocioSincronizado: true,
+            notas: "Importado do HubSpot (negócio)",
+          }];
+          return;
+        }
+        if (alvo.negocioSincronizado) return;
+        dealsApplied = true;
+        const patch = { negocioSincronizado: true };
+        if (alvo.status === "prospeccao") patch.status = d.situacao;
+        if (!alvo.etapaNegocio) patch.etapaNegocio = d.etapa;
+        if (!alvo.valorNegocio) patch.valorNegocio = d.valor;
+        if (!alvo.dataNegocio) patch.dataNegocio = d.data;
+        withDeals = withDeals.map((m) => (m === alvo ? { ...m, ...patch } : m));
+      });
+      setMembers(withDeals);
+      if (parsedM.length === 0 || missingMemberSeeds.length > 0 || forcedChangedMembers || appendedNotes || mergedDuplicates || dealsApplied) {
+        await persistMembers(withDeals);
       }
     } catch (e) {
       console.error("Falha ao carregar associados (provavelmente ainda não há dados salvos)", e);
@@ -397,7 +426,7 @@ export default function App() {
     setHubspotError(null);
     setHubspotMessage(null);
     try {
-      const prompt = `Usando o HubSpot conectado, liste todos os meus negócios (deals) no CRM. Para cada um, retorne: nome (nome do negócio, ou da empresa associada se o negócio não tiver nome próprio), valor (amount formatado como texto, ex: "R$ 1.200,00", ou vazio se não houver), etapa (nome da etapa/dealstage) e status_sugerido (use exatamente "ativo" se a etapa for closed won/ganho, "inativo" se for closed lost/perdido, e "prospeccao" para qualquer outra etapa em andamento). Responda APENAS com um array JSON, sem markdown, sem texto antes ou depois, neste formato: [{"nome": "...", "valor": "... ou vazio", "etapa": "... ou vazio", "status_sugerido": "ativo, prospeccao ou inativo"}]. Se não houver negócios, responda [].`;
+      const prompt = `Usando o HubSpot conectado, liste todos os meus negócios (deals) no CRM. Para cada um, retorne: nome (nome do negócio, ou da empresa associada se o negócio não tiver nome próprio), valor (amount formatado como texto, ex: "R$ 1.200,00", ou vazio se não houver), etapa (nome da etapa/dealstage) e status_sugerido (use exatamente "ativo" se a etapa for closed won/ganho, "perdido" se for closed lost/perdido, e "negociacao" para qualquer outra etapa em andamento). Responda APENAS com um array JSON, sem markdown, sem texto antes ou depois, neste formato: [{"nome": "...", "valor": "... ou vazio", "etapa": "... ou vazio", "status_sugerido": "ativo, negociacao ou perdido"}]. Se não houver negócios, responda [].`;
       const pulled = await callMcpForJson(prompt, MCP_HUBSPOT);
       const existingNames = new Set((members || []).map((m) => m.nome));
       const validStatus = new Set(Object.keys(STATUS_MEMBER));
@@ -409,6 +438,7 @@ export default function App() {
           nome: d.nome,
           valor: d.valor || "",
           tipoVinculo: d.etapa ? `Negócio HubSpot (${d.etapa})` : "Negócio HubSpot",
+          etapaNegocio: d.etapa || "",
           status: validStatus.has(d.status_sugerido) ? d.status_sugerido : "prospeccao",
           notas: "Importado do HubSpot (negócio)",
         }));
@@ -535,7 +565,7 @@ export default function App() {
   const ufsSul = ESTADOS.filter((uf) => uf !== "Outro");
   const byEstado = ESTADOS.map((uf) => {
     const daUf = (m) => (uf === "Outro" ? !ufsSul.includes(m.estado) : m.estado === uf);
-    return { uf, count: membrosAtivos.filter(daUf).length, prospects: members.filter((m) => m.status === "prospeccao" && daUf(m)).length };
+    return { uf, count: membrosAtivos.filter(daUf).length, prospects: members.filter((m) => m.status === "negociacao" && daUf(m)).length };
   });
 
   const ativos = members.filter((m) => m.status === "ativo").length;
@@ -675,7 +705,6 @@ export default function App() {
             hubspotError={hubspotError}
             hubspotMessage={hubspotMessage}
             memberFilterEstado={memberFilterEstado}
-            memberFilterStatus={memberFilterStatus}
             memberSearch={memberSearch}
             members={members}
             modalidadeSuggestions={modalidadeSuggestions}
@@ -683,7 +712,6 @@ export default function App() {
             pullDealsFromHubspot={pullDealsFromHubspot}
             removeMember={removeMember}
             setMemberFilterEstado={setMemberFilterEstado}
-            setMemberFilterStatus={setMemberFilterStatus}
             setMemberSearch={setMemberSearch}
             tipoVinculoSuggestions={tipoVinculoSuggestions}
             toggleMemberExpand={toggleMemberExpand}

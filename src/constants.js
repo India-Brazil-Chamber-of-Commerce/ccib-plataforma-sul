@@ -18,7 +18,9 @@ export const RESPONSAVEIS = [
 
 export const STATUS_MEMBER = {
   prospeccao: { label: "Em prospecção", color: "#B8752E" },
+  negociacao: { label: "Em negociação", color: "#2F6FB0" },
   ativo: { label: "Ativo", color: "#0E7C3A" },
+  perdido: { label: "Negócio perdido", color: "#C1502E" },
   inativo: { label: "Inativo", color: "#8992A6" },
 };
 

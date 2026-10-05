@@ -125,7 +125,7 @@ function EmpresasPorEstado({ byEstado, ativos }) {
             <span style={{ fontFamily: mono, fontSize: 14, color: "#0B2545", fontWeight: 600, width: 24, textAlign: "right" }}>{e.count}</span>
           </div>
           {e.prospects > 0 && (
-            <div style={{ marginLeft: 50, marginTop: 4, fontSize: 11, color: "#8992A6" }}>+ {e.prospects} em prospecção</div>
+            <div style={{ marginLeft: 50, marginTop: 4, fontSize: 11, color: "#8992A6" }}>+ {e.prospects} em negociação</div>
           )}
         </div>
       ))}
