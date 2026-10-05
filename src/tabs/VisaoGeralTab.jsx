@@ -3,7 +3,6 @@ import { STATUS_EVENTO, STATUS_MEETING } from "../constants";
 import { formatDate } from "../lib/format";
 import { ChakraIcon } from "../components/ui";
 import mapaRegiaoSul from "../assets/mapa-regiao-sul.webp";
-import { ATUALIZACOES_REGIONAL_SUL, MISSAO_INDIA_HEALTH } from "../data/seeds";
 
 const MAPA_UFS = [
   { uf: "PR", nome: "Paraná", cor: "#E8964F" },
@@ -38,34 +37,6 @@ function CardTitle({ children, kicker, accent = "#0E7C3A" }) {
         </div>
       </div>
       <div style={{ height: 3, width: 44, borderRadius: 2, marginTop: 12, background: "linear-gradient(to right, #FF9933, #0E7C3A)" }} />
-    </div>
-  );
-}
-
-function AtualizacoesRegionalSul() {
-  return (
-    <div style={{ ...card, marginBottom: 28, background: "linear-gradient(135deg, #FFFFFF 0%, #FBF7F1 100%)" }}>
-      <CardTitle kicker="Destaques recentes" accent="#B8752E">Atualizações Regional Sul</CardTitle>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 16 }}>
-        {ATUALIZACOES_REGIONAL_SUL.map((a) => (
-          <div
-            key={a.titulo}
-            style={{ background: "#FFFFFF", border: "1px solid #E6E9EF", borderRadius: 12, padding: "16px 18px", boxShadow: "0 2px 8px -2px rgba(11,37,69,0.08)" }}
-          >
-            <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 12 }}>
-              <span style={{ fontFamily: serif, fontWeight: 600, fontSize: 42, color: "#0E7C3A", lineHeight: 1 }}>{a.numero}</span>
-              <span style={{ fontSize: 15, color: "#1B2438", fontWeight: 500 }}>{a.titulo}</span>
-            </div>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-              {a.itens.map((nome) => (
-                <span key={nome} style={{ fontSize: 12.5, color: "#0B2545", background: "#EEF6F0", border: "1px solid #D3E8DA", borderRadius: 999, padding: "4px 12px" }}>
-                  {nome}
-                </span>
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
     </div>
   );
 }
@@ -133,25 +104,6 @@ function EmpresasPorEstado({ byEstado, ativos }) {
   );
 }
 
-function MissaoIndiaHealth() {
-  return (
-    <div style={card}>
-      <CardTitle kicker={MISSAO_INDIA_HEALTH.subtitulo} accent="#B8752E">{MISSAO_INDIA_HEALTH.titulo}</CardTitle>
-      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-        {MISSAO_INDIA_HEALTH.instituicoes.map((nome) => (
-          <div
-            key={nome}
-            style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderRadius: 10, background: "#FBF7F1", border: "1px solid #F0E4D3" }}
-          >
-            <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#FF9933", flexShrink: 0 }} />
-            <span style={{ fontSize: 13.5, color: "#1B2438", fontWeight: 500 }}>{nome}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 function AgendaItem({ nome, local, data, horario, status }) {
   return (
     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 12, padding: "11px 0", borderBottom: "1px solid #EEF1F5" }}>
@@ -175,14 +127,10 @@ function AgendaItem({ nome, local, data, horario, status }) {
 export default function VisaoGeralTab({ ativos, byEstado, members, upcomingEvents, upcomingMeetings }) {
   return (
     <div>
-      <AtualizacoesRegionalSul />
-
       <MapaAssociados members={members} />
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 360px), 1fr))", gap: 24 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 300px), 1fr))", gap: 24 }}>
         <EmpresasPorEstado byEstado={byEstado} ativos={ativos} />
-
-        <MissaoIndiaHealth />
 
         <div style={card}>
           <CardTitle kicker="Agenda da Regional">Próximos eventos</CardTitle>

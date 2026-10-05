@@ -344,18 +344,6 @@ export const ENSURE_MEMBERS = [
   ...EMPRESAS_HUBSPOT_PROSPECCAO,
 ];
 
-// Destaques exibidos no topo da página inicial (edite aqui para atualizar)
-export const ATUALIZACOES_REGIONAL_SUL = [
-  { numero: "+2", titulo: "associados", itens: ["Tecnova", "Do Sul Pneus"] },
-  { numero: "+1", titulo: "serviço contratado", itens: ["Construfit"] },
-];
-
-export const MISSAO_INDIA_HEALTH = {
-  titulo: "Missão India Health",
-  subtitulo: "Aproximação com",
-  instituicoes: ["C-DAC", "Polymed", "Mankind Pharma", "Apollo Hospitals", "Artemis Hospitals"],
-};
-
 // Negócios do HubSpot (Gustavo), consultados em 05/10/2026. Aplicados uma única vez a cada empresa:
 // só mudam o status de quem ainda está "Em prospecção" e só preenchem campos vazios.
 // Empresas que não existem na plataforma são acrescentadas.
