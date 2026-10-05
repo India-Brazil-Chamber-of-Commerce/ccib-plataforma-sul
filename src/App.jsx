@@ -668,7 +668,6 @@ export default function App() {
             byEstado={byEstado}
             members={members}
             pastEvents={pastEvents}
-            prospeccao={prospeccao}
             upcomingEvents={upcomingEvents}
             upcomingMeetings={upcomingMeetings}
           />

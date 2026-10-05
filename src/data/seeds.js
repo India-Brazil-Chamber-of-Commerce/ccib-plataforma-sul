@@ -227,6 +227,7 @@ export const FORCE_MEMBER_UPDATES = {
   "Taurus": { estado: "RS" },
   "TCS": { estado: "PR" },
   "WEG": { estado: "SC" },
+  "Tecnova Reciclagem de Metais": { status: "ativo" },
 };
 
 // Textos acrescentados ao final das notas de uma empresa (sem apagar o que já está escrito).
@@ -310,3 +311,15 @@ export const ENSURE_MEMBERS = [
   },
   ...EMPRESAS_HUBSPOT_PROSPECCAO,
 ];
+
+// Destaques exibidos no topo da página inicial (edite aqui para atualizar)
+export const ATUALIZACOES_REGIONAL_SUL = [
+  { numero: "+2", titulo: "associados", itens: ["Tecnova", "Do Sul Pneus"] },
+  { numero: "+1", titulo: "serviço contratado", itens: ["Construfit"] },
+];
+
+export const MISSAO_INDIA_HEALTH = {
+  titulo: "Missão India Health",
+  subtitulo: "Aproximação com",
+  instituicoes: ["C-DAC", "Polymed", "Mankind Pharma", "Apollo Hospitals", "Artemis Hospitals"],
+};

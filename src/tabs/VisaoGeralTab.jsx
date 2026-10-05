@@ -3,6 +3,7 @@ import { STATUS_EVENTO, STATUS_MEETING } from "../constants";
 import { formatDate, getDisplayImageUrl } from "../lib/format";
 import { SectionTitle } from "../components/ui";
 import mapaRegiaoSul from "../assets/mapa-regiao-sul.webp";
+import { ATUALIZACOES_REGIONAL_SUL, MISSAO_INDIA_HEALTH } from "../data/seeds";
 
 const MAPA_UFS = [
   { uf: "PR", nome: "Paraná", cor: "#E8964F" },
@@ -46,72 +47,57 @@ function MapaAssociados({ members }) {
   );
 }
 
+const kicker = { fontFamily: "'IBM Plex Mono', monospace", fontSize: 10.5, letterSpacing: "0.08em", textTransform: "uppercase", color: "#8992A6" };
+
+function AtualizacoesRegionalSul() {
+  return (
+    <div style={{ border: "1px solid #E3E6EC", borderRadius: 12, padding: "24px 28px", marginBottom: 32 }}>
+      <div style={{ ...kicker, marginBottom: 16 }}>Atualizações Regional Sul</div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 0 }}>
+        {ATUALIZACOES_REGIONAL_SUL.map((a, i) => (
+          <div key={a.titulo} style={{ flex: "1 1 220px", padding: "4px 22px", paddingLeft: i === 0 ? 0 : 22, borderLeft: i === 0 ? "none" : "1px solid #E3E6EC" }}>
+            <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 10 }}>
+              <span style={{ fontFamily: "'Fraunces', serif", fontWeight: 600, fontSize: 40, color: "#0E7C3A", lineHeight: 1 }}>{a.numero}</span>
+              <span style={{ fontSize: 14, color: "#566175" }}>{a.titulo}</span>
+            </div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+              {a.itens.map((nome) => (
+                <span key={nome} style={{ fontSize: 12.5, color: "#0B2545", background: "#EEF6F0", border: "1px solid #D3E8DA", borderRadius: 999, padding: "4px 12px" }}>{nome}</span>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function MissaoIndiaHealth() {
+  return (
+    <div>
+      <SectionTitle>{MISSAO_INDIA_HEALTH.titulo}</SectionTitle>
+      <div style={{ ...kicker, marginBottom: 10 }}>{MISSAO_INDIA_HEALTH.subtitulo}</div>
+      {MISSAO_INDIA_HEALTH.instituicoes.map((nome) => (
+        <div key={nome} style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 0", borderBottom: "1px solid #E3E6EC" }}>
+          <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#B8752E", flexShrink: 0 }} />
+          <span style={{ fontSize: 13, color: "#1B2438" }}>{nome}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function VisaoGeralTab({
   ativos,
   byEstado,
   members,
   pastEvents,
-  prospeccao,
   upcomingEvents,
   upcomingMeetings,
 }) {
   return (
       <div>
-        <div
-          style={{
-            border: "1px solid #E3E6EC",
-            borderRadius: 12,
-            padding: "24px 28px",
-            marginBottom: 32,
-            display: "flex",
-            gap: 0,
-            flexWrap: "wrap",
-          }}
-        >
-          {[
-            { label: "Empresas cadastradas", value: members.length },
-            { label: "Ativos", value: ativos, accent: "#0E7C3A" },
-            { label: "Em prospecção", value: prospeccao, accent: "#B8752E" },
-          ].map((s, i) => (
-            <div
-              key={s.label}
-              style={{
-                flex: "1 1 140px",
-                padding: "0 22px",
-                borderLeft: i === 0 ? "none" : "1px solid #E3E6EC",
-              }}
-            >
-              <div
-                style={{
-                  fontFamily: "'Fraunces', serif",
-                  fontWeight: 600,
-                  fontSize: 30,
-                  color: "#0B2545",
-                  lineHeight: 1,
-                  marginBottom: 8,
-                }}
-              >
-                {s.value}
-              </div>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 6,
-                  fontFamily: "'IBM Plex Mono', monospace",
-                  fontSize: 10.5,
-                  color: "#8992A6",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.05em",
-                }}
-              >
-                {s.accent && (
-                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: s.accent, display: "inline-block", flexShrink: 0 }} />
-                )}                    {s.label}
-              </div>
-            </div>
-          ))}
-        </div>
+        <AtualizacoesRegionalSul />
 
         <MapaAssociados members={members} />
 
@@ -147,6 +133,8 @@ export default function VisaoGeralTab({
               </div>
             ))}
           </div>
+
+          <MissaoIndiaHealth />
 
           <div>
             <SectionTitle>Próximos eventos</SectionTitle>
