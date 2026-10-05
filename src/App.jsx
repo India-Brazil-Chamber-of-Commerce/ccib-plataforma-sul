@@ -126,8 +126,9 @@ export default function App() {
       const missingMemberSeeds = ENSURE_MEMBERS.filter((s) => !existingMemberNames.has(normalizeName(s.nome)));
       const mergedMembers = missingMemberSeeds.length > 0 ? [...baseMembers, ...missingMemberSeeds] : baseMembers;
       let forcedChangedMembers = false;
+      const forceByName = Object.fromEntries(Object.entries(FORCE_MEMBER_UPDATES).map(([k, v]) => [normalizeName(k), v]));
       const withForcedMembers = mergedMembers.map((m) => {
-        const force = FORCE_MEMBER_UPDATES[m.nome];
+        const force = forceByName[normalizeName(m.nome)];
         if (!force) return m;
         const patch = {};
         Object.keys(force).forEach((k) => {
