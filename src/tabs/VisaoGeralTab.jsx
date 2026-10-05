@@ -139,9 +139,6 @@ export default function VisaoGeralTab({
                     {e.count}
                   </span>
                 </div>
-                {e.nomes.length > 0 && (
-                  <div style={{ marginLeft: 50, marginTop: 4, fontSize: 12, color: "#566175", lineHeight: 1.5 }}>{e.nomes.join(", ")}</div>
-                )}
                 {e.prospects > 0 && (
                   <div style={{ marginLeft: 50, marginTop: 2, fontSize: 11, color: "#8992A6" }}>
                     + {e.prospects} em prospecção

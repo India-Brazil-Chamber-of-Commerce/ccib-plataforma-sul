@@ -540,8 +540,7 @@ export default function App() {
   const ufsSul = ESTADOS.filter((uf) => uf !== "Outro");
   const byEstado = ESTADOS.map((uf) => {
     const daUf = (m) => (uf === "Outro" ? !ufsSul.includes(m.estado) : m.estado === uf);
-    const lista = membrosAtivos.filter(daUf).map((m) => m.nome).sort((x, y) => x.localeCompare(y, "pt-BR"));
-    return { uf, count: lista.length, nomes: lista, prospects: members.filter((m) => m.status === "prospeccao" && daUf(m)).length };
+    return { uf, count: membrosAtivos.filter(daUf).length, prospects: members.filter((m) => m.status === "prospeccao" && daUf(m)).length };
   });
 
   const ativos = members.filter((m) => m.status === "ativo").length;
