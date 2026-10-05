@@ -4,6 +4,7 @@ import imgFniSc from "../assets/eventos/fni-sc.jpg";
 import imgHappyHourIrip from "../assets/eventos/happy-hour-irip.jpg";
 import imgSaoJoseDasNacoes from "../assets/eventos/sao-jose-das-nacoes.webp";
 import imgCafeDasNacoes from "../assets/eventos/cafe-das-nacoes.jpg";
+import imgCafeDasNacoesInovaWeek from "../assets/eventos/cafe-das-nacoes-inovaweek-maringa.jpg";
 
 export const SEED_CONTACTS = [
   { id: "seed-c-1", nome: "Nipun Jain", empresa: "PHARMCHEM/IPHEX", cargo: "Chairman IPHEX", email: "nipun@phrmchem.net", telefone: "91 98108 20562", setor: "Saúde", createdAt: Date.now() },
@@ -31,6 +32,18 @@ export const SEED_EVENTS = [
     status: "planejado",
     descricao: "Café das Nações: rodada business sobre o Acordo Mercosul - União Europeia.",
     registro: imgCafeDasNacoes,
+    createdAt: Date.now(),
+  },
+  {
+    id: "seed-e-cafe-das-nacoes-inovaweek-maringa",
+    nome: "Café das Nações - InovaWeek Maringá",
+    data: "2026-10-21",
+    horario: "A partir das 13:30",
+    local: "Sede da Sicredi Dexis - Avenida Paraná, 891, Maringá/PR",
+    tipo: "Webinar/Seminário",
+    status: "planejado",
+    descricao: "Edição do Café das Nações na InovaWeek, pela primeira vez em Maringá: um evento que conecta empresas ao mundo (Paraná, Brasil, Mercosul, Índia e o mundo). Realizadores: CRA-PR, Sow Agro e Sicredi. Apoiadores: PEIEX/ApexBrasil, Instituto Mercosul, ACIM, Empreender e Integra.",
+    registro: imgCafeDasNacoesInovaWeek,
     createdAt: Date.now(),
   },
   {
