@@ -3,6 +3,7 @@ import imgExpoIndustria2026 from "../assets/eventos/expo-industria-2026.jpg";
 import imgFniSc from "../assets/eventos/fni-sc.jpg";
 import imgHappyHourIrip from "../assets/eventos/happy-hour-irip.jpg";
 import imgSaoJoseDasNacoes from "../assets/eventos/sao-jose-das-nacoes.webp";
+import imgCafeDasNacoes from "../assets/eventos/cafe-das-nacoes.jpg";
 
 export const SEED_CONTACTS = [
   { id: "seed-c-1", nome: "Nipun Jain", empresa: "PHARMCHEM/IPHEX", cargo: "Chairman IPHEX", email: "nipun@phrmchem.net", telefone: "91 98108 20562", setor: "Saúde", createdAt: Date.now() },
@@ -29,7 +30,7 @@ export const SEED_EVENTS = [
     tipo: "Webinar/Seminário",
     status: "planejado",
     descricao: "Café das Nações: rodada business sobre o Acordo Mercosul - União Europeia.",
-    registro: "",
+    registro: imgCafeDasNacoes,
     createdAt: Date.now(),
   },
   {
@@ -109,6 +110,9 @@ export const FORCE_EVENT_UPDATES = {
   },
   "FNI SC": {
     registro: imgFniSc,
+  },
+  "Café das Nações - Rodada Business sobre o Acordo Mercosul - UE": {
+    registro: imgCafeDasNacoes,
   },
   "FNI SC - Florianópolis": {
     data: "2026-11-12",
