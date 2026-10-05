@@ -45,6 +45,18 @@ export const SEED_EVENTS = [
     createdAt: Date.now(),
   },
   {
+    id: "seed-e-fni-sc-florianopolis",
+    nome: "FNI SC - Florianópolis",
+    data: "",
+    horario: "",
+    local: "Florianópolis/SC",
+    tipo: "Webinar/Seminário",
+    status: "planejado",
+    descricao: "",
+    registro: imgFniSc,
+    createdAt: Date.now(),
+  },
+  {
     id: "seed-e-4",
     nome: "Expo + Indústria 2026",
     data: "2026-08-26",

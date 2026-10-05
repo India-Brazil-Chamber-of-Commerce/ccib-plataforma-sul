@@ -115,7 +115,7 @@ function EmpresasPorEstado({ byEstado, ativos }) {
   return (
     <div style={card}>
       <CardTitle kicker="Associados ativos">Empresas por estado</CardTitle>
-      {byEstado.filter((e) => e.uf !== "Outro" || e.count > 0).map((e) => (
+      {byEstado.filter((e) => e.uf !== "Outro").map((e) => (
         <div key={e.uf} style={{ marginBottom: 16 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <span style={{ width: 40, fontFamily: mono, fontSize: 12, color: "#566175", fontWeight: 600 }}>{e.uf}</span>
