@@ -29,6 +29,7 @@ function novoProjeto() {
     dataPrevista: "",
     parceiros: "",
     etapas: [],
+    empresasVisitadas: [],
     notas: "",
     createdAt: Date.now(),
   };
@@ -44,6 +45,15 @@ function ProjetoCard({ p, aberto, onToggle, patch, remover }) {
   const feitas = etapas.filter((e) => e.feito).length;
   const pct = etapas.length ? Math.round((feitas / etapas.length) * 100) : 0;
   const [novaEtapa, setNovaEtapa] = useState("");
+  const visitas = p.empresasVisitadas || [];
+  const [novaVisita, setNovaVisita] = useState({ nome: "", cidade: "" });
+
+  const addVisita = () => {
+    const nome = novaVisita.nome.trim();
+    if (!nome) return;
+    patch({ empresasVisitadas: [...visitas, { id: `v-${Date.now()}`, nome, cidade: novaVisita.cidade.trim() }] });
+    setNovaVisita({ nome: "", cidade: "" });
+  };
 
   const addEtapa = () => {
     const texto = novaEtapa.trim();
@@ -74,6 +84,11 @@ function ProjetoCard({ p, aberto, onToggle, patch, remover }) {
                 <div style={{ width: `${pct}%`, height: "100%", background: "#0E7C3A", borderRadius: 6 }} />
               </div>
               <span style={{ fontFamily: mono, fontSize: 11, color: "#566175" }}>{feitas}/{etapas.length} etapas</span>
+            </div>
+          )}
+          {visitas.length > 0 && (
+            <div style={{ fontFamily: mono, fontSize: 11, color: "#566175", marginTop: 10 }}>
+              {visitas.length} empresa{visitas.length === 1 ? "" : "s"} visitada{visitas.length === 1 ? "" : "s"}
             </div>
           )}
         </div>
@@ -151,6 +166,50 @@ function ProjetoCard({ p, aberto, onToggle, patch, remover }) {
             />
             <button onClick={addEtapa} className="ccib-btn" style={{ display: "flex", alignItems: "center", gap: 4, background: "transparent", border: "1px solid #0B2545", color: "#0B2545", borderRadius: 7, padding: "6px 12px", fontSize: 12.5, cursor: "pointer" }}>
               <Plus size={14} /> Etapa
+            </button>
+          </div>
+
+          <span style={labelStyle}>Empresas visitadas</span>
+          <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 10 }}>
+            {visitas.length === 0 && <div style={{ fontSize: 12.5, color: "#8992A6" }}>Nenhuma empresa visitada cadastrada.</div>}
+            {visitas.map((v) => (
+              <div key={v.id} style={{ display: "flex", alignItems: "center", gap: 8, background: "#FFFFFF", border: "1px solid #E6E9EF", borderRadius: 8, padding: "6px 10px" }}>
+                <input
+                  className="ccib-input"
+                  value={v.nome}
+                  onChange={(e) => patch({ empresasVisitadas: visitas.map((x) => (x.id === v.id ? { ...x, nome: e.target.value } : x)) })}
+                  style={{ ...inputStyle, borderBottom: "none", padding: "2px", flex: 2 }}
+                />
+                <input
+                  className="ccib-input"
+                  value={v.cidade || ""}
+                  placeholder="Cidade"
+                  onChange={(e) => patch({ empresasVisitadas: visitas.map((x) => (x.id === v.id ? { ...x, cidade: e.target.value } : x)) })}
+                  style={{ ...inputStyle, borderBottom: "none", padding: "2px", flex: 1, fontFamily: mono, fontSize: 12, color: "#566175" }}
+                />
+                <button onClick={() => patch({ empresasVisitadas: visitas.filter((x) => x.id !== v.id) })} title="Remover empresa" style={{ background: "transparent", border: "none", cursor: "pointer", color: "#B7BEC9", padding: 0, display: "flex" }}>
+                  <X size={14} />
+                </button>
+              </div>
+            ))}
+          </div>
+          <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+            <input
+              value={novaVisita.nome}
+              placeholder="Empresa / instituição"
+              onChange={(e) => setNovaVisita((s) => ({ ...s, nome: e.target.value }))}
+              onKeyDown={(e) => { if (e.key === "Enter") addVisita(); }}
+              style={{ ...filterInputStyle, flex: 2, padding: "6px 10px", fontSize: 12.5 }}
+            />
+            <input
+              value={novaVisita.cidade}
+              placeholder="Cidade"
+              onChange={(e) => setNovaVisita((s) => ({ ...s, cidade: e.target.value }))}
+              onKeyDown={(e) => { if (e.key === "Enter") addVisita(); }}
+              style={{ ...filterInputStyle, flex: 1, padding: "6px 10px", fontSize: 12.5 }}
+            />
+            <button onClick={addVisita} className="ccib-btn" style={{ display: "flex", alignItems: "center", gap: 4, background: "transparent", border: "1px solid #0B2545", color: "#0B2545", borderRadius: 7, padding: "6px 12px", fontSize: 12.5, cursor: "pointer" }}>
+              <Plus size={14} /> Empresa
             </button>
           </div>
 
