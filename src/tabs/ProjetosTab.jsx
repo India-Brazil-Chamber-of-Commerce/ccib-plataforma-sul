@@ -396,6 +396,32 @@ function ProjetoDetalhe({ p, patch, remover, voltar }) {
   );
 }
 
+// Listas do projeto que recebem itens novos da semente (por id do item)
+const LISTAS_SEMENTE = ["participantes", "empresasVisitadas", "etapas", "custos"];
+
+// Preenche os campos que ainda não existem no projeto salvo e acrescenta às listas os itens-semente
+// novos. Os ids já aplicados ficam em _seedItens, para que um item removido na plataforma não volte.
+function mesclarSemente(p, seed) {
+  const vistos = new Set(p._seedItens || []);
+  const novo = { ...p };
+  let alterou = false;
+  Object.keys(seed).forEach((k) => {
+    if (novo[k] === undefined) { novo[k] = seed[k]; alterou = true; }
+  });
+  LISTAS_SEMENTE.forEach((k) => {
+    const itensSeed = seed[k] || [];
+    const atual = Array.isArray(novo[k]) ? novo[k] : [];
+    const idsAtuais = new Set(atual.map((x) => x.id));
+    const faltando = itensSeed.filter((x) => !idsAtuais.has(x.id) && !vistos.has(x.id));
+    if (faltando.length) { novo[k] = [...atual, ...faltando]; alterou = true; }
+    itensSeed.forEach((x) => {
+      if (!vistos.has(x.id)) { vistos.add(x.id); alterou = true; }
+    });
+  });
+  if (alterou) novo._seedItens = [...vistos];
+  return [novo, alterou];
+}
+
 export default function ProjetosTab() {
   const [projetos, setProjetos] = useState(null);
   const [abertoId, setAbertoId] = useState(null);
@@ -411,17 +437,16 @@ export default function ProjetosTab() {
       } catch (e) {
         salvos = [];
       }
-      // Acrescenta os projetos-semente que ainda não existem (por id) e preenche só os campos
-      // que ainda não existem nos já salvos, sem sobrescrever o que foi editado
+      // Acrescenta os projetos-semente que ainda não existem (por id) e mescla os já salvos sem
+      // sobrescrever o que foi editado (ver mesclarSemente)
       let mudou = false;
       const porId = new Map(SEED_PROJECTS.map((p) => [p.id, p]));
       const lista = salvos.map((p) => {
         const seed = porId.get(p.id);
         if (!seed) return p;
-        const faltando = Object.keys(seed).filter((k) => p[k] === undefined);
-        if (!faltando.length) return p;
-        mudou = true;
-        return { ...p, ...Object.fromEntries(faltando.map((k) => [k, seed[k]])) };
+        const [mesclado, alterou] = mesclarSemente(p, seed);
+        if (alterou) mudou = true;
+        return mesclado;
       });
       const ids = new Set(salvos.map((p) => p.id));
       SEED_PROJECTS.filter((p) => !ids.has(p.id)).forEach((p) => { lista.push(p); mudou = true; });

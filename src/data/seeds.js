@@ -424,6 +424,7 @@ export const SEED_PROJECTS = [
       { id: "seed-pt-fni-sc-3", empresa: "ALEXANDER", representante: "Alexander Santana", cargo: "", observacoes: "", status: "confirmada" },
       { id: "seed-pt-fni-sc-4", empresa: "ZOHO", representante: "Rodrigo Vaca", cargo: "", observacoes: "", status: "confirmada" },
       { id: "seed-pt-fni-sc-5", empresa: "Nanofeed Animal Health e Nutrition", representante: "Lucas São Thiago Soares", cargo: "CEO", observacoes: "Subsidiária da Indiana Orgonew Private Ltd. para Brasil e LATAM", status: "confirmada" },
+      { id: "seed-pt-fni-sc-6", empresa: "Audaces", representante: "Matheus Diogo Fagundes", cargo: "Presidente Global", observacoes: "", status: "confirmada" },
     ],
     notas: "",
     createdAt: Date.now(),
