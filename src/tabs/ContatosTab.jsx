@@ -1,7 +1,33 @@
 import React from "react";
-import { Plus, Trash2, ChevronDown, Contact } from "lucide-react";
+import { Plus, Trash2, ChevronDown, Contact, Download } from "lucide-react";
 import { inputStyle, labelStyle, filterInputStyle } from "../styles";
 import { Field, HubspotSyncBar } from "../components/ui";
+
+function filtrarContatos(contacts, contactSearch) {
+  const q = contactSearch.trim().toLowerCase();
+  return (contacts || []).filter((c) => {
+    if (!q) return true;
+    return c.nome.toLowerCase().includes(q) || (c.empresa || "").toLowerCase().includes(q) || (c.cargo || "").toLowerCase().includes(q) || (c.setor || "").toLowerCase().includes(q);
+  }).sort((a, b) => a.nome.localeCompare(b.nome));
+}
+
+async function baixarExcel(lista) {
+  const XLSX = await import("xlsx");
+  const linhas = lista.map((c) => ({
+    Nome: c.nome || "",
+    Empresa: c.empresa || "",
+    Setor: c.setor || "",
+    Cargo: c.cargo || "",
+    "E-mail": c.email || "",
+    Telefone: c.telefone || "",
+  }));
+  const ws = XLSX.utils.json_to_sheet(linhas, { header: ["Nome", "Empresa", "Setor", "Cargo", "E-mail", "Telefone"] });
+  ws["!cols"] = [{ wch: 32 }, { wch: 30 }, { wch: 18 }, { wch: 28 }, { wch: 34 }, { wch: 18 }];
+  ws["!autofilter"] = { ref: ws["!ref"] };
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Contatos");
+  XLSX.writeFile(wb, `contatos-ccib-regional-sul-${new Date().toISOString().slice(0, 10)}.xlsx`);
+}
 
 export default function ContatosTab({
   addContact,
@@ -35,6 +61,23 @@ export default function ContatosTab({
             onChange={(e) => setContactSearch(e.target.value)}
             style={{ ...filterInputStyle, flex: "1 1 300px" }}
           />
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <button
+            onClick={() => {
+              const lista = filtrarContatos(contacts, contactSearch);
+              if (!lista.length) { window.alert("Não há contatos para exportar."); return; }
+              baixarExcel(lista).catch((e) => { console.error("Falha ao gerar o Excel", e); window.alert("Não foi possível gerar o arquivo Excel."); });
+            }}
+            className="ccib-btn"
+            title={contactSearch.trim() ? "Baixa só os contatos filtrados pela busca" : "Baixa todos os contatos"}
+            style={{
+              display: "flex", alignItems: "center", gap: 6,
+              background: "transparent", color: "#0B2545", border: "1px solid #0B2545",
+              borderRadius: 7, padding: "8px 16px", fontWeight: 500, fontSize: 13, cursor: "pointer",
+            }}
+          >
+            <Download size={15} /> Baixar Excel
+          </button>
           <button
             onClick={addContact}
             className="ccib-btn ccib-btn-solid"
@@ -46,15 +89,12 @@ export default function ContatosTab({
           >
             <Plus size={15} /> Novo contato
           </button>
+          </div>
         </div>
 
         {(() => {
           const setorSuggestions = [...new Set((contacts || []).map((c) => c.setor).filter(Boolean))].sort();
-          const q = contactSearch.trim().toLowerCase();
-          const filtered = (contacts || []).filter((c) => {
-            if (!q) return true;
-            return c.nome.toLowerCase().includes(q) || (c.empresa || "").toLowerCase().includes(q) || (c.cargo || "").toLowerCase().includes(q) || (c.setor || "").toLowerCase().includes(q);
-          }).sort((a, b) => a.nome.localeCompare(b.nome));
+          const filtered = filtrarContatos(contacts, contactSearch);
 
           if (filtered.length === 0) {
             return (
