@@ -413,6 +413,13 @@ export const SEED_PROJECTS = [
     dataPrevista: "",
     parceiros: "",
     etapas: [],
+    participantes: [
+      { id: "seed-pt-fni-sc-1", empresa: "NIDEC", representante: "Rafael Oliveira", cargo: "", observacoes: "", status: "confirmada" },
+      { id: "seed-pt-fni-sc-2", empresa: "WEG", representante: "", cargo: "", observacoes: "", status: "a_confirmar" },
+      { id: "seed-pt-fni-sc-3", empresa: "ALEXANDER", representante: "Alexander Santana", cargo: "", observacoes: "", status: "confirmada" },
+      { id: "seed-pt-fni-sc-4", empresa: "ZOHO", representante: "Rodrigo Vaca", cargo: "", observacoes: "", status: "confirmada" },
+      { id: "seed-pt-fni-sc-5", empresa: "Nanofeed Animal Health e Nutrition", representante: "Lucas São Thiago Soares", cargo: "CEO", observacoes: "Subsidiária da Indiana Orgonew Private Ltd. para Brasil e LATAM", status: "confirmada" },
+    ],
     notas: "",
     createdAt: Date.now(),
   },

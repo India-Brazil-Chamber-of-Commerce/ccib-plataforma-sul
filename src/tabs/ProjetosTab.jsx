@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Plus, Trash2, ChevronRight, ArrowLeft, FolderKanban, CheckSquare, Square, X, MapPin, CalendarDays, Building2, Wallet } from "lucide-react";
+import { Plus, Trash2, ChevronRight, ArrowLeft, FolderKanban, CheckSquare, Square, X, MapPin, CalendarDays, Building2, Wallet, Users } from "lucide-react";
 import { ESTADOS, RESPONSAVEIS, STORAGE_PROJECTS, STATUS_PROJETO } from "../constants";
 import { inputStyle, labelStyle, filterInputStyle } from "../styles";
 import { Field } from "../components/ui";
@@ -21,6 +21,11 @@ const card = {
 const secao = { ...card, padding: "18px 22px" };
 
 const MOEDAS = ["BRL", "USD", "INR"];
+const STATUS_PARTICIPANTE = {
+  confirmada: { label: "Confirmada", color: "#0E7C3A" },
+  a_confirmar: { label: "A confirmar", color: "#B8752E" },
+  nao_participa: { label: "Não participa", color: "#8992A6" },
+};
 const CATEGORIAS_CUSTO = ["Passagens", "Hospedagem", "Alimentação", "Transporte local", "Inscrições / taxas", "Materiais", "Outros"];
 
 const btnLinha = { display: "flex", alignItems: "center", gap: 4, background: "transparent", border: "1px solid #0B2545", color: "#0B2545", borderRadius: 7, padding: "6px 12px", fontSize: 12.5, cursor: "pointer", flexShrink: 0 };
@@ -42,6 +47,7 @@ function novoProjeto() {
     dataFim: "",
     parceiros: "",
     etapas: [],
+    participantes: [],
     empresasVisitadas: [],
     custos: [],
     resultados: "",
@@ -104,6 +110,8 @@ function ProjetoResumo({ p, onAbrir }) {
   const etapas = p.etapas || [];
   const feitas = etapas.filter((e) => e.feito).length;
   const visitas = p.empresasVisitadas || [];
+  const participantes = p.participantes || [];
+  const confirmadas = participantes.filter((x) => x.status === "confirmada").length;
   const totais = totaisPorMoeda(p.custos);
 
   return (
@@ -124,6 +132,7 @@ function ProjetoResumo({ p, onAbrir }) {
             <Chip color="#B8752E" bg="#FBF3EA">{periodo(p)}</Chip>
           </div>
           <div style={{ display: "flex", gap: 16, flexWrap: "wrap", marginTop: 10, fontFamily: mono, fontSize: 11, color: "#566175" }}>
+            {participantes.length > 0 && <span>{participantes.length} empresa{participantes.length === 1 ? "" : "s"} participante{participantes.length === 1 ? "" : "s"} ({confirmadas} confirmada{confirmadas === 1 ? "" : "s"})</span>}
             {visitas.length > 0 && <span>{visitas.length} empresa{visitas.length === 1 ? "" : "s"} visitada{visitas.length === 1 ? "" : "s"}</span>}
             {etapas.length > 0 && <span>{feitas}/{etapas.length} etapas</span>}
             {totais.length > 0 && <span>Despendido: {totais.map(([m, v]) => formatMoeda(v, m)).join(" + ")}</span>}
@@ -139,12 +148,15 @@ function ProjetoDetalhe({ p, patch, remover, voltar }) {
   const status = STATUS_PROJETO[p.status] || STATUS_PROJETO.ideia;
   const etapas = p.etapas || [];
   const visitas = p.empresasVisitadas || [];
+  const participantes = p.participantes || [];
+  const confirmadas = participantes.filter((x) => x.status === "confirmada").length;
   const custos = p.custos || [];
   const feitas = etapas.filter((e) => e.feito).length;
   const pct = etapas.length ? Math.round((feitas / etapas.length) * 100) : 0;
   const totais = totaisPorMoeda(custos);
 
   const [novaEtapa, setNovaEtapa] = useState("");
+  const [novoPart, setNovoPart] = useState({ empresa: "", representante: "" });
   const [novaVisita, setNovaVisita] = useState({ nome: "", cidade: "" });
   const [novoCusto, setNovoCusto] = useState({ descricao: "", categoria: "Outros", valor: "", moeda: "BRL" });
 
@@ -153,6 +165,13 @@ function ProjetoDetalhe({ p, patch, remover, voltar }) {
     if (!texto) return;
     patch({ etapas: [...etapas, { id: novoId("e"), texto, feito: false }] });
     setNovaEtapa("");
+  };
+  const addPart = () => {
+    const empresa = novoPart.empresa.trim();
+    if (!empresa) return;
+    const representante = novoPart.representante.trim();
+    patch({ participantes: [...participantes, { id: novoId("pt"), empresa, representante, cargo: "", observacoes: "", status: representante ? "confirmada" : "a_confirmar" }] });
+    setNovoPart({ empresa: "", representante: "" });
   };
   const addVisita = () => {
     const nome = novaVisita.nome.trim();
@@ -195,7 +214,9 @@ function ProjetoDetalhe({ p, patch, remover, voltar }) {
             {[
               { icon: MapPin, label: "Onde", valor: p.local || p.estado || "A definir" },
               { icon: CalendarDays, label: "Quando", valor: periodo(p) },
-              { icon: Building2, label: "Empresas visitadas", valor: String(visitas.length) },
+              participantes.length > 0 && !visitas.length
+                ? { icon: Users, label: "Empresas participantes", valor: `${participantes.length} (${confirmadas} confirmada${confirmadas === 1 ? "" : "s"})` }
+                : { icon: Building2, label: "Empresas visitadas", valor: String(visitas.length) },
               { icon: Wallet, label: "Valor despendido", valor: totais.length ? totais.map(([m, v]) => formatMoeda(v, m)).join(" + ") : "Não informado" },
             ].map((k) => (
               <div key={k.label} style={{ background: "#FAFBFC", border: "1px solid #EEF1F5", borderRadius: 12, padding: "12px 14px" }}>
@@ -246,6 +267,33 @@ function ProjetoDetalhe({ p, patch, remover, voltar }) {
             <Field label="Parceiros / patrocinadores">
               <input className="ccib-input" style={inputStyle} value={p.parceiros || ""} placeholder="Ex: FIESC, associados..." onChange={(e) => patch({ parceiros: e.target.value })} />
             </Field>
+          </div>
+        </div>
+
+        <div style={secao}>
+          <TituloSecao icon={Users} extra={participantes.length > 0 && <span style={{ fontFamily: mono, fontSize: 11, color: "#566175" }}>{confirmadas}/{participantes.length} confirmadas</span>}>Empresas participantes</TituloSecao>
+          <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 10 }}>
+            {participantes.length === 0 && <div style={{ fontSize: 12.5, color: "#8992A6" }}>Nenhuma empresa participante cadastrada.</div>}
+            {participantes.map((pt) => {
+              const st = STATUS_PARTICIPANTE[pt.status] || STATUS_PARTICIPANTE.a_confirmar;
+              return (
+                <div key={pt.id} style={linhaItem}>
+                  <input className="ccib-input" value={pt.empresa} placeholder="Empresa" onChange={(e) => patchItem("participantes", participantes, pt.id, { empresa: e.target.value })} style={{ ...inputLinha, flex: "2 1 160px", fontWeight: 600, color: "#0B2545" }} />
+                  <input className="ccib-input" value={pt.representante || ""} placeholder="Representante" onChange={(e) => patchItem("participantes", participantes, pt.id, { representante: e.target.value })} style={{ ...inputLinha, flex: "2 1 160px" }} />
+                  <input className="ccib-input" value={pt.cargo || ""} placeholder="Cargo" onChange={(e) => patchItem("participantes", participantes, pt.id, { cargo: e.target.value })} style={{ ...inputLinha, flex: "1 1 90px", fontSize: 12.5, color: "#566175" }} />
+                  <input className="ccib-input" value={pt.observacoes || ""} placeholder="Observações" onChange={(e) => patchItem("participantes", participantes, pt.id, { observacoes: e.target.value })} style={{ ...inputLinha, flex: "3 1 200px", fontSize: 12.5 }} />
+                  <select value={pt.status || "a_confirmar"} onChange={(e) => patchItem("participantes", participantes, pt.id, { status: e.target.value })} style={{ ...inputLinha, flex: "0 1 120px", fontSize: 12, fontWeight: 600, color: st.color }}>
+                    {Object.entries(STATUS_PARTICIPANTE).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
+                  </select>
+                  <button onClick={() => patch({ participantes: participantes.filter((x) => x.id !== pt.id) })} title="Remover empresa" style={btnRemover}><X size={14} /></button>
+                </div>
+              );
+            })}
+          </div>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <input value={novoPart.empresa} placeholder="Empresa" onChange={(e) => setNovoPart((s) => ({ ...s, empresa: e.target.value }))} onKeyDown={(e) => { if (e.key === "Enter") addPart(); }} style={{ ...filterInputStyle, flex: "2 1 160px", padding: "6px 10px", fontSize: 12.5 }} />
+            <input value={novoPart.representante} placeholder="Representante" onChange={(e) => setNovoPart((s) => ({ ...s, representante: e.target.value }))} onKeyDown={(e) => { if (e.key === "Enter") addPart(); }} style={{ ...filterInputStyle, flex: "2 1 160px", padding: "6px 10px", fontSize: 12.5 }} />
+            <button onClick={addPart} className="ccib-btn" style={btnLinha}><Plus size={14} /> Participante</button>
           </div>
         </div>
 
