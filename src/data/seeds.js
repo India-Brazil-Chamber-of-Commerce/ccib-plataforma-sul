@@ -423,7 +423,9 @@ export const SEED_PROJECTS = [
     status: "andamento",
     responsavel: "ambos",
     estado: "",
+    local: "New Delhi e Chennai, Índia",
     dataPrevista: "",
+    dataFim: "",
     parceiros: "",
     etapas: [],
     empresasVisitadas: [
@@ -436,6 +438,8 @@ export const SEED_PROJECTS = [
       { id: "seed-v-ih-7", nome: "Apollo Hospitals", cidade: "New Delhi" },
       { id: "seed-v-ih-8", nome: "Apollo Hospitals", cidade: "Chennai" },
     ],
+    custos: [],
+    resultados: "",
     notas: "",
     createdAt: Date.now(),
   },
