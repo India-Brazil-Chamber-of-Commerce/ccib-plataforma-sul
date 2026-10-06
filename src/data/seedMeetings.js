@@ -771,6 +771,19 @@ export const SEED_MEETINGS = [
     origem: "teams",
     createdAt: Date.now(),
   },
+  {
+    id: "teams-auto-20261013-ccib-neoking-foods",
+    nome: "[Ext] CCIB <> NeoKing Foods",
+    data: "2026-10-13",
+    horario: "09:00 – 10:00",
+    participantes: "Dana Blackman, Sofia Bagolin, Laysa Rodrigues (NeoKing Foods), Jaime Lang (NeoKing Foods)",
+    local: "Microsoft Teams",
+    responsavel: "ambos",
+    status: "agendada",
+    notas: "Importado do Teams (rotina diária)",
+    origem: "teams",
+    createdAt: Date.now(),
+  },
 ];
 
 // Reuniões removidas a pedido. São apagadas também dos dados já salvos nos navegadores.
