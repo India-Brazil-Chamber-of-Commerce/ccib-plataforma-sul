@@ -19,6 +19,11 @@ export const SEED_CONTACTS = [
   { id: "seed-c-10", nome: "Dr. Shyam Sunder Mahansaria", empresa: "Artemis Hospitals", cargo: "Sr. Consultant - Liver Transplant & Gastro Intestinal Surgery", email: "shyams.mahansaria@artemishospitals.com", telefone: "91 9540 9468 36", setor: "Saúde", createdAt: Date.now() },
   { id: "seed-c-11", nome: "Dr. Giriraj Singh Bora", empresa: "Artemis Hospitals", cargo: "Chief - Liver Transplant & Sr. Consultant", email: "giriraj.bora@artemishospitals.com", telefone: "91 9873 7089 79", setor: "Saúde", createdAt: Date.now() },
   { id: "seed-c-12", nome: "Aaryaman Baid", empresa: "Poly Medicure", cargo: "Senior Manager - Corporate Strategy", email: "aaryaman.baid@polymedicure.com", telefone: "91 11 33550700", setor: "Saúde", createdAt: Date.now() },
+  { id: "seed-c-13", nome: "Rahul Gautam", empresa: "Poly Medicure", cargo: "President", email: "rahul.gautam@polymedicure.com", telefone: "91 9899731400", setor: "Farmacêutico", tipo: "Empresa", createdAt: Date.now() },
+  { id: "seed-c-14", nome: "Vivek Khaneja", empresa: "CDAC", cargo: "Executive Director (Noida)", email: "vivekkhaneja@cdac.in", telefone: "91 9810456177", setor: "Governamental", tipo: "Instituição", createdAt: Date.now() },
+  { id: "seed-c-15", nome: "Prashant Dinde", empresa: "CDAC", cargo: "Associate Director (Pune)", email: "", telefone: "91 9822650512", setor: "Governamental", tipo: "Instituição", createdAt: Date.now() },
+  { id: "seed-c-16", nome: "Ethirajan Magesh", empresa: "CDAC", cargo: "General Director", email: "dg@cdac.in", telefone: "91 9884184667", setor: "Governamental", tipo: "Instituição", createdAt: Date.now() },
+  { id: "seed-c-17", nome: "Parminder Singh", empresa: "VVDN", cargo: "Business Development", email: "parminder.singh@vvdntech.in", telefone: "91 7042520185", setor: "Tecnologia", tipo: "Empresa", createdAt: Date.now() },
 ];
 
 export const SEED_EVENTS = [

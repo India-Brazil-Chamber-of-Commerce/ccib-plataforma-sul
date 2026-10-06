@@ -7,7 +7,7 @@ function filtrarContatos(contacts, contactSearch) {
   const q = contactSearch.trim().toLowerCase();
   return (contacts || []).filter((c) => {
     if (!q) return true;
-    return c.nome.toLowerCase().includes(q) || (c.empresa || "").toLowerCase().includes(q) || (c.cargo || "").toLowerCase().includes(q) || (c.setor || "").toLowerCase().includes(q);
+    return c.nome.toLowerCase().includes(q) || (c.empresa || "").toLowerCase().includes(q) || (c.cargo || "").toLowerCase().includes(q) || (c.setor || "").toLowerCase().includes(q) || (c.tipo || "").toLowerCase().includes(q);
   }).sort((a, b) => a.nome.localeCompare(b.nome));
 }
 
@@ -17,12 +17,13 @@ async function baixarExcel(lista) {
     Nome: c.nome || "",
     Empresa: c.empresa || "",
     Setor: c.setor || "",
+    Tipo: c.tipo || "",
     Cargo: c.cargo || "",
     "E-mail": c.email || "",
     Telefone: c.telefone || "",
   }));
-  const ws = XLSX.utils.json_to_sheet(linhas, { header: ["Nome", "Empresa", "Setor", "Cargo", "E-mail", "Telefone"] });
-  ws["!cols"] = [{ wch: 32 }, { wch: 30 }, { wch: 18 }, { wch: 28 }, { wch: 34 }, { wch: 18 }];
+  const ws = XLSX.utils.json_to_sheet(linhas, { header: ["Nome", "Empresa", "Setor", "Tipo", "Cargo", "E-mail", "Telefone"] });
+  ws["!cols"] = [{ wch: 32 }, { wch: 30 }, { wch: 18 }, { wch: 14 }, { wch: 28 }, { wch: 34 }, { wch: 18 }];
   ws["!autofilter"] = { ref: ws["!ref"] };
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, "Contatos");
@@ -204,6 +205,13 @@ export default function ContatosTab({
                             <datalist id={`contact-setores-${c.id}`}>
                               {setorSuggestions.map((s) => <option key={s} value={s} />)}
                             </datalist>
+                          </Field>
+                          <Field label="Tipo">
+                            <select className="ccib-input" style={inputStyle} value={c.tipo || ""} onChange={(e) => patchContact(c.id, { tipo: e.target.value })}>
+                              <option value="">A definir</option>
+                              <option value="Empresa">Empresa</option>
+                              <option value="Instituição">Instituição</option>
+                            </select>
                           </Field>
                           <Field label="Cargo">
                             <input className="ccib-input" style={inputStyle} value={c.cargo} placeholder="Cargo" onChange={(e) => patchContact(c.id, { cargo: e.target.value })} />

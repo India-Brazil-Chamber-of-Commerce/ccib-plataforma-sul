@@ -279,8 +279,10 @@ export default function App() {
     try {
       const r = await safeGet(STORAGE_CONTACTS, true);
       const parsedContacts = r && r.value ? JSON.parse(r.value) : [];
-      const existingEmails = new Set(parsedContacts.map((c) => c.email));
-      const missingContactSeeds = SEED_CONTACTS.filter((s) => !existingEmails.has(s.email));
+      // Um contato-semente só entra se ainda não existir (mesmo id ou mesmo e-mail, quando houver e-mail)
+      const existingIds = new Set(parsedContacts.map((c) => c.id));
+      const existingEmails = new Set(parsedContacts.map((c) => (c.email || "").trim().toLowerCase()).filter(Boolean));
+      const missingContactSeeds = SEED_CONTACTS.filter((s) => !existingIds.has(s.id) && !(s.email && existingEmails.has(s.email.toLowerCase())));
       const mergedRaw = missingContactSeeds.length > 0 ? [...parsedContacts, ...missingContactSeeds] : parsedContacts;
       // Contatos salvos antes de existir a coluna Setor ficam como "Saúde" (só quando o campo ainda não existe)
       let setorAdded = false;
