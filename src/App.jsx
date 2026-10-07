@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
-import { Loader2, Building2, CalendarDays, LayoutGrid, Users, Contact, FolderKanban } from "lucide-react";
+import { Loader2, Building2, CalendarDays, LayoutGrid, Users, Contact, FolderKanban, TrendingUp } from "lucide-react";
 import { STORAGE_MEMBERS, STORAGE_EVENTS, STORAGE_MEETINGS, STORAGE_PARTNERS, STORAGE_CONTACTS, ESTADOS, STATUS_MEMBER } from "./constants";
 import { SEED_CONTACTS, SEED_EVENTS, REMOVED_EVENTS, FORCE_EVENT_UPDATES, FORCE_MEMBER_UPDATES, APPEND_MEMBER_NOTES, MERGE_MEMBERS, NEGOCIOS_HUBSPOT, SEED_MEMBERS, ENSURE_MEMBERS } from "./data/seeds";
 import { SEED_MEETINGS, REMOVED_MEETINGS } from "./data/seedMeetings";
@@ -11,6 +11,7 @@ import { callMcpForJson, MCP_HUBSPOT, MCP_MICROSOFT_365 } from "./lib/claude";
 import ProjetosTab from "./tabs/ProjetosTab";
 import VisaoGeralTab from "./tabs/VisaoGeralTab";
 import EmpresasTab from "./tabs/EmpresasTab";
+import PipelineTab from "./tabs/PipelineTab";
 import ContatosTab from "./tabs/ContatosTab";
 import ReunioesTab from "./tabs/ReunioesTab";
 import EventosTab from "./tabs/EventosTab";
@@ -342,6 +343,27 @@ export default function App() {
   };
   const patchMember = (id, patch) =>
     updateMembers((members || []).map((m) => (m.id === id ? { ...m, ...patch } : m)));
+  // Pipeline: novo prospect pelo nome (se já existir, só abre a empresa)
+  const addPipelineItem = (nome) => {
+    const chave = nome.trim().toLowerCase();
+    const existente = (members || []).find((m) => (m.nome || "").trim().toLowerCase() === chave);
+    if (existente) {
+      if (existente.status === "perdido" || existente.status === "inativo") {
+        if (window.confirm(`${existente.nome} já está no histórico. Voltar para o pipeline como Prospecção?`)) patchMember(existente.id, { status: "prospeccao" });
+      } else {
+        window.alert(`${existente.nome} já está cadastrada na plataforma.`);
+      }
+      return;
+    }
+    updateMembers([...(members || []), { ...blankMember(), nome: nome.trim(), status: "prospeccao", responsavel: "ambos" }]);
+  };
+  const abrirEmpresa = (id) => {
+    const m = (members || []).find((x) => x.id === id);
+    setMemberFilterEstado("todos");
+    setMemberSearch(m ? m.nome : "");
+    setExpandedMembers((prev) => new Set([...prev, id]));
+    setTab("associados");
+  };
   const removeMember = (id) => updateMembers((members || []).filter((m) => m.id !== id));
   const toggleMemberExpand = (id) =>
     setExpandedMembers((prev) => {
@@ -592,6 +614,7 @@ export default function App() {
   const TABS = [
     { id: "visao", label: "Visão Geral", icon: LayoutGrid },
     { id: "associados", label: "Empresas", icon: Building2 },
+    { id: "pipeline", label: "Pipeline", icon: TrendingUp },
     { id: "contatos", label: "Contatos", icon: Contact },
     { id: "reunioes", label: "Reuniões", icon: Users },
     { id: "eventos", label: "Eventos", icon: CalendarDays },
@@ -704,7 +727,11 @@ export default function App() {
         )}
       </div>
 
-      <div style={{ maxWidth: 1020, margin: "0 auto" }}>
+      <div style={{ maxWidth: tab === "pipeline" ? 1500 : 1020, margin: "0 auto" }}>
+        {tab === "pipeline" && (
+          <PipelineTab members={members} patchMember={patchMember} addPipelineItem={addPipelineItem} abrirEmpresa={abrirEmpresa} />
+        )}
+
         {tab === "projetos" && <ProjetosTab />}
 
         {tab === "visao" && (
