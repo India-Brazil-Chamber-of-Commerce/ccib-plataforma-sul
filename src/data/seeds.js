@@ -505,7 +505,10 @@ export const SEED_PROJECTS = [
     dataFim: "",
     parceiros: "",
     etapas: [],
-    participantes: [],
+    participantes: [
+      { id: "seed-pt-it-1", empresa: "Solucz", representante: "Mariah", cargo: "", observacoes: "Abordagem para a missão", status: "a_confirmar" },
+      { id: "seed-pt-it-2", empresa: "iCities", representante: "", cargo: "", observacoes: "Abordagem para a missão", status: "a_confirmar" },
+    ],
     empresasVisitadas: [],
     custos: [],
     resultados: "",
