@@ -6,6 +6,7 @@ import { Field } from "../components/ui";
 import { storage } from "../lib/storage";
 import { formatDate } from "../lib/format";
 import { SEED_PROJECTS } from "../data/seeds";
+import PainelMissao, { painelMissaoPadrao } from "../components/PainelMissao";
 
 const mono = "'IBM Plex Mono', monospace";
 const serif = "'Fraunces', serif";
@@ -227,6 +228,18 @@ function ProjetoDetalhe({ p, patch, remover, voltar }) {
           </div>
         </div>
       </div>
+
+      {p.painelMissao ? (
+        <div style={{ marginBottom: 18 }}>
+          <PainelMissao painel={p.painelMissao} nomeProjeto={p.nome} onChange={(painelMissao) => patch({ painelMissao })} />
+        </div>
+      ) : (
+        <div style={{ marginBottom: 18 }}>
+          <button onClick={() => patch({ painelMissao: painelMissaoPadrao() })} className="ccib-btn" style={btnLinha}>
+            <Plus size={14} /> Adicionar painel de conversão (delegados, metas e receita)
+          </button>
+        </div>
+      )}
 
       <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
         <div style={secao}>
