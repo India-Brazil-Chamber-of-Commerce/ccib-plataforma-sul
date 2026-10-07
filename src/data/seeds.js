@@ -515,7 +515,7 @@ export const SEED_PROJECTS = [
     notas: "",
     // Painel de contratações da missão: todos os números são preenchidos pela equipe
     painelMissao: {
-      metaContratacoes: "",
+      metaContratacoes: "2",
       valorParticipante: "",
       moeda: "BRL",
       projecao: "pessimista",

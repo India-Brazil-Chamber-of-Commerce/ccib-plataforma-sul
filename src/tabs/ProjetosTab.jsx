@@ -421,6 +421,15 @@ function mesclarSemente(p, seed) {
   Object.keys(seed).forEach((k) => {
     if (novo[k] === undefined) { novo[k] = seed[k]; alterou = true; }
   });
+  // Painel da missão: valores definidos na semente preenchem só os campos que ainda estão vazios no salvo
+  if (seed.painelMissao && novo.painelMissao && typeof novo.painelMissao === "object") {
+    Object.entries(seed.painelMissao).forEach(([k, v]) => {
+      if (typeof v === "string" && v !== "" && (novo.painelMissao[k] === undefined || novo.painelMissao[k] === "")) {
+        novo.painelMissao = { ...novo.painelMissao, [k]: v };
+        alterou = true;
+      }
+    });
+  }
   LISTAS_SEMENTE.forEach((k) => {
     const itensSeed = seed[k] || [];
     const atual = Array.isArray(novo[k]) ? novo[k] : [];
