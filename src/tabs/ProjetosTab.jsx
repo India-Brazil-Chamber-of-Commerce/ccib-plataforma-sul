@@ -231,12 +231,12 @@ function ProjetoDetalhe({ p, patch, remover, voltar }) {
 
       {p.painelMissao ? (
         <div style={{ marginBottom: 18 }}>
-          <PainelMissao painel={p.painelMissao} nomeProjeto={p.nome} onChange={(painelMissao) => patch({ painelMissao })} />
+          <PainelMissao painel={p.painelMissao} nomeProjeto={p.nome} participantes={participantes} onChange={(painelMissao) => patch({ painelMissao })} />
         </div>
       ) : (
         <div style={{ marginBottom: 18 }}>
           <button onClick={() => patch({ painelMissao: painelMissaoPadrao() })} className="ccib-btn" style={btnLinha}>
-            <Plus size={14} /> Adicionar painel de conversão (delegados, metas e receita)
+            <Plus size={14} /> Adicionar painel de contratações da missão (metas, cenários e receita)
           </button>
         </div>
       )}

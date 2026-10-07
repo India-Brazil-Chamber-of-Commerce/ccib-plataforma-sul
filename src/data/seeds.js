@@ -513,15 +513,13 @@ export const SEED_PROJECTS = [
     custos: [],
     resultados: "",
     notas: "",
-    // Painel de conversão: só o valor conhecido do plano Institucional; o resto é preenchido pela equipe
+    // Painel de contratações da missão: todos os números são preenchidos pela equipe
     painelMissao: {
-      metaDelegados: "",
-      estrategia: "A",
-      projecao: "conservador",
-      taxas: { conservador: "", otimista: "" },
-      pctInstitucional: { A: "67", B: "33" },
-      planos: { institucional: "2100", taj: "" },
-      convertidos: "",
+      metaContratacoes: "",
+      valorParticipante: "",
+      moeda: "BRL",
+      projecao: "pessimista",
+      taxas: { pessimista: "", otimista: "" },
       instituicoes: [],
     },
     createdAt: Date.now(),
