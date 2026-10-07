@@ -784,6 +784,32 @@ export const SEED_MEETINGS = [
     origem: "teams",
     createdAt: Date.now(),
   },
+  {
+    id: "teams-auto-20261008-business-collaboration-windlas-brazil",
+    nome: "Business Collaboration - Windlas Brazil",
+    data: "2026-10-08",
+    horario: "08:30 – 09:00",
+    participantes: "Megh Dave (Windlas Biotech), Silvia (Nunesfarma), Cecilia (Nunesfarma), Pamela (Nunesfarma)",
+    local: "Microsoft Teams",
+    responsavel: "bianca",
+    status: "agendada",
+    notas: "Importado do Teams (rotina diária)",
+    origem: "teams",
+    createdAt: Date.now(),
+  },
+  {
+    id: "teams-auto-20261008-ccib-ferraz-support",
+    nome: "Reunião: CCIB + Ferraz Support",
+    data: "2026-10-08",
+    horario: "16:00 – 16:30",
+    participantes: "CEO (Ferraz Support)",
+    local: "Microsoft Teams",
+    responsavel: "ambos",
+    status: "confirmada",
+    notas: "Importado do Teams (rotina diária)",
+    origem: "teams",
+    createdAt: Date.now(),
+  },
 ];
 
 // Reuniões removidas a pedido. São apagadas também dos dados já salvos nos navegadores.
