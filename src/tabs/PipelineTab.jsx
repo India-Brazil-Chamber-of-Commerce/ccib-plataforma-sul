@@ -9,7 +9,7 @@ const serif = "'Fraunces', serif";
 
 // Etapas do funil comercial da CCIB (mesma sequência do pipeline do HubSpot)
 export const ETAPAS_PIPELINE = [
-  { key: "prospeccao", label: "Prospecção", detalhe: "Ainda sem proposta", color: "#8992A6" },
+  { key: "prospeccao", label: "Negócio Perdido", detalhe: "Sem negócio aberto", color: "#8992A6" },
   { key: "primeiro", label: "Primeiro contato", detalhe: "Reunião ou apresentação", color: "#B8752E" },
   { key: "proposta", label: "Proposta enviada", detalhe: "Em negociação", color: "#2F6FB0" },
   { key: "aceita", label: "Proposta aceita", detalhe: "Aguardando ficha", color: "#6A5ACD" },
