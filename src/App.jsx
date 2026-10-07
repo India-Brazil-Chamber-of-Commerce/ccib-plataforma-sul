@@ -189,9 +189,17 @@ export default function App() {
           return;
         }
         if (alvo.negocioSincronizado) {
-          if (d.dataAnterior && alvo.dataNegocio === d.dataAnterior && d.data !== alvo.dataNegocio) {
+          // Mudança vinda do HubSpot: só troca o campo se ele ainda tiver o valor anterior (ninguém editou na plataforma)
+          const anterior = { ...(d.anterior || {}), ...(d.dataAnterior ? { data: d.dataAnterior } : {}) };
+          const campos = { situacao: "status", etapa: "etapaNegocio", valor: "valorNegocio", data: "dataNegocio" };
+          const patch = {};
+          Object.entries(campos).forEach(([k, campo]) => {
+            const antigos = [].concat(anterior[k] === undefined ? [] : anterior[k]);
+            if (antigos.includes(alvo[campo]) && d[k] !== alvo[campo]) patch[campo] = d[k];
+          });
+          if (Object.keys(patch).length) {
             dealsApplied = true;
-            withDeals = withDeals.map((m) => (m === alvo ? { ...m, dataNegocio: d.data } : m));
+            withDeals = withDeals.map((m) => (m === alvo ? { ...m, ...patch } : m));
           }
           return;
         }
