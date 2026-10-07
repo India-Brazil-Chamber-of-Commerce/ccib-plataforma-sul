@@ -188,7 +188,13 @@ export default function App() {
           }];
           return;
         }
-        if (alvo.negocioSincronizado) return;
+        if (alvo.negocioSincronizado) {
+          if (d.dataAnterior && alvo.dataNegocio === d.dataAnterior && d.data !== alvo.dataNegocio) {
+            dealsApplied = true;
+            withDeals = withDeals.map((m) => (m === alvo ? { ...m, dataNegocio: d.data } : m));
+          }
+          return;
+        }
         dealsApplied = true;
         const patch = { negocioSincronizado: true };
         if (alvo.status === "prospeccao") patch.status = d.situacao;

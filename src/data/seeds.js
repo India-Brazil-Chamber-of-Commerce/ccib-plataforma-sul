@@ -352,12 +352,13 @@ export const ENSURE_MEMBERS = [
 // Negócios do HubSpot (Gustavo), consultados em 05/10/2026. Aplicados uma única vez a cada empresa:
 // só mudam o status de quem ainda está "Em prospecção" e só preenchem campos vazios.
 // Empresas que não existem na plataforma são acrescentadas.
+// dataAnterior: quando a previsão muda no HubSpot, a data nova só substitui a antiga se ninguém a editou na plataforma.
 export const NEGOCIOS_HUBSPOT = [
   { empresa: "Preet Tratores", situacao: "negociacao", etapa: "Proposta Enviada / Em negociação", valor: "US$ 2.100", data: "2026-09-30" },
-  { empresa: "Konei Group", situacao: "negociacao", etapa: "Proposta Enviada / Em negociação", valor: "US$ 2.100", data: "2026-09-30" },
+  { empresa: "Konei Group", situacao: "negociacao", etapa: "Proposta Enviada / Em negociação", valor: "US$ 2.100", data: "2026-10-23", dataAnterior: "2026-09-30" },
   { empresa: "Construfit", situacao: "negociacao", etapa: "Proposta Aceita (serviços)", valor: "US$ 300", data: "2026-09-30" },
   { empresa: "COLVENBRASIL", situacao: "negociacao", etapa: "Proposta Enviada / Em negociação", valor: "US$ 2.100", data: "2026-10-31" },
-  { empresa: "Motherson", situacao: "negociacao", etapa: "Proposta Enviada / Em negociação", valor: "US$ 2.100", data: "2026-09-30" },
+  { empresa: "Motherson", situacao: "negociacao", etapa: "Proposta Enviada / Em negociação", valor: "US$ 2.100", data: "2026-10-23", dataAnterior: "2026-09-30" },
   { empresa: "Try Brazil", situacao: "perdido", etapa: "Negócio perdido", valor: "US$ 2.100", data: "2026-09-18" },
   { empresa: "Rocket Logistics", situacao: "perdido", etapa: "Negócio perdido", valor: "US$ 2.100", data: "2026-09-21" },
   { empresa: "Latina Cobranças", situacao: "perdido", etapa: "Negócio perdido", valor: "US$ 300", data: "2026-09-23" },
