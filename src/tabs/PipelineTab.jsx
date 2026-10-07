@@ -14,7 +14,6 @@ export const ETAPAS_PIPELINE = [
   { key: "proposta", label: "Proposta enviada", detalhe: "Em negociação", color: "#2F6FB0" },
   { key: "aceita", label: "Proposta aceita", detalhe: "Aguardando ficha", color: "#6A5ACD" },
   { key: "ficha", label: "Ficha preenchida / assinada", detalhe: "Documentação", color: "#0E8A7A" },
-  { key: "boleto", label: "Boleto enviado", detalhe: "Aguardando pagamento", color: "#0E7C3A" },
 ];
 
 const ETAPA_TEXTO = {
@@ -22,7 +21,6 @@ const ETAPA_TEXTO = {
   proposta: "Proposta Enviada / Em negociação",
   aceita: "Proposta Aceita",
   ficha: "Ficha Preenchida / Assinada",
-  boleto: "Boleto Enviado / Aguardando Pagamento",
 };
 
 function normalizar(s) {
@@ -34,8 +32,8 @@ export function etapaDoPipeline(m) {
   if (m.status === "prospeccao") return "prospeccao";
   if (m.status !== "negociacao") return null;
   const e = normalizar(m.etapaNegocio);
-  if (e.includes("boleto") || e.includes("pagamento")) return "boleto";
-  if (e.includes("ficha")) return "ficha";
+  // Boleto enviado / aguardando pagamento fica junto com a ficha (última etapa do funil)
+  if (e.includes("ficha") || e.includes("boleto") || e.includes("pagamento")) return "ficha";
   if (e.includes("aceita")) return "aceita";
   if (e.includes("primeiro")) return "primeiro";
   return "proposta";
