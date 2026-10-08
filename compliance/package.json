@@ -2,7 +2,7 @@
   "name": "ccib-plataforma-compliance",
   "private": true,
   "version": "1.0.0",
-  "description": "Plataforma de Compliance — Câmara de Comércio Índia Brasil (CCIB)",
+  "description": "Plataforma de Compliance, Câmara de Comércio Índia Brasil (CCIB)",
   "type": "module",
   "scripts": {
     "dev": "vite",
