@@ -1,0 +1,30 @@
+# Publica a Plataforma de Compliance (pasta compliance/) na Vercel a cada push na main que altere essa pasta.
+# Configuração: na Vercel, crie um projeto com Root Directory = compliance e um Deploy Hook para a main.
+# Cadastre a URL do hook em Settings > Secrets and variables > Actions, com o nome VERCEL_DEPLOY_HOOK_COMPLIANCE.
+name: Deploy na Vercel (Compliance)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "compliance/**"
+      - ".github/workflows/deploy-vercel-compliance.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-vercel-compliance
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Aciona o Deploy Hook da Vercel
+        env:
+          VERCEL_DEPLOY_HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK_COMPLIANCE }}
+        run: |
+          if [ -z "$VERCEL_DEPLOY_HOOK" ]; then
+            echo "::error::Segredo VERCEL_DEPLOY_HOOK_COMPLIANCE não configurado."
+            exit 1
+          fi
+          curl --fail-with-body --silent --show-error -X POST "$VERCEL_DEPLOY_HOOK"
