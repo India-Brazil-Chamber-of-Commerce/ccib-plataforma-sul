@@ -11,6 +11,8 @@ export const STORAGE = {
   conflitos: "ccib-compliance-conflitos",
   brindes: "ccib-compliance-brindes",
   agentes: "ccib-compliance-agentes-publicos",
+  eventos: "ccib-compliance-eventos",
+  // Formato antigo (tabelas "Por vir" e "Passados"): lido só para migrar para "eventos"
   eventosFuturos: "ccib-compliance-eventos-futuros",
   eventosPassados: "ccib-compliance-eventos-passados",
   duvidas: "ccib-compliance-duvidas",
@@ -38,7 +40,7 @@ export const ANALISE_CONFLITO = ["Em análise", "Sem conflito", "Conflito mitiga
 export const DIRECOES_BRINDE = ["Recebido", "Oferecido"];
 export const SIM_NAO = ["Não", "Sim"];
 export const TIPOS_EVENTO = ["Jornada/Semana de compliance", "Webinar", "Treinamento", "Evento institucional", "Outro"];
-export const STATUS_EVENTO = ["Previsto", "Confirmado", "Cancelado"];
+export const STATUS_EVENTO = ["Previsto", "Confirmado", "Realizado", "Cancelado"];
 export const STATUS_DUVIDA = ["Aberta", "Respondida"];
 export const FORMATOS_EVENTO = ["Presencial", "Online", "Híbrido"];
 export const PARTICIPACOES_EMPRESA = ["Palestrante", "Patrocinador", "Apoiador", "Expositor", "Participante"];
@@ -46,7 +48,7 @@ export const STATUS_EMPRESA_EVENTO = ["Convidada", "Confirmada", "Recusada"];
 
 // Cor da etiqueta de cada valor (verde = ok, âmbar = atenção, vermelho = problema)
 const CORES = {
-  green: ["Vigente", "Concluído", "Finalizada", "Baixo", "Sem conflito", "Conflito mitigado", "Confirmado", "Respondida", "Sim", "Confirmada"],
+  green: ["Vigente", "Concluído", "Finalizada", "Baixo", "Sem conflito", "Conflito mitigado", "Confirmado", "Respondida", "Sim", "Confirmada", "Realizado"],
   amber: ["Em revisão", "Rascunho", "Em andamento", "Pendente", "Médio", "Em análise", "Previsto", "Aberta", "Convidada"],
   red: ["Vencida", "Reprovada", "Alto", "Conflito confirmado", "Cancelado", "Recusada"],
 };

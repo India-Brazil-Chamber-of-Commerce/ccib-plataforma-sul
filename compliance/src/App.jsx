@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { STORAGE } from "./constants";
-import { SEEDS } from "./data/seeds";
+import { SEEDS, migrarEventos } from "./data/seeds";
 import { storage } from "./lib/storage";
 import LOGO_URL from "./assets/logo-ccib.png";
 import VisaoGeralTab from "./tabs/VisaoGeralTab";
@@ -62,6 +62,7 @@ export default function App() {
           } catch (e) {
             console.error(`Falha ao carregar ${nome}`, e);
           }
+          if (SEEDS[nome] === undefined) return [nome, undefined];
           // Primeira vez: grava os dados iniciais
           try {
             await storage.set(key, JSON.stringify(SEEDS[nome]), true);
@@ -71,7 +72,16 @@ export default function App() {
           return [nome, SEEDS[nome]];
         })
       );
-      setDb(Object.fromEntries(entries));
+      const dados = Object.fromEntries(entries);
+      if (dados.eventos === undefined) {
+        dados.eventos = migrarEventos(dados.eventosFuturos, dados.eventosPassados);
+        try {
+          await storage.set(STORAGE.eventos, JSON.stringify(dados.eventos), true);
+        } catch (e) {
+          console.error("Falha ao gravar eventos", e);
+        }
+      }
+      setDb(dados);
     })();
   }, []);
 
