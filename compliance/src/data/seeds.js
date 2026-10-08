@@ -127,7 +127,34 @@ export const SEEDS = {
   conflitos: [],
   brindes: [],
   agentes: [],
+  eventos: undefined, // montado a partir do formato antigo (ver migrarEventos)
   eventosFuturos: SEED_EVENTOS_FUTUROS,
   eventosPassados: SEED_EVENTOS_PASSADOS,
   duvidas: [],
 };
+
+// "18/11/2026" ou "2026-11-18" vira "2026-11-18"; qualquer outro texto ("Novembro/2026") não é data exata
+function paraIso(texto) {
+  const s = String(texto || "").trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  const m = s.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  return m ? `${m[3]}-${m[2]}-${m[1]}` : "";
+}
+
+// Junta as antigas tabelas "Por vir" e "Passados" numa lista única de eventos
+export function migrarEventos(futuros = [], passados = []) {
+  const converter = (e, status) => {
+    const iso = paraIso(e.data);
+    return {
+      ...e,
+      evento: e.evento || "",
+      tipo: e.tipo || "Outro",
+      status: status || e.status || "Previsto",
+      data: iso,
+      dataPrevista: iso ? "" : e.data || "",
+      programacao: e.programacao || [],
+      empresas: e.empresas || [],
+    };
+  };
+  return [...futuros.map((e) => converter(e)), ...passados.map((e) => converter(e, "Realizado"))];
+}
