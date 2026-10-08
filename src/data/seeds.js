@@ -215,6 +215,7 @@ export const NOMES_HUBSPOT_PROSPECCAO = [
   "Brazcac",
   "Erva Mate Paraná",
   "Universidade Positivo",
+  "iCities",
 ];
 
 export const ESTADOS_CONHECIDOS = {
@@ -441,6 +442,8 @@ export const NEGOCIOS_HUBSPOT = [
   { empresa: "Brazcac", situacao: "perdido", etapa: "Negócio perdido", valor: "US$ 2.100", data: "2026-05-28" },
   { empresa: "Universidade Positivo", situacao: "perdido", etapa: "Negócio perdido", valor: "US$ 2.100", data: "2025-10-09" },
   { empresa: "Cotton Baby", situacao: "perdido", etapa: "Negócio perdido", valor: "", data: "2025-06-17" },
+  { empresa: "iCities", situacao: "negociacao", etapa: "Proposta Enviada / Em negociação", valor: "US$ 2.100", data: "2026-10-31" },
+  { empresa: "United Carbon Solutions", situacao: "negociacao", etapa: "Proposta Enviada / Em negociação", valor: "US$ 2.100", data: "2026-10-31" },
 ];
 
 // Projetos da Regional Sul. Entram uma vez (por id) e depois podem ser editados livremente na aba Projetos.
