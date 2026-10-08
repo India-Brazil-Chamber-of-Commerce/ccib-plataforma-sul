@@ -17,7 +17,7 @@ export default function VisaoGeralTab({ db, save }) {
 
   return (
     <section className="panel active">
-      <p className="lede">Visão consolidada do programa de compliance: indicadores, ações realizadas e pendências prioritárias.</p>
+      <p className="lede">Página Inicial Plataforma de Compliance</p>
 
       <div style={{ background: "linear-gradient(135deg,var(--navy-900) 0%,var(--navy-800) 100%)", borderLeft: "4px solid var(--gold-500)", borderRadius: "var(--radius)", padding: "26px 32px", margin: "0 0 28px 0", boxShadow: "var(--shadow)" }}>
         <p className="serif" style={{ margin: 0, textAlign: "center", fontSize: 23, lineHeight: 1.4, fontWeight: 500, fontStyle: "italic", color: "var(--cream-50)" }}>
