@@ -40,12 +40,15 @@ export const SIM_NAO = ["Não", "Sim"];
 export const TIPOS_EVENTO = ["Jornada/Semana de compliance", "Webinar", "Treinamento", "Evento institucional", "Outro"];
 export const STATUS_EVENTO = ["Previsto", "Confirmado", "Cancelado"];
 export const STATUS_DUVIDA = ["Aberta", "Respondida"];
+export const FORMATOS_EVENTO = ["Presencial", "Online", "Híbrido"];
+export const PARTICIPACOES_EMPRESA = ["Palestrante", "Patrocinador", "Apoiador", "Expositor", "Participante"];
+export const STATUS_EMPRESA_EVENTO = ["Convidada", "Confirmada", "Recusada"];
 
 // Cor da etiqueta de cada valor (verde = ok, âmbar = atenção, vermelho = problema)
 const CORES = {
-  green: ["Vigente", "Concluído", "Finalizada", "Baixo", "Sem conflito", "Conflito mitigado", "Confirmado", "Respondida", "Sim"],
-  amber: ["Em revisão", "Rascunho", "Em andamento", "Pendente", "Médio", "Em análise", "Previsto", "Aberta"],
-  red: ["Vencida", "Reprovada", "Alto", "Conflito confirmado", "Cancelado"],
+  green: ["Vigente", "Concluído", "Finalizada", "Baixo", "Sem conflito", "Conflito mitigado", "Confirmado", "Respondida", "Sim", "Confirmada"],
+  amber: ["Em revisão", "Rascunho", "Em andamento", "Pendente", "Médio", "Em análise", "Previsto", "Aberta", "Convidada"],
+  red: ["Vencida", "Reprovada", "Alto", "Conflito confirmado", "Cancelado", "Recusada"],
 };
 
 export function tagColor(value) {
