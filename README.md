@@ -2,6 +2,10 @@
 
 Painel da Regional Sul da Câmara de Comércio Índia Brasil (CCIB): empresas, serviços, contatos, reuniões, eventos e rotina.
 
+## Plataforma de Compliance
+
+A pasta `compliance/` tem uma plataforma separada, no mesmo modelo desta, para o programa de compliance da CCIB. Ela tem dados, senha e projeto na Vercel próprios. Veja `compliance/README.md`.
+
 ## Como rodar
 
 ```bash

@@ -6,6 +6,10 @@ name: Deploy na Vercel
 on:
   push:
     branches: [main]
+    # A Plataforma de Compliance tem projeto e workflow próprios
+    paths-ignore:
+      - "compliance/**"
+      - ".github/workflows/deploy-vercel-compliance.yml"
   workflow_dispatch:
 
 concurrency:
