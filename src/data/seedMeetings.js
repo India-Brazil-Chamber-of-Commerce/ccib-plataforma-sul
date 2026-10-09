@@ -849,6 +849,32 @@ export const SEED_MEETINGS = [
     origem: "teams",
     createdAt: Date.now(),
   },
+  {
+    id: "teams-auto-20261013-organizacao-evento-fni-sc",
+    nome: "REUNIÃO: Organização evento FNI SC",
+    data: "2026-10-13",
+    horario: "15:00 – 16:00",
+    participantes: "Pedro Silva (Governo de SC, SAI), Anthony Linzmeyer (Governo de SC, SICOS), Leonardo, Gui Mota, Pedro Queiroz, Gabriela Amud",
+    local: "Microsoft Teams",
+    responsavel: "ambos",
+    status: "confirmada",
+    notas: "Importado do Teams (rotina diária)",
+    origem: "teams",
+    createdAt: Date.now(),
+  },
+  {
+    id: "teams-auto-20261014-ccib-construfit",
+    nome: "Reunião: CCIB + CONSTRUFIT",
+    data: "2026-10-14",
+    horario: "15:00 – 15:30",
+    participantes: "Tito (Construfit), Bernardo, Luana Ferreira, Gui Mota",
+    local: "Microsoft Teams",
+    responsavel: "ambos",
+    status: "confirmada",
+    notas: "Importado do Teams (rotina diária)",
+    origem: "teams",
+    createdAt: Date.now(),
+  },
 ];
 
 // Reuniões removidas a pedido. São apagadas também dos dados já salvos nos navegadores.
