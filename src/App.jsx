@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
-import { Loader2, Building2, CalendarDays, LayoutGrid, Users, Contact, FolderKanban, TrendingUp } from "lucide-react";
+import { Loader2, Building2, CalendarDays, LayoutGrid, Users, Contact, FolderKanban, TrendingUp, Plane } from "lucide-react";
 import { STORAGE_MEMBERS, STORAGE_EVENTS, STORAGE_MEETINGS, STORAGE_PARTNERS, STORAGE_CONTACTS, ESTADOS, STATUS_MEMBER } from "./constants";
 import { SEED_CONTACTS, SEED_EVENTS, REMOVED_EVENTS, FORCE_EVENT_UPDATES, FORCE_MEMBER_UPDATES, APPEND_MEMBER_NOTES, MERGE_MEMBERS, NEGOCIOS_HUBSPOT, SEED_MEMBERS, ENSURE_MEMBERS } from "./data/seeds";
 import { SEED_MEETINGS, REMOVED_MEETINGS } from "./data/seedMeetings";
@@ -9,6 +9,7 @@ import LOGO_URL from "./assets/logo-ccib.png";
 import { storage } from "./lib/storage";
 import { callMcpForJson, MCP_HUBSPOT, MCP_MICROSOFT_365 } from "./lib/claude";
 import ProjetosTab from "./tabs/ProjetosTab";
+import MissoesTab from "./tabs/MissoesTab";
 import VisaoGeralTab from "./tabs/VisaoGeralTab";
 import EmpresasTab from "./tabs/EmpresasTab";
 import PipelineTab from "./tabs/PipelineTab";
@@ -20,6 +21,7 @@ import "./styles.css";
 export default function App() {
   useGoogleFonts();
   const [tab, setTab] = useState("visao");
+  const [missaoAberta, setMissaoAberta] = useState(null);
   const hasAutoSyncedTeams = useRef(false);
   const [members, setMembers] = useState(null);
   const [events, setEvents] = useState(null);
@@ -619,6 +621,7 @@ export default function App() {
     { id: "reunioes", label: "Reuniões", icon: Users },
     { id: "eventos", label: "Eventos", icon: CalendarDays },
     { id: "projetos", label: "Projetos", icon: FolderKanban },
+    { id: "missoes", label: "Missões", icon: Plane },
   ];
 
   return (
@@ -732,7 +735,9 @@ export default function App() {
           <PipelineTab members={members} patchMember={patchMember} addPipelineItem={addPipelineItem} abrirEmpresa={abrirEmpresa} />
         )}
 
-        {tab === "projetos" && <ProjetosTab />}
+        {tab === "projetos" && <ProjetosTab abrirMissao={(id) => { setMissaoAberta(id); setTab("missoes"); window.scrollTo({ top: 0 }); }} />}
+
+        {tab === "missoes" && <MissoesTab key={missaoAberta || "lista"} abertaInicial={missaoAberta} limparAbertaInicial={() => setMissaoAberta(null)} />}
 
         {tab === "visao" && (
           <VisaoGeralTab

@@ -1,0 +1,99 @@
+import { useEffect, useRef, useState } from "react";
+import { STORAGE_PROJECTS } from "../constants";
+import { storage } from "./storage";
+import { SEED_PROJECTS } from "../data/seeds";
+
+// Listas do projeto que recebem itens novos da semente (por id do item)
+const LISTAS_SEMENTE = ["participantes", "empresasVisitadas", "etapas", "custos"];
+
+// Preenche os campos que ainda não existem no projeto salvo e acrescenta às listas os itens-semente
+// novos. Os ids já aplicados ficam em _seedItens, para que um item removido na plataforma não volte.
+export function mesclarSemente(p, seed) {
+  const vistos = new Set(p._seedItens || []);
+  const novo = { ...p };
+  let alterou = false;
+  Object.keys(seed).forEach((k) => {
+    if (novo[k] === undefined) { novo[k] = seed[k]; alterou = true; }
+    // Textos definidos depois na semente preenchem só campos ainda vazios no salvo
+    else if (typeof seed[k] === "string" && seed[k] !== "" && novo[k] === "") { novo[k] = seed[k]; alterou = true; }
+  });
+  // Painel da missão: valores definidos na semente preenchem só os campos que ainda estão vazios no salvo
+  if (seed.painelMissao && novo.painelMissao && typeof novo.painelMissao === "object") {
+    Object.entries(seed.painelMissao).forEach(([k, v]) => {
+      if (typeof v === "string" && v !== "" && (novo.painelMissao[k] === undefined || novo.painelMissao[k] === "")) {
+        novo.painelMissao = { ...novo.painelMissao, [k]: v };
+        alterou = true;
+      }
+    });
+  }
+  LISTAS_SEMENTE.forEach((k) => {
+    const itensSeed = seed[k] || [];
+    const atual = Array.isArray(novo[k]) ? novo[k] : [];
+    const idsAtuais = new Set(atual.map((x) => x.id));
+    const faltando = itensSeed.filter((x) => !idsAtuais.has(x.id) && !vistos.has(x.id));
+    if (faltando.length) { novo[k] = [...atual, ...faltando]; alterou = true; }
+    itensSeed.forEach((x) => {
+      if (!vistos.has(x.id)) { vistos.add(x.id); alterou = true; }
+    });
+  });
+  if (alterou) novo._seedItens = [...vistos];
+  return [novo, alterou];
+}
+
+// Projetos salvos (mesclados com a semente) e função para atualizar e salvar.
+// Usado pelas abas Projetos e Missões, que leem e gravam a mesma lista.
+export function useProjetos() {
+  const [projetos, setProjetos] = useState(null);
+  const salvarTimer = useRef(null);
+
+  useEffect(() => {
+    let vivo = true;
+    (async () => {
+      let salvos = [];
+      try {
+        const r = await storage.get(STORAGE_PROJECTS, true);
+        salvos = r && r.value ? JSON.parse(r.value) : [];
+      } catch (e) {
+        salvos = [];
+      }
+      let mudou = false;
+      const porId = new Map(SEED_PROJECTS.map((p) => [p.id, p]));
+      const lista = salvos.map((p) => {
+        const seed = porId.get(p.id);
+        if (!seed) return p;
+        const [mesclado, alterou] = mesclarSemente(p, seed);
+        if (alterou) mudou = true;
+        return mesclado;
+      });
+      const ids = new Set(salvos.map((p) => p.id));
+      SEED_PROJECTS.filter((p) => !ids.has(p.id)).forEach((p) => { lista.push(p); mudou = true; });
+      if (!vivo) return;
+      setProjetos(lista);
+      if (mudou) {
+        try { await storage.set(STORAGE_PROJECTS, JSON.stringify(lista), true); } catch (e) { /* sem armazenamento */ }
+      }
+    })();
+    return () => { vivo = false; };
+  }, []);
+
+  // Grava na hora ao sair da aba, para não perder a última edição
+  const pendente = useRef(null);
+  useEffect(() => () => {
+    clearTimeout(salvarTimer.current);
+    if (pendente.current) storage.set(STORAGE_PROJECTS, JSON.stringify(pendente.current), true).catch(() => {});
+  }, []);
+
+  const atualizar = (next) => {
+    setProjetos(next);
+    pendente.current = next;
+    clearTimeout(salvarTimer.current);
+    salvarTimer.current = setTimeout(() => {
+      pendente.current = null;
+      storage.set(STORAGE_PROJECTS, JSON.stringify(next), true).catch(() => {});
+    }, 300);
+  };
+
+  return [projetos, atualizar];
+}
+
+export const ehMissao = (p) => !!(p && (p.missao || p.painelMissao));

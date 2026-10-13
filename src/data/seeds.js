@@ -473,13 +473,16 @@ export const SEED_PROJECTS = [
   {
     id: "seed-p-missao-india-health",
     nome: "Missão India Health",
+    missao: true,
+    painelMissao: { metaContratacoes: "", valorParticipante: "", moeda: "BRL", projecao: "pessimista", taxas: { pessimista: "", otimista: "" }, instituicoes: [] },
     descricao: "",
     status: "andamento",
     responsavel: "ambos",
     estado: "",
     local: "New Delhi e Chennai, Índia",
-    dataPrevista: "",
-    dataFim: "",
+    // Datas da Plataforma de Agendas da IBCC (India Health 2026)
+    dataPrevista: "2026-09-03",
+    dataFim: "2026-09-12",
     parceiros: "",
     etapas: [],
     empresasVisitadas: [
@@ -500,6 +503,7 @@ export const SEED_PROJECTS = [
   {
     id: "seed-p-missao-india-tech",
     nome: "Missão India Tech",
+    missao: true,
     descricao: "",
     status: "planejamento",
     responsavel: "ambos",

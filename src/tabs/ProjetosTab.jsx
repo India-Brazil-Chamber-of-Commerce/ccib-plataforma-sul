@@ -1,11 +1,10 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useState } from "react";
 import { Plus, Trash2, ChevronRight, ArrowLeft, FolderKanban, CheckSquare, Square, X, MapPin, CalendarDays, Building2, Wallet, Users } from "lucide-react";
-import { ESTADOS, RESPONSAVEIS, STORAGE_PROJECTS, STATUS_PROJETO } from "../constants";
+import { ESTADOS, RESPONSAVEIS, STATUS_PROJETO } from "../constants";
 import { inputStyle, labelStyle, filterInputStyle } from "../styles";
 import { Field } from "../components/ui";
-import { storage } from "../lib/storage";
 import { formatDate } from "../lib/format";
-import { SEED_PROJECTS } from "../data/seeds";
+import { useProjetos, ehMissao } from "../lib/useProjetos";
 import PainelMissao, { painelMissaoPadrao } from "../components/PainelMissao";
 
 const mono = "'IBM Plex Mono', monospace";
@@ -145,7 +144,7 @@ function ProjetoResumo({ p, onAbrir }) {
   );
 }
 
-function ProjetoDetalhe({ p, patch, remover, voltar }) {
+function ProjetoDetalhe({ p, patch, remover, voltar, abrirMissao }) {
   const status = STATUS_PROJETO[p.status] || STATUS_PROJETO.ideia;
   const etapas = p.etapas || [];
   const visitas = p.empresasVisitadas || [];
@@ -331,6 +330,16 @@ function ProjetoDetalhe({ p, patch, remover, voltar }) {
           </div>
         </div>
 
+        {ehMissao(p) && abrirMissao ? (
+          <div style={{ ...secao, display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap", borderLeft: "4px solid #2F6FB0" }}>
+            <Wallet size={18} style={{ color: "#2F6FB0", flexShrink: 0 }} />
+            <div style={{ flex: "1 1 240px", fontSize: 13, color: "#566175", lineHeight: 1.5 }}>
+              <b style={{ color: "#0B2545" }}>Financeiro da missão.</b> Valor arrecadado, custos (passagens, diárias etc.) e resultado ficam na aba Missões.
+              {totais.length > 0 && <> Custos lançados: <b style={{ color: "#0B2545" }}>{totais.map(([m, v]) => formatMoeda(v, m)).join(" + ")}</b>.</>}
+            </div>
+            <button onClick={() => abrirMissao(p.id)} className="ccib-btn" style={btnLinha}>Abrir financeiro <ChevronRight size={14} /></button>
+          </div>
+        ) : (
         <div style={secao}>
           <TituloSecao icon={Wallet} extra={totais.length > 0 && <span style={{ fontFamily: mono, fontSize: 12, fontWeight: 600, color: "#0B2545" }}>{totais.map(([m, v]) => formatMoeda(v, m)).join(" + ")}</span>}>Valor despendido</TituloSecao>
           <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 10 }}>
@@ -361,6 +370,7 @@ function ProjetoDetalhe({ p, patch, remover, voltar }) {
             <button onClick={addCusto} className="ccib-btn" style={btnLinha}><Plus size={14} /> Custo</button>
           </div>
         </div>
+        )}
 
         <div style={secao}>
           <TituloSecao icon={CheckSquare} extra={etapas.length > 0 && <span style={{ fontFamily: mono, fontSize: 11, color: "#566175" }}>{feitas}/{etapas.length} ({pct}%)</span>}>Etapas</TituloSecao>
@@ -409,87 +419,9 @@ function ProjetoDetalhe({ p, patch, remover, voltar }) {
   );
 }
 
-// Listas do projeto que recebem itens novos da semente (por id do item)
-const LISTAS_SEMENTE = ["participantes", "empresasVisitadas", "etapas", "custos"];
-
-// Preenche os campos que ainda não existem no projeto salvo e acrescenta às listas os itens-semente
-// novos. Os ids já aplicados ficam em _seedItens, para que um item removido na plataforma não volte.
-function mesclarSemente(p, seed) {
-  const vistos = new Set(p._seedItens || []);
-  const novo = { ...p };
-  let alterou = false;
-  Object.keys(seed).forEach((k) => {
-    if (novo[k] === undefined) { novo[k] = seed[k]; alterou = true; }
-    // Textos definidos depois na semente preenchem só campos ainda vazios no salvo
-    else if (typeof seed[k] === "string" && seed[k] !== "" && novo[k] === "") { novo[k] = seed[k]; alterou = true; }
-  });
-  // Painel da missão: valores definidos na semente preenchem só os campos que ainda estão vazios no salvo
-  if (seed.painelMissao && novo.painelMissao && typeof novo.painelMissao === "object") {
-    Object.entries(seed.painelMissao).forEach(([k, v]) => {
-      if (typeof v === "string" && v !== "" && (novo.painelMissao[k] === undefined || novo.painelMissao[k] === "")) {
-        novo.painelMissao = { ...novo.painelMissao, [k]: v };
-        alterou = true;
-      }
-    });
-  }
-  LISTAS_SEMENTE.forEach((k) => {
-    const itensSeed = seed[k] || [];
-    const atual = Array.isArray(novo[k]) ? novo[k] : [];
-    const idsAtuais = new Set(atual.map((x) => x.id));
-    const faltando = itensSeed.filter((x) => !idsAtuais.has(x.id) && !vistos.has(x.id));
-    if (faltando.length) { novo[k] = [...atual, ...faltando]; alterou = true; }
-    itensSeed.forEach((x) => {
-      if (!vistos.has(x.id)) { vistos.add(x.id); alterou = true; }
-    });
-  });
-  if (alterou) novo._seedItens = [...vistos];
-  return [novo, alterou];
-}
-
-export default function ProjetosTab() {
-  const [projetos, setProjetos] = useState(null);
+export default function ProjetosTab({ abrirMissao }) {
+  const [projetos, atualizar] = useProjetos();
   const [abertoId, setAbertoId] = useState(null);
-  const salvarTimer = useRef(null);
-
-  useEffect(() => {
-    let vivo = true;
-    (async () => {
-      let salvos = [];
-      try {
-        const r = await storage.get(STORAGE_PROJECTS, true);
-        salvos = r && r.value ? JSON.parse(r.value) : [];
-      } catch (e) {
-        salvos = [];
-      }
-      // Acrescenta os projetos-semente que ainda não existem (por id) e mescla os já salvos sem
-      // sobrescrever o que foi editado (ver mesclarSemente)
-      let mudou = false;
-      const porId = new Map(SEED_PROJECTS.map((p) => [p.id, p]));
-      const lista = salvos.map((p) => {
-        const seed = porId.get(p.id);
-        if (!seed) return p;
-        const [mesclado, alterou] = mesclarSemente(p, seed);
-        if (alterou) mudou = true;
-        return mesclado;
-      });
-      const ids = new Set(salvos.map((p) => p.id));
-      SEED_PROJECTS.filter((p) => !ids.has(p.id)).forEach((p) => { lista.push(p); mudou = true; });
-      if (!vivo) return;
-      setProjetos(lista);
-      if (mudou) {
-        try { await storage.set(STORAGE_PROJECTS, JSON.stringify(lista), true); } catch (e) { /* sem armazenamento */ }
-      }
-    })();
-    return () => { vivo = false; };
-  }, []);
-
-  const atualizar = (next) => {
-    setProjetos(next);
-    clearTimeout(salvarTimer.current);
-    salvarTimer.current = setTimeout(() => {
-      storage.set(STORAGE_PROJECTS, JSON.stringify(next), true).catch(() => {});
-    }, 300);
-  };
 
   const abrir = (id) => {
     setAbertoId(id);
@@ -505,6 +437,7 @@ export default function ProjetosTab() {
         key={aberto.id}
         p={aberto}
         voltar={() => setAbertoId(null)}
+        abrirMissao={abrirMissao}
         patch={(patch) => atualizar(projetos.map((x) => (x.id === aberto.id ? { ...x, ...patch } : x)))}
         remover={() => {
           if (window.confirm(`Remover o projeto "${aberto.nome || "sem nome"}"?`)) {
