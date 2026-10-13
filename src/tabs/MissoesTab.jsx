@@ -154,7 +154,7 @@ function Resultado({ valor, moeda, grande }) {
   const Icone = positivo ? TrendingUp : TrendingDown;
   return (
     <span style={{ display: "inline-flex", alignItems: "center", gap: 6, color: positivo ? "#0E7C3A" : "#C1502E", fontWeight: 600 }}>
-      <Icone size={grande ? 20 : 14} /> {dinheiro(valor, moeda)} <span style={{ fontSize: grande ? 12 : 10.5, fontFamily: mono, fontWeight: 600 }}>{positivo ? "superávit" : "déficit"}</span>
+      <Icone size={grande ? 20 : 14} /> {dinheiro(valor, moeda)} <span style={{ fontSize: grande ? 12 : 10.5, fontFamily: mono, fontWeight: 600 }}>{positivo ? "lucro" : "prejuízo"}</span>
     </span>
   );
 }
@@ -217,6 +217,24 @@ function EvolucaoMissoes({ missoes, abrir }) {
   );
 }
 
+// Saldo final em verde (lucro) ou vermelho (prejuízo), sempre com ícone e texto
+function SaldoFinal({ c }) {
+  if (!c.temDados) {
+    return <div style={{ marginTop: 10, fontSize: 12.5, color: "#8992A6", background: "#F7F8FA", borderRadius: 8, padding: "9px 12px" }}>Saldo final: sem valores lançados ainda</div>;
+  }
+  const lucro = c.resultado >= 0;
+  const Icone = lucro ? TrendingUp : TrendingDown;
+  const cor = lucro ? "#0E7C3A" : "#C1502E";
+  return (
+    <div style={{ marginTop: 10, display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", background: lucro ? "#EAF5EE" : "#FBEDE8", border: `1px solid ${lucro ? "#BFDFCB" : "#F0C9BC"}`, borderRadius: 8, padding: "9px 12px", color: cor }}>
+      <Icone size={18} />
+      <span style={{ ...labelStyle, color: cor, marginBottom: 0 }}>Saldo final</span>
+      <span style={{ fontFamily: serif, fontSize: 20, fontWeight: 600 }}>{dinheiro(c.resultado, c.moeda)}</span>
+      <span style={{ fontFamily: mono, fontSize: 11, fontWeight: 600 }}>{lucro ? "lucro" : "prejuízo"}{c.margem != null ? ` · margem ${Math.round(c.margem)}%` : ""}</span>
+    </div>
+  );
+}
+
 function MissaoResumo({ p, c, abrir }) {
   const status = STATUS_PROJETO[p.status] || STATUS_PROJETO.ideia;
   const meta = c.meta;
@@ -235,12 +253,23 @@ function MissaoResumo({ p, c, abrir }) {
             {p.local && <Chip>{p.local}</Chip>}
             <Chip color="#B8752E" bg="#FBF3EA">{periodo(p)}</Chip>
           </div>
-          <div style={{ display: "flex", gap: 18, flexWrap: "wrap", marginTop: 10, fontFamily: mono, fontSize: 11.5, color: "#566175" }}>
-            <span>Arrecadado: <b style={{ color: "#0B2545" }}>{dinheiro(c.arrecadado, c.moeda)}</b></span>
-            <span>Gasto: <b style={{ color: "#0B2545" }}>{dinheiro(c.gasto, c.moeda)}</b></span>
-            <span>Resultado: {c.temDados ? <Resultado valor={c.resultado} moeda={c.moeda} /> : "—"}</span>
-            <span>{c.pagantes.length} pagante{c.pagantes.length === 1 ? "" : "s"}{meta ? ` de ${meta} (meta)` : ""}</span>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(118px, 1fr))", gap: 8, marginTop: 12 }}>
+            {[
+              ["Participantes", `${c.pagantes.length}${meta ? ` de ${meta}` : ""}`],
+              ["Custo individual", dinheiro(c.custoPorPagante, c.moeda)],
+              ["Arrecadado", dinheiro(c.arrecadado, c.moeda)],
+              ["Passagens", dinheiro(c.porCategoria["Passagens"] || 0, c.moeda)],
+              ["Diárias", dinheiro(c.porCategoria["Diárias"] || 0, c.moeda)],
+              ["Hotel", dinheiro(c.porCategoria["Hospedagem"] || 0, c.moeda)],
+              ["Gasto total", dinheiro(c.gasto, c.moeda)],
+            ].map(([rotulo, valor]) => (
+              <div key={rotulo} style={{ background: "#FAFBFC", border: "1px solid #EEF1F5", borderRadius: 8, padding: "7px 10px" }}>
+                <div style={{ ...labelStyle, fontSize: 9, marginBottom: 2 }}>{rotulo}</div>
+                <div style={{ fontFamily: mono, fontSize: 12.5, fontWeight: 600, color: "#0B2545" }}>{valor}</div>
+              </div>
+            ))}
           </div>
+          <SaldoFinal c={c} />
           {progresso != null && (
             <div style={{ height: 6, background: "#EEF1F5", borderRadius: 4, marginTop: 10, maxWidth: 360, overflow: "hidden" }}>
               <div style={{ width: `${progresso}%`, height: "100%", background: "#0E7C3A", borderRadius: 4 }} />
@@ -337,7 +366,7 @@ function MissaoDetalhe({ p, patch, voltar }) {
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 18 }}>
             <Kpi icon={Wallet} label="Valor arrecadado" valor={dinheiro(c.arrecadado, moeda)} cor={COR_RECEITA} sub={`${c.pagantes.length} pagante${c.pagantes.length === 1 ? "" : "s"}${c.extras ? " + outras receitas" : ""}`} />
             <Kpi icon={Receipt} label="Valor gasto" valor={dinheiro(c.gasto, moeda)} cor={COR_CUSTO} sub={`${dinheiro(c.gastoPago, moeda)} pago · ${dinheiro(c.gasto - c.gastoPago, moeda)} previsto`} />
-            <Kpi icon={Scale} label="Resultado" valor={<Resultado valor={c.resultado} moeda={moeda} grande />} cor={c.resultado >= 0 ? "#0E7C3A" : "#C1502E"} sub={c.margem != null ? `Margem de ${Math.round(c.margem)}% sobre o arrecadado` : "Sem receita lançada"} />
+            <Kpi icon={Scale} label="Saldo final" valor={<Resultado valor={c.resultado} moeda={moeda} grande />} cor={c.resultado >= 0 ? "#0E7C3A" : "#C1502E"} sub={c.margem != null ? `Margem de ${Math.round(c.margem)}% sobre o arrecadado` : "Sem receita lançada"} />
           </div>
           {c.semCambio.length > 0 && (
             <div style={{ marginTop: 12, fontSize: 12.5, color: "#B5533C", background: "#FBEFEC", borderRadius: 8, padding: "8px 12px" }}>
@@ -512,7 +541,7 @@ function MissaoDetalhe({ p, patch, voltar }) {
           <TituloSecao icon={Calculator}>Indicadores e simulação</TituloSecao>
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 16 }}>
             <Kpi icon={Scale} label="Ponto de equilíbrio" valor={c.equilibrio != null ? `${c.equilibrio} pagante${c.equilibrio === 1 ? "" : "s"}` : "—"} sub={c.equilibrio != null ? "Mínimo para cobrir o gasto atual" : "Preencha o valor base"} />
-            <Kpi icon={Users} label="Custo por pagante" valor={dinheiro(c.custoPorPagante, moeda)} sub={c.pagantes.length ? `Gasto ÷ ${c.pagantes.length} pagante${c.pagantes.length === 1 ? "" : "s"}` : "Sem pagantes ainda"} />
+            <Kpi icon={Users} label="Custo individual" valor={dinheiro(c.custoPorPagante, moeda)} sub={c.pagantes.length ? `Gasto ÷ ${c.pagantes.length} pagante${c.pagantes.length === 1 ? "" : "s"}` : "Sem pagantes ainda"} />
             <Kpi icon={TrendingUp} label="Se bater a meta" valor={c.meta && c.valorBase != null ? dinheiro(c.meta * c.valorBase + c.extras - c.gasto, moeda) : "—"} sub={c.meta ? `Resultado com ${c.meta} pagantes e o gasto atual` : "Preencha a meta de participantes"} />
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", background: "#F7F8FA", borderRadius: 10, padding: "12px 16px", fontSize: 13, color: "#566175" }}>
@@ -623,7 +652,7 @@ export default function MissoesTab({ abertaInicial, limparAbertaInicial }) {
         <Kpi icon={Receipt} label="Total gasto" valor={somar("gasto")} cor={COR_CUSTO} />
         <Kpi
           icon={Scale}
-          label="Resultado acumulado"
+          label="Saldo final acumulado"
           valor={resultados.length ? resultados.map(([m, t]) => <div key={m}><Resultado valor={t.arrecadado - t.gasto} moeda={m} grande /></div>) : "—"}
           cor="#0E7C3A"
         />
@@ -632,7 +661,7 @@ export default function MissoesTab({ abertaInicial, limparAbertaInicial }) {
       <EvolucaoMissoes missoes={missoes} abrir={abrir} />
 
       {missoes.length === 0 && <div style={{ padding: "30px 0", textAlign: "center", color: "#8992A6", fontSize: 13 }}>Nenhuma missão cadastrada.</div>}
-      <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 440px), 1fr))", gap: 16 }}>
         {missoes.map(({ p, c }) => <MissaoResumo key={p.id} p={p} c={c} abrir={() => abrir(p.id)} />)}
       </div>
     </div>
