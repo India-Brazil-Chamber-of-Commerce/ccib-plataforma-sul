@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Plus, X, ArrowLeft, ChevronRight, Plane, Wallet, TrendingUp, TrendingDown, Users, Receipt, Calculator, Scale, Coins } from "lucide-react";
+import React, { useRef, useState } from "react";
+import { Plus, X, ArrowLeft, ChevronRight, Plane, Wallet, TrendingUp, TrendingDown, Users, Receipt, Calculator, Scale, Coins, ImagePlus } from "lucide-react";
 import { STATUS_PROJETO } from "../constants";
 import { inputStyle, labelStyle, filterInputStyle } from "../styles";
 import { Field } from "../components/ui";
@@ -217,6 +217,65 @@ function EvolucaoMissoes({ missoes, abrir }) {
   );
 }
 
+// Logo da missão: a imagem é reduzida (até 320 px) e guardada junto com a missão
+const LOGO_MAX = 320;
+function lerLogo(arquivo) {
+  return new Promise((resolve, reject) => {
+    if (!arquivo || !arquivo.type.startsWith("image/")) return reject(new Error("Arquivo não é imagem"));
+    const leitor = new FileReader();
+    leitor.onerror = () => reject(new Error("Falha ao ler"));
+    leitor.onload = () => {
+      const img = new Image();
+      img.onerror = () => reject(new Error("Imagem inválida"));
+      img.onload = () => {
+        const escala = Math.min(1, LOGO_MAX / Math.max(img.width, img.height));
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.max(1, Math.round(img.width * escala));
+        canvas.height = Math.max(1, Math.round(img.height * escala));
+        canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
+        const webp = canvas.toDataURL("image/webp", 0.9);
+        resolve(webp.startsWith("data:image/webp") ? webp : canvas.toDataURL("image/png"));
+      };
+      img.src = leitor.result;
+    };
+    leitor.readAsDataURL(arquivo);
+  });
+}
+
+function LogoMissao({ logo, tamanho = 42, onChange }) {
+  const ref = useRef(null);
+  const [erro, setErro] = useState("");
+  const escolher = async (e) => {
+    const arquivo = e.target.files && e.target.files[0];
+    e.target.value = "";
+    if (!arquivo) return;
+    try {
+      setErro("");
+      onChange(await lerLogo(arquivo));
+    } catch (err) {
+      setErro("Não foi possível usar essa imagem.");
+    }
+  };
+  const caixa = { width: tamanho, height: tamanho, borderRadius: tamanho > 60 ? 14 : 12, background: logo ? "#FFFFFF" : "#EAF1FA", border: logo ? "1px solid #E6E9EF" : "none", color: COR_RECEITA, display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0, overflow: "hidden" };
+  const imagem = logo ? <img src={logo} alt="Logo da missão" style={{ maxWidth: "88%", maxHeight: "88%", objectFit: "contain" }} /> : null;
+  if (!onChange) return <span style={caixa}>{imagem || <Plane size={Math.round(tamanho * 0.48)} />}</span>;
+  return (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, flexShrink: 0 }}>
+      <button onClick={() => ref.current && ref.current.click()} title={logo ? "Trocar logo" : "Adicionar logo"} style={{ ...caixa, cursor: "pointer", border: logo ? caixa.border : "1.5px dashed #9DB6D6", padding: 0, flexDirection: "column", gap: 4 }}>
+        {imagem || (<><ImagePlus size={22} /><span style={{ fontSize: 10.5, fontWeight: 600 }}>Adicionar logo</span></>)}
+      </button>
+      <input ref={ref} type="file" accept="image/*" onChange={escolher} style={{ display: "none" }} />
+      {logo && (
+        <div style={{ display: "flex", gap: 10, fontSize: 11 }}>
+          <button onClick={() => ref.current && ref.current.click()} style={{ background: "none", border: "none", padding: 0, color: "#2F6FB0", cursor: "pointer", fontSize: 11 }}>Trocar</button>
+          <button onClick={() => { if (window.confirm("Remover a logo desta missão?")) onChange(""); }} style={{ background: "none", border: "none", padding: 0, color: "#B5533C", cursor: "pointer", fontSize: 11 }}>Remover</button>
+        </div>
+      )}
+      {erro && <div style={{ fontSize: 11, color: "#B5533C", maxWidth: tamanho + 40, textAlign: "center" }}>{erro}</div>}
+    </div>
+  );
+}
+
 // Saldo final em verde (lucro) ou vermelho (prejuízo), sempre com ícone e texto
 function SaldoFinal({ c }) {
   if (!c.temDados) {
@@ -243,9 +302,7 @@ function MissaoResumo({ p, c, abrir }) {
     <div style={{ ...card, overflow: "hidden" }} className="ccib-fade-in">
       <div style={{ height: 4, background: status.color }} />
       <div onClick={abrir} className="ccib-row" style={{ padding: "16px 22px", cursor: "pointer", display: "flex", gap: 16, alignItems: "flex-start" }}>
-        <span style={{ width: 42, height: 42, borderRadius: 12, background: "#EAF1FA", color: COR_RECEITA, display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-          <Plane size={20} />
-        </span>
+        <LogoMissao logo={p.logo} tamanho={p.logo ? 64 : 42} />
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontFamily: serif, fontWeight: 600, fontSize: 18, color: "#0B2545" }}>{p.nome || "(missão sem nome)"}</div>
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 8 }}>
@@ -345,6 +402,9 @@ function MissaoDetalhe({ p, patch, voltar }) {
       <div style={{ ...card, overflow: "hidden", marginBottom: 18 }}>
         <div style={{ height: 4, background: status.color }} />
         <div style={{ padding: "20px 22px" }}>
+          <div style={{ display: "flex", gap: 18, alignItems: "flex-start" }}>
+          <LogoMissao logo={p.logo} tamanho={96} onChange={(logo) => patch({ logo })} />
+          <div style={{ flex: 1, minWidth: 0 }}>
           <input className="ccib-input" value={p.nome} placeholder="Nome da missão" onChange={(e) => patch({ nome: e.target.value })} style={{ ...inputStyle, fontFamily: serif, fontWeight: 600, fontSize: 24, color: "#0B2545", borderBottom: "1px solid transparent" }} />
           <div style={{ display: "flex", gap: 16, flexWrap: "wrap", marginTop: 10 }}>
             <Field label="Status">
@@ -362,11 +422,13 @@ function MissaoDetalhe({ p, patch, voltar }) {
               <input type="date" style={{ ...inputStyle, colorScheme: "light" }} value={p.dataFim || ""} onChange={(e) => patch({ dataFim: e.target.value })} />
             </Field>
           </div>
+          </div>
+          </div>
 
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 18 }}>
             <Kpi icon={Wallet} label="Valor arrecadado" valor={dinheiro(c.arrecadado, moeda)} cor={COR_RECEITA} sub={`${c.pagantes.length} pagante${c.pagantes.length === 1 ? "" : "s"}${c.extras ? " + outras receitas" : ""}`} />
             <Kpi icon={Receipt} label="Valor gasto" valor={dinheiro(c.gasto, moeda)} cor={COR_CUSTO} sub={`${dinheiro(c.gastoPago, moeda)} pago · ${dinheiro(c.gasto - c.gastoPago, moeda)} previsto`} />
-            <Kpi icon={Scale} label="Saldo final" valor={<Resultado valor={c.resultado} moeda={moeda} grande />} cor={c.resultado >= 0 ? "#0E7C3A" : "#C1502E"} sub={c.margem != null ? `Margem de ${Math.round(c.margem)}% sobre o arrecadado` : "Sem receita lançada"} />
+            <Kpi icon={Scale} label="Saldo final" valor={c.temDados ? <Resultado valor={c.resultado} moeda={moeda} grande /> : "—"} cor={c.resultado >= 0 ? "#0E7C3A" : "#C1502E"} sub={c.margem != null ? `Margem de ${Math.round(c.margem)}% sobre o arrecadado` : "Sem receita lançada"} />
           </div>
           {c.semCambio.length > 0 && (
             <div style={{ marginTop: 12, fontSize: 12.5, color: "#B5533C", background: "#FBEFEC", borderRadius: 8, padding: "8px 12px" }}>

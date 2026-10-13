@@ -118,9 +118,15 @@ function ProjetoResumo({ p, onAbrir }) {
     <div style={card} className="ccib-fade-in">
       <div style={{ height: 4, background: status.color }} />
       <div onClick={onAbrir} className="ccib-row" style={{ padding: "18px 22px", cursor: "pointer", display: "flex", gap: 16, alignItems: "flex-start" }}>
-        <span style={{ width: 42, height: 42, borderRadius: 12, background: `${status.color}1A`, color: status.color, display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-          <FolderKanban size={20} />
-        </span>
+        {p.logo ? (
+          <span style={{ width: 56, height: 56, borderRadius: 12, background: "#FFFFFF", border: "1px solid #E6E9EF", display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0, overflow: "hidden" }}>
+            <img src={p.logo} alt="" style={{ maxWidth: "88%", maxHeight: "88%", objectFit: "contain" }} />
+          </span>
+        ) : (
+          <span style={{ width: 42, height: 42, borderRadius: 12, background: `${status.color}1A`, color: status.color, display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <FolderKanban size={20} />
+          </span>
+        )}
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontFamily: serif, fontWeight: 600, fontSize: 18, color: "#0B2545", lineHeight: 1.25 }}>{p.nome || "(projeto sem nome)"}</div>
           {p.descricao && <div style={{ fontSize: 13, color: "#566175", marginTop: 4, lineHeight: 1.45 }}>{p.descricao}</div>}
