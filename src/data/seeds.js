@@ -1,6 +1,7 @@
 import imgWebinarMarthaBeckerCriseNaoTemHora from "../assets/eventos/webinar-martha-becker-crise-nao-tem-hora.jpg";
 import imgExpoIndustria2026 from "../assets/eventos/expo-industria-2026.jpg";
 import imgFniSc from "../assets/eventos/fni-sc.jpg";
+import logoIndiaHealth from "../assets/missoes/india-health.webp";
 import imgHappyHourIrip from "../assets/eventos/happy-hour-irip.jpg";
 import imgSaoJoseDasNacoes from "../assets/eventos/sao-jose-das-nacoes.webp";
 import imgCafeDasNacoes from "../assets/eventos/cafe-das-nacoes.jpg";
@@ -474,6 +475,7 @@ export const SEED_PROJECTS = [
     id: "seed-p-missao-india-health",
     nome: "Missão India Health",
     missao: true,
+    logo: logoIndiaHealth,
     painelMissao: { metaContratacoes: "", valorParticipante: "", moeda: "BRL", projecao: "pessimista", taxas: { pessimista: "", otimista: "" }, instituicoes: [] },
     descricao: "",
     status: "andamento",

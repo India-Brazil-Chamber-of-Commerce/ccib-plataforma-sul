@@ -256,19 +256,19 @@ function LogoMissao({ logo, tamanho = 42, onChange }) {
       setErro("Não foi possível usar essa imagem.");
     }
   };
-  const caixa = { width: tamanho, height: tamanho, borderRadius: tamanho > 60 ? 14 : 12, background: logo ? "#FFFFFF" : "#EAF1FA", border: logo ? "1px solid #E6E9EF" : "none", color: COR_RECEITA, display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0, overflow: "hidden" };
-  const imagem = logo ? <img src={logo} alt="Logo da missão" style={{ maxWidth: "88%", maxHeight: "88%", objectFit: "contain" }} /> : null;
+  const caixa = { width: logo ? "auto" : tamanho, minWidth: tamanho, maxWidth: tamanho * 2.2, padding: logo ? "0 6px" : 0, height: tamanho, borderRadius: tamanho > 60 ? 14 : 12, background: logo ? "#FFFFFF" : "#EAF1FA", border: logo ? "1px solid #E6E9EF" : "none", color: COR_RECEITA, display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0, overflow: "hidden" };
+  const imagem = logo ? <img src={logo} alt="Logo da missão" style={{ height: "86%", width: "auto", maxWidth: tamanho * 2.2 - 12, objectFit: "contain" }} /> : null;
   if (!onChange) return <span style={caixa}>{imagem || <Plane size={Math.round(tamanho * 0.48)} />}</span>;
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, flexShrink: 0 }}>
-      <button onClick={() => ref.current && ref.current.click()} title={logo ? "Trocar logo" : "Adicionar logo"} style={{ ...caixa, cursor: "pointer", border: logo ? caixa.border : "1.5px dashed #9DB6D6", padding: 0, flexDirection: "column", gap: 4 }}>
+      <button onClick={() => ref.current && ref.current.click()} title={logo ? "Trocar logo" : "Adicionar logo"} style={{ ...caixa, cursor: "pointer", border: logo ? caixa.border : "1.5px dashed #9DB6D6", flexDirection: "column", gap: 4 }}>
         {imagem || (<><ImagePlus size={22} /><span style={{ fontSize: 10.5, fontWeight: 600 }}>Adicionar logo</span></>)}
       </button>
       <input ref={ref} type="file" accept="image/*" onChange={escolher} style={{ display: "none" }} />
       {logo && (
         <div style={{ display: "flex", gap: 10, fontSize: 11 }}>
           <button onClick={() => ref.current && ref.current.click()} style={{ background: "none", border: "none", padding: 0, color: "#2F6FB0", cursor: "pointer", fontSize: 11 }}>Trocar</button>
-          <button onClick={() => { if (window.confirm("Remover a logo desta missão?")) onChange(""); }} style={{ background: "none", border: "none", padding: 0, color: "#B5533C", cursor: "pointer", fontSize: 11 }}>Remover</button>
+          <button onClick={() => { if (window.confirm("Remover a logo desta missão?")) onChange(null); }} style={{ background: "none", border: "none", padding: 0, color: "#B5533C", cursor: "pointer", fontSize: 11 }}>Remover</button>
         </div>
       )}
       {erro && <div style={{ fontSize: 11, color: "#B5533C", maxWidth: tamanho + 40, textAlign: "center" }}>{erro}</div>}

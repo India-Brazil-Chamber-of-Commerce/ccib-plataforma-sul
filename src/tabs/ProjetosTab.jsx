@@ -119,8 +119,8 @@ function ProjetoResumo({ p, onAbrir }) {
       <div style={{ height: 4, background: status.color }} />
       <div onClick={onAbrir} className="ccib-row" style={{ padding: "18px 22px", cursor: "pointer", display: "flex", gap: 16, alignItems: "flex-start" }}>
         {p.logo ? (
-          <span style={{ width: 56, height: 56, borderRadius: 12, background: "#FFFFFF", border: "1px solid #E6E9EF", display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0, overflow: "hidden" }}>
-            <img src={p.logo} alt="" style={{ maxWidth: "88%", maxHeight: "88%", objectFit: "contain" }} />
+          <span style={{ minWidth: 56, maxWidth: 124, height: 56, padding: "0 6px", borderRadius: 12, background: "#FFFFFF", border: "1px solid #E6E9EF", display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0, overflow: "hidden" }}>
+            <img src={p.logo} alt="" style={{ height: "86%", width: "auto", maxWidth: 112, objectFit: "contain" }} />
           </span>
         ) : (
           <span style={{ width: 42, height: 42, borderRadius: 12, background: `${status.color}1A`, color: status.color, display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
