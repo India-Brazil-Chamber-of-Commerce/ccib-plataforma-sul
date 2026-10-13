@@ -420,6 +420,8 @@ function mesclarSemente(p, seed) {
   let alterou = false;
   Object.keys(seed).forEach((k) => {
     if (novo[k] === undefined) { novo[k] = seed[k]; alterou = true; }
+    // Textos definidos depois na semente preenchem só campos ainda vazios no salvo
+    else if (typeof seed[k] === "string" && seed[k] !== "" && novo[k] === "") { novo[k] = seed[k]; alterou = true; }
   });
   // Painel da missão: valores definidos na semente preenchem só os campos que ainda estão vazios no salvo
   if (seed.painelMissao && novo.painelMissao && typeof novo.painelMissao === "object") {

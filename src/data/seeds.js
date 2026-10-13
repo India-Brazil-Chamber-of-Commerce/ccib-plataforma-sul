@@ -456,8 +456,8 @@ export const SEED_PROJECTS = [
     status: "planejamento",
     responsavel: "ambos",
     estado: "SC",
-    dataPrevista: "",
-    parceiros: "",
+    dataPrevista: "2026-11-12",
+    parceiros: "Possível patrocínio: Alexander Advogados (a confirmar)",
     etapas: [],
     participantes: [
       { id: "seed-pt-fni-sc-1", empresa: "NIDEC", representante: "Rafael Oliveira", cargo: "", observacoes: "", status: "confirmada" },
