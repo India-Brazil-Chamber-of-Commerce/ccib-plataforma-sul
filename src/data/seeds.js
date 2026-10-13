@@ -67,7 +67,7 @@ export const SEED_EVENTS = [
     id: "seed-e-fni-sc-florianopolis",
     nome: "FNI SC - Florianópolis",
     data: "2026-11-12",
-    horario: "",
+    horario: "08:00 – 12:00",
     local: "Florianópolis/SC",
     tipo: "Webinar/Seminário",
     status: "planejado",
@@ -134,6 +134,7 @@ export const FORCE_EVENT_UPDATES = {
   },
   "FNI SC - Florianópolis": {
     data: "2026-11-12",
+    horario: "08:00 – 12:00",
   },
   "Happy Hour IRIP": {
     registro: imgHappyHourIrip,
