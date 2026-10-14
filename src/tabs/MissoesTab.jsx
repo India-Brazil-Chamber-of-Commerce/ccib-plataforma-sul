@@ -6,6 +6,7 @@ import { Field } from "../components/ui";
 import { formatDate } from "../lib/format";
 import { useProjetos, ehMissao } from "../lib/useProjetos";
 import { painelMissaoPadrao } from "../components/PainelMissao";
+import { ProjetoDetalhe } from "./ProjetosTab";
 
 const mono = "'IBM Plex Mono', monospace";
 const serif = "'Fraunces', serif";
@@ -339,7 +340,7 @@ function MissaoResumo({ p, c, abrir }) {
   );
 }
 
-function MissaoDetalhe({ p, patch, voltar }) {
+function MissaoDetalhe({ p, patch, voltar, abrirFicha }) {
   const c = calcularMissao(p);
   const { pm, moeda } = c;
   const status = STATUS_PROJETO[p.status] || STATUS_PROJETO.ideia;
@@ -397,6 +398,12 @@ function MissaoDetalhe({ p, patch, voltar }) {
       <button onClick={voltar} className="ccib-btn" style={{ display: "flex", alignItems: "center", gap: 6, background: "transparent", border: "none", color: "#0B2545", fontSize: 13, cursor: "pointer", padding: "4px 0", marginBottom: 14 }}>
         <ArrowLeft size={15} /> Todas as missões
       </button>
+      <div style={{ ...secao, display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap", marginBottom: 18, borderLeft: "4px solid #B8752E" }}>
+        <div style={{ flex: "1 1 260px", fontSize: 13, color: "#566175", lineHeight: 1.5 }}>
+          <b style={{ color: "#0B2545" }}>Ficha completa da missão:</b> etapas, empresas visitadas, painel de contratações (cenários), resultados e notas.
+        </div>
+        <button onClick={abrirFicha} className="ccib-btn" style={btnLinha}>Abrir ficha completa <ChevronRight size={14} /></button>
+      </div>
 
       {/* Cabeçalho e números principais */}
       <div style={{ ...card, overflow: "hidden", marginBottom: 18 }}>
@@ -651,6 +658,7 @@ function novaMissao() {
 export default function MissoesTab({ abertaInicial, limparAbertaInicial }) {
   const [projetos, atualizar] = useProjetos();
   const [abertoId, setAbertoId] = useState(abertaInicial || null);
+  const [ficha, setFicha] = useState(false);
 
   const abrir = (id) => {
     setAbertoId(id);
@@ -665,12 +673,33 @@ export default function MissoesTab({ abertaInicial, limparAbertaInicial }) {
 
   const aberta = abertoId && projetos.find((p) => p.id === abertoId);
   if (aberta) {
+    const patchAberta = (mudanca) => atualizar(projetos.map((x) => (x.id === aberta.id ? { ...x, ...mudanca } : x)));
+    if (ficha) {
+      return (
+        <ProjetoDetalhe
+          key={`ficha-${aberta.id}`}
+          p={aberta}
+          patch={patchAberta}
+          rotuloVoltar="Voltar ao financeiro da missão"
+          voltar={() => { setFicha(false); window.scrollTo({ top: 0 }); }}
+          abrirMissao={() => { setFicha(false); window.scrollTo({ top: 0 }); }}
+          remover={() => {
+            if (window.confirm(`Remover a missão "${aberta.nome || "sem nome"}"? Os dados dela serão apagados para todos.`)) {
+              atualizar(projetos.filter((x) => x.id !== aberta.id));
+              setFicha(false);
+              voltar();
+            }
+          }}
+        />
+      );
+    }
     return (
       <MissaoDetalhe
         key={aberta.id}
         p={aberta}
         voltar={voltar}
-        patch={(mudanca) => atualizar(projetos.map((x) => (x.id === aberta.id ? { ...x, ...mudanca } : x)))}
+        abrirFicha={() => { setFicha(true); window.scrollTo({ top: 0 }); }}
+        patch={patchAberta}
       />
     );
   }

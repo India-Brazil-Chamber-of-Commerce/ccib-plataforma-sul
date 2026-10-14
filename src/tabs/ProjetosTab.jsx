@@ -150,7 +150,7 @@ function ProjetoResumo({ p, onAbrir }) {
   );
 }
 
-function ProjetoDetalhe({ p, patch, remover, voltar, abrirMissao }) {
+export function ProjetoDetalhe({ p, patch, remover, voltar, abrirMissao, rotuloVoltar = "Todos os projetos" }) {
   const status = STATUS_PROJETO[p.status] || STATUS_PROJETO.ideia;
   const etapas = p.etapas || [];
   const visitas = p.empresasVisitadas || [];
@@ -196,7 +196,7 @@ function ProjetoDetalhe({ p, patch, remover, voltar, abrirMissao }) {
   return (
     <div className="ccib-fade-in">
       <button onClick={voltar} className="ccib-btn" style={{ display: "flex", alignItems: "center", gap: 6, background: "transparent", border: "none", color: "#0B2545", fontSize: 13, cursor: "pointer", padding: "4px 0", marginBottom: 14 }}>
-        <ArrowLeft size={15} /> Todos os projetos
+        <ArrowLeft size={15} /> {rotuloVoltar}
       </button>
 
       <div style={{ ...card, marginBottom: 18 }}>
@@ -462,7 +462,8 @@ export default function ProjetosTab({ abrirMissao }) {
   };
 
   const ordem = Object.keys(STATUS_PROJETO);
-  const lista = [...projetos].sort((a, b) => ordem.indexOf(a.status) - ordem.indexOf(b.status) || (a.dataPrevista || "9999").localeCompare(b.dataPrevista || "9999"));
+  // Missões ficam na aba Missões
+  const lista = projetos.filter((p) => !ehMissao(p)).sort((a, b) => ordem.indexOf(a.status) - ordem.indexOf(b.status) || (a.dataPrevista || "9999").localeCompare(b.dataPrevista || "9999"));
 
   return (
     <div>
@@ -470,7 +471,7 @@ export default function ProjetosTab({ abrirMissao }) {
         <div style={{ flex: 1, minWidth: 200 }}>
           <h2 style={{ fontFamily: serif, fontWeight: 600, fontSize: 24, margin: 0, color: "#0B2545" }}>Projetos da Regional Sul</h2>
           <div style={{ fontFamily: mono, fontSize: 10.5, letterSpacing: "0.08em", textTransform: "uppercase", color: "#8992A6", marginTop: 4 }}>
-            {projetos.length} projeto{projetos.length === 1 ? "" : "s"}
+            {lista.length} projeto{lista.length === 1 ? "" : "s"}
           </div>
         </div>
         <button
