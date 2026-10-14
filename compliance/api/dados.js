@@ -11,10 +11,22 @@
 const PREFIXO = "ccib-compliance-";
 const LIMITE_BYTES = 5 * 1024 * 1024;
 
+// A Vercel pode criar as variáveis do banco com um prefixo (ex.: "STORAGE_KV_REST_API_URL"),
+// então procuramos qualquer par *KV_REST_API_URL / *KV_REST_API_TOKEN (ou *REDIS_REST_URL / *REDIS_REST_TOKEN).
+function variaveisDoBanco() {
+  const nomes = Object.keys(process.env);
+  for (const [sufUrl, sufToken] of [["KV_REST_API_URL", "KV_REST_API_TOKEN"], ["REDIS_REST_URL", "REDIS_REST_TOKEN"]]) {
+    for (const nomeUrl of nomes.filter((n) => n.endsWith(sufUrl))) {
+      const nomeToken = nomeUrl.slice(0, -sufUrl.length) + sufToken;
+      if (process.env[nomeUrl] && process.env[nomeToken]) return { nomeUrl, nomeToken };
+    }
+  }
+  return null;
+}
+
 function banco() {
-  const url = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
-  const token = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
-  return url && token ? { url, token } : null;
+  const v = variaveisDoBanco();
+  return v ? { url: process.env[v.nomeUrl], token: process.env[v.nomeToken] } : null;
 }
 
 async function comando(db, args) {
@@ -40,6 +52,21 @@ function chave(request) {
 }
 
 export async function GET(request) {
+  // Diagnóstico: /api/dados?status=1 mostra se o banco está conectado (sem revelar valores)
+  if (new URL(request.url).searchParams.has("status")) {
+    const v = variaveisDoBanco();
+    const candidatas = Object.keys(process.env).filter((n) => /KV|REDIS|UPSTASH/.test(n));
+    let teste = "sem banco";
+    if (v) {
+      try {
+        await comando(banco(), ["PING"]);
+        teste = "ok";
+      } catch (e) {
+        teste = `erro: ${e.message}`;
+      }
+    }
+    return json({ banco: !!v, variavel: v ? v.nomeUrl : null, teste, variaveisEncontradas: candidatas });
+  }
   const db = banco();
   if (!db) return json({ error: "Banco não configurado" }, 503);
   const key = chave(request);
