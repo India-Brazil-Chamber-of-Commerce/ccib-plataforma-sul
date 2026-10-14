@@ -100,10 +100,12 @@ export default function App() {
 
   const flush = useCallback(async (nome) => {
     const lista = pending.current[nome];
-    delete pending.current[nome];
     delete timers.current[nome];
+    if (lista === undefined) return;
     try {
       await storage.set(STORAGE[nome], JSON.stringify(lista), true);
+      // Só considera salvo se ninguém editou de novo enquanto gravava (evita recarregar por cima)
+      if (pending.current[nome] === lista) delete pending.current[nome];
       if (Object.keys(pending.current).length === 0) setSaveState("salvo");
     } catch (e) {
       console.error(`Falha ao salvar ${nome}`, e);
