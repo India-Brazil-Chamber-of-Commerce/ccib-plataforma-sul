@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { Loader2, Building2, CalendarDays, LayoutGrid, Users, Contact, FolderKanban, TrendingUp, Plane } from "lucide-react";
-import { STORAGE_MEMBERS, STORAGE_EVENTS, STORAGE_MEETINGS, STORAGE_PARTNERS, STORAGE_CONTACTS, ESTADOS, STATUS_MEMBER } from "./constants";
+import { STORAGE_MEMBERS, STORAGE_EVENTS, STORAGE_MEETINGS, STORAGE_PARTNERS, STORAGE_CONTACTS, STORAGE_PROJECTS, ESTADOS, STATUS_MEMBER } from "./constants";
 import { SEED_CONTACTS, SEED_EVENTS, REMOVED_EVENTS, FORCE_EVENT_UPDATES, FORCE_MEMBER_UPDATES, APPEND_MEMBER_NOTES, MERGE_MEMBERS, NEGOCIOS_HUBSPOT, SEED_MEMBERS, ENSURE_MEMBERS } from "./data/seeds";
 import { SEED_MEETINGS, REMOVED_MEETINGS } from "./data/seedMeetings";
 import { blankContact, blankMeeting, blankPartner, blankMember, blankEvent } from "./lib/factories";
 import { useGoogleFonts } from "./lib/useGoogleFonts";
 import LOGO_URL from "./assets/logo-ccib.png";
-import { storage } from "./lib/storage";
+import { storage, EVENTO_ATUALIZADO } from "./lib/storage";
 import { callMcpForJson, MCP_HUBSPOT, MCP_MICROSOFT_365 } from "./lib/claude";
 import ProjetosTab from "./tabs/ProjetosTab";
 import MissoesTab from "./tabs/MissoesTab";
@@ -320,6 +320,29 @@ export default function App() {
 
   useEffect(() => {
     loadData();
+  }, [loadData]);
+
+  // Alterações feitas por outra pessoa (banco compartilhado): recarrega os dados da tela.
+  // Se alguém estiver digitando, espera sair do campo para não atrapalhar a edição.
+  useEffect(() => {
+    let pendente = false;
+    const digitando = () => {
+      const el = document.activeElement;
+      return el && ["INPUT", "TEXTAREA", "SELECT"].includes(el.tagName);
+    };
+    const recarregar = () => {
+      if (digitando()) { pendente = true; return; }
+      pendente = false;
+      loadData();
+    };
+    const aoSair = () => { if (pendente) setTimeout(recarregar, 0); };
+    const aoAtualizar = (e) => { if (e.detail?.key !== STORAGE_PROJECTS) recarregar(); };
+    window.addEventListener(EVENTO_ATUALIZADO, aoAtualizar);
+    document.addEventListener("focusout", aoSair);
+    return () => {
+      window.removeEventListener(EVENTO_ATUALIZADO, aoAtualizar);
+      document.removeEventListener("focusout", aoSair);
+    };
   }, [loadData]);
 
   const updateMembers = (next) => {

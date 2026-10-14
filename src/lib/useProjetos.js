@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { STORAGE_PROJECTS } from "../constants";
-import { storage } from "./storage";
+import { storage, EVENTO_ATUALIZADO } from "./storage";
 import { SEED_PROJECTS } from "../data/seeds";
 
 // Listas do projeto que recebem itens novos da semente (por id do item)
@@ -45,10 +45,12 @@ export function mesclarSemente(p, seed) {
 export function useProjetos() {
   const [projetos, setProjetos] = useState(null);
   const salvarTimer = useRef(null);
+  const pendente = useRef(null);
 
+  const carregar = useRef(null);
   useEffect(() => {
     let vivo = true;
-    (async () => {
+    carregar.current = async () => {
       let salvos = [];
       try {
         const r = await storage.get(STORAGE_PROJECTS, true);
@@ -72,12 +74,35 @@ export function useProjetos() {
       if (mudou) {
         try { await storage.set(STORAGE_PROJECTS, JSON.stringify(lista), true); } catch (e) { /* sem armazenamento */ }
       }
-    })();
+    };
+    carregar.current();
     return () => { vivo = false; };
   }, []);
 
+  // Alteração feita por outra pessoa (banco compartilhado): recarrega, salvo se houver edição
+  // local ainda não gravada ou alguém digitando (aí recarrega ao sair do campo)
+  useEffect(() => {
+    let atrasado = false;
+    const digitando = () => {
+      const el = document.activeElement;
+      return el && ["INPUT", "TEXTAREA", "SELECT"].includes(el.tagName);
+    };
+    const tentar = () => {
+      if (pendente.current || digitando()) { atrasado = true; return; }
+      atrasado = false;
+      if (carregar.current) carregar.current();
+    };
+    const aoAtualizar = (e) => { if (e.detail?.key === STORAGE_PROJECTS) tentar(); };
+    const aoSair = () => { if (atrasado) setTimeout(tentar, 400); };
+    window.addEventListener(EVENTO_ATUALIZADO, aoAtualizar);
+    document.addEventListener("focusout", aoSair);
+    return () => {
+      window.removeEventListener(EVENTO_ATUALIZADO, aoAtualizar);
+      document.removeEventListener("focusout", aoSair);
+    };
+  }, []);
+
   // Grava na hora ao sair da aba, para não perder a última edição
-  const pendente = useRef(null);
   useEffect(() => () => {
     clearTimeout(salvarTimer.current);
     if (pendente.current) storage.set(STORAGE_PROJECTS, JSON.stringify(pendente.current), true).catch(() => {});
