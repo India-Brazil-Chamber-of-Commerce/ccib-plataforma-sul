@@ -25,6 +25,7 @@ const COR_CUSTO = "#E8742B";
 
 const MOEDAS = ["BRL", "USD", "INR"];
 const CATEGORIAS_CUSTO = ["Passagens", "Diárias", "Hospedagem", "Alimentação", "Transporte local", "Intérprete / tradução", "Inscrições / taxas", "Materiais", "Outros"];
+const DESCRICAO_PADRAO = { Passagens: "Passagens aéreas", "Diárias": "Diárias", Hospedagem: "Hotel", "Alimentação": "Alimentação", "Transporte local": "Transporte local", "Intérprete / tradução": "Intérprete", "Inscrições / taxas": "Inscrições e taxas", Materiais: "Materiais" };
 const SITUACAO_CUSTO = {
   previsto: { label: "Previsto", color: "#B8752E" },
   pago: { label: "Pago", color: "#0E7C3A" },
@@ -96,7 +97,14 @@ export function calcularMissao(p) {
     const v = num(x.valorNegociado);
     return v != null ? v : valorBase;
   };
-  const receitaParticipantes = pagantes.reduce((s, x) => s + (valorDe(x) || 0), 0);
+  // Número de participantes: digitado na missão ou, se vazio, as empresas confirmadas da lista.
+  // Participantes além dos da lista entram pelo valor base.
+  const nManual = num(p.numParticipantes);
+  const nPart = nManual != null ? Math.max(0, Math.round(nManual)) : pagantes.length;
+  const somaLista = pagantes.reduce((s, x) => s + (valorDe(x) || 0), 0);
+  const receitaParticipantes = nPart >= pagantes.length
+    ? somaLista + (nPart - pagantes.length) * (valorBase || 0)
+    : nPart * (valorBase || 0);
   const extras = (p.receitasExtras || []).reduce((s, r) => s + (num(r.valor) || 0), 0);
   const arrecadado = receitaParticipantes + extras;
 
@@ -118,11 +126,11 @@ export function calcularMissao(p) {
 
   const resultado = arrecadado - gasto;
   const margem = arrecadado > 0 ? (resultado / arrecadado) * 100 : null;
-  const custoPorPagante = pagantes.length ? gasto / pagantes.length : null;
+  const custoPorPagante = nPart ? gasto / nPart : null;
   const equilibrio = valorBase ? Math.max(0, Math.ceil((gasto - extras) / valorBase)) : null;
   const temDados = arrecadado > 0 || gasto > 0;
 
-  return { pm, moeda, valorBase, meta, participantes, pagantes, valorDe, receitaParticipantes, extras, arrecadado, gasto, gastoPago, semCambio: [...semCambio], porCategoria, resultado, margem, custoPorPagante, equilibrio, temDados, converter };
+  return { pm, moeda, valorBase, meta, participantes, pagantes, nPart, nManual, valorDe, receitaParticipantes, extras, arrecadado, gasto, gastoPago, semCambio: [...semCambio], porCategoria, resultado, margem, custoPorPagante, equilibrio, temDados, converter };
 }
 
 function Chip({ children, color = "#566175", bg = "#EEF1F5" }) {
@@ -298,7 +306,7 @@ function SaldoFinal({ c }) {
 function MissaoResumo({ p, c, abrir }) {
   const status = STATUS_PROJETO[p.status] || STATUS_PROJETO.ideia;
   const meta = c.meta;
-  const progresso = meta ? Math.min(100, Math.round((c.pagantes.length / meta) * 100)) : null;
+  const progresso = meta ? Math.min(100, Math.round((c.nPart / meta) * 100)) : null;
   return (
     <div style={{ ...card, overflow: "hidden" }} className="ccib-fade-in">
       <div style={{ height: 4, background: status.color }} />
@@ -313,7 +321,7 @@ function MissaoResumo({ p, c, abrir }) {
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(118px, 1fr))", gap: 8, marginTop: 12 }}>
             {[
-              ["Participantes", `${c.pagantes.length}${meta ? ` de ${meta}` : ""}`],
+              ["Participantes", `${c.nPart}${meta ? ` de ${meta}` : ""}`],
               ["Custo individual", dinheiro(c.custoPorPagante, c.moeda)],
               ["Arrecadado", dinheiro(c.arrecadado, c.moeda)],
               ["Passagens", dinheiro(c.porCategoria["Passagens"] || 0, c.moeda)],
@@ -378,6 +386,17 @@ function MissaoDetalhe({ p, patch, voltar, abrirFicha }) {
     patch({ receitasExtras: [...extras, { id: novoId("r"), descricao, valor: novaReceita.valor }] });
     setNovaReceita({ descricao: "", valor: "" });
   };
+  const [tiposModelo, setTiposModelo] = useState(["Passagens", "Diárias", "Hospedagem", "Alimentação", "Transporte local"]);
+  const [mostrarModelo, setMostrarModelo] = useState(false);
+  const categoriasUsadas = new Set(custos.map((x) => x.categoria));
+  const preencherModelo = () => {
+    const novos = CATEGORIAS_CUSTO.filter((cat) => tiposModelo.includes(cat) && !categoriasUsadas.has(cat)).map((cat) => ({
+      id: novoId("c"), categoria: cat, descricao: DESCRICAO_PADRAO[cat] || cat, quantidade: "", valorUnitario: "", valor: "", moeda, situacao: "previsto",
+    }));
+    if (novos.length) patch({ custos: [...custos, ...novos] });
+    setMostrarModelo(false);
+  };
+
   const addCusto = () => {
     const q = num(novoCusto.quantidade);
     const u = num(novoCusto.valorUnitario);
@@ -433,7 +452,7 @@ function MissaoDetalhe({ p, patch, voltar, abrirFicha }) {
           </div>
 
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 18 }}>
-            <Kpi icon={Wallet} label="Valor arrecadado" valor={dinheiro(c.arrecadado, moeda)} cor={COR_RECEITA} sub={`${c.pagantes.length} pagante${c.pagantes.length === 1 ? "" : "s"}${c.extras ? " + outras receitas" : ""}`} />
+            <Kpi icon={Wallet} label="Valor arrecadado" valor={dinheiro(c.arrecadado, moeda)} cor={COR_RECEITA} sub={`${c.nPart} participante${c.nPart === 1 ? "" : "s"}${c.extras ? " + outras receitas" : ""}`} />
             <Kpi icon={Receipt} label="Valor gasto" valor={dinheiro(c.gasto, moeda)} cor={COR_CUSTO} sub={`${dinheiro(c.gastoPago, moeda)} pago · ${dinheiro(c.gasto - c.gastoPago, moeda)} previsto`} />
             <Kpi icon={Scale} label="Saldo final" valor={c.temDados ? <Resultado valor={c.resultado} moeda={moeda} grande /> : "—"} cor={c.resultado >= 0 ? "#0E7C3A" : "#C1502E"} sub={c.margem != null ? `Margem de ${Math.round(c.margem)}% sobre o arrecadado` : "Sem receita lançada"} />
           </div>
@@ -462,10 +481,10 @@ function MissaoDetalhe({ p, patch, voltar, abrirFicha }) {
                 </span>
               </label>
               <span style={{ fontSize: 18, color: "#8992A6", paddingBottom: 6 }}>×</span>
-              <div style={{ paddingBottom: 4 }}>
-                <div style={{ ...labelStyle, marginBottom: 2 }}>Pagantes</div>
-                <div style={{ fontFamily: mono, fontSize: 18, fontWeight: 600 }}>{c.pagantes.length}</div>
-              </div>
+              <label style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                <span style={{ ...labelStyle, marginBottom: 0 }}>Participantes</span>
+                <input value={p.numParticipantes ?? ""} inputMode="numeric" placeholder={String(c.pagantes.length)} title="Número de participantes pagantes" onChange={(e) => patch({ numParticipantes: e.target.value.replace(/[^\d]/g, "") })} style={{ ...inputNovo, width: 70, fontFamily: mono, fontSize: 15, fontWeight: 600, textAlign: "center" }} />
+              </label>
               {c.extras > 0 && (
                 <>
                   <span style={{ fontSize: 18, color: "#8992A6", paddingBottom: 6 }}>+</span>
@@ -485,7 +504,7 @@ function MissaoDetalhe({ p, patch, voltar, abrirFicha }) {
                 <input value={pm.metaContratacoes || ""} inputMode="numeric" placeholder="—" onChange={(e) => setPainel({ metaContratacoes: e.target.value })} style={{ ...inputNovo, width: 80, fontFamily: mono, fontSize: 13.5 }} />
               </label>
             </div>
-            <div style={{ fontSize: 11.5, color: "#566175", marginTop: 8 }}>Cada empresa com status "Confirmada (pagante)" entra pelo valor base. Se uma empresa negociou outro valor, preencha a coluna "Valor negociado" dela.</div>
+            <div style={{ fontSize: 11.5, color: "#566175", marginTop: 8 }}>Digite o número de participantes. Se deixar em branco, vale o número de empresas "Confirmada (pagante)" da lista abaixo ({c.pagantes.length} hoje). Empresas da lista com "Valor negociado" entram pelo valor delas; os demais participantes, pelo valor base.</div>
           </div>
 
           <div style={labelStyle}>Empresas participantes</div>
@@ -536,8 +555,39 @@ function MissaoDetalhe({ p, patch, voltar, abrirFicha }) {
         <div style={secao}>
           <TituloSecao icon={Receipt} extra={<span style={{ fontFamily: mono, fontSize: 12, fontWeight: 600, color: "#0B2545" }}>{dinheiro(c.gasto, moeda)}</span>}>Valor gasto</TituloSecao>
           <div style={{ fontSize: 11.5, color: "#566175", marginBottom: 10 }}>Cada custo é quantidade × valor unitário (ex.: 4 passagens × R$ 6.500, ou 8 diárias × R$ 350). Marque como "Pago" quando o pagamento sair.</div>
+          <div style={{ marginBottom: 12 }}>
+            {!mostrarModelo ? (
+              <button onClick={() => setMostrarModelo(true)} className="ccib-btn" style={{ ...btnLinha, borderStyle: "dashed" }}><Plus size={14} /> Preencher com tipos de gasto</button>
+            ) : (
+              <div style={{ background: "#FBF7F1", border: "1px solid #F0E2CF", borderRadius: 10, padding: "12px 14px" }}>
+                <div style={{ ...labelStyle, color: "#B8752E" }}>Selecione os tipos de gasto desta missão</div>
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>
+                  {CATEGORIAS_CUSTO.filter((cat) => cat !== "Outros").map((cat) => {
+                    const ja = categoriasUsadas.has(cat);
+                    const marcado = ja || tiposModelo.includes(cat);
+                    return (
+                      <button
+                        key={cat}
+                        disabled={ja}
+                        title={ja ? "Já existe uma linha desse tipo" : ""}
+                        onClick={() => setTiposModelo((t) => (t.includes(cat) ? t.filter((x) => x !== cat) : [...t, cat]))}
+                        style={{ display: "inline-flex", alignItems: "center", gap: 6, border: `1px solid ${marcado ? "#0B2545" : "#D6DAE2"}`, background: marcado ? "#0B2545" : "#FFFFFF", color: marcado ? "#FFFFFF" : "#566175", opacity: ja ? 0.5 : 1, borderRadius: 999, padding: "5px 12px", fontSize: 12.5, cursor: ja ? "default" : "pointer" }}
+                      >
+                        {marcado ? "✓" : "+"} {cat === "Hospedagem" ? "Hospedagem (hotel)" : cat}
+                      </button>
+                    );
+                  })}
+                </div>
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  <button onClick={preencherModelo} className="ccib-btn ccib-btn-solid" style={{ ...btnLinha, background: "#0B2545", color: "#FFFFFF" }}>Criar linhas selecionadas</button>
+                  <button onClick={() => setMostrarModelo(false)} className="ccib-btn" style={{ ...btnLinha, border: "none", color: "#566175" }}>Cancelar</button>
+                </div>
+                <div style={{ fontSize: 11.5, color: "#8992A6", marginTop: 8 }}>Cada tipo vira uma linha pronta; depois é só preencher quantidade e valor unitário.</div>
+              </div>
+            )}
+          </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 10 }}>
-            {custos.length === 0 && <div style={{ fontSize: 12.5, color: "#8992A6" }}>Nenhum custo lançado.</div>}
+            {custos.length === 0 && !mostrarModelo && <div style={{ fontSize: 12.5, color: "#8992A6" }}>Nenhum custo lançado. Use "Preencher com tipos de gasto" para criar as linhas de uma vez.</div>}
             {custos.map((cst) => {
               const t = totalCusto(cst);
               const sit = SITUACAO_CUSTO[cst.situacao] || SITUACAO_CUSTO.previsto;
@@ -610,12 +660,12 @@ function MissaoDetalhe({ p, patch, voltar, abrirFicha }) {
           <TituloSecao icon={Calculator}>Indicadores e simulação</TituloSecao>
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 16 }}>
             <Kpi icon={Scale} label="Ponto de equilíbrio" valor={c.equilibrio != null ? `${c.equilibrio} pagante${c.equilibrio === 1 ? "" : "s"}` : "—"} sub={c.equilibrio != null ? "Mínimo para cobrir o gasto atual" : "Preencha o valor base"} />
-            <Kpi icon={Users} label="Custo individual" valor={dinheiro(c.custoPorPagante, moeda)} sub={c.pagantes.length ? `Gasto ÷ ${c.pagantes.length} pagante${c.pagantes.length === 1 ? "" : "s"}` : "Sem pagantes ainda"} />
+            <Kpi icon={Users} label="Custo individual" valor={dinheiro(c.custoPorPagante, moeda)} sub={c.nPart ? `Gasto ÷ ${c.nPart} participante${c.nPart === 1 ? "" : "s"}` : "Sem participantes ainda"} />
             <Kpi icon={TrendingUp} label="Se bater a meta" valor={c.meta && c.valorBase != null ? dinheiro(c.meta * c.valorBase + c.extras - c.gasto, moeda) : "—"} sub={c.meta ? `Resultado com ${c.meta} pagantes e o gasto atual` : "Preencha a meta de participantes"} />
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", background: "#F7F8FA", borderRadius: 10, padding: "12px 16px", fontSize: 13, color: "#566175" }}>
             <span>E se a missão tiver</span>
-            <input value={simulados} inputMode="numeric" placeholder={String(c.meta || c.pagantes.length || 0)} onChange={(e) => setSimulados(e.target.value)} style={{ ...inputNovo, width: 64, fontFamily: mono, textAlign: "center" }} />
+            <input value={simulados} inputMode="numeric" placeholder={String(c.meta || c.nPart || 0)} onChange={(e) => setSimulados(e.target.value)} style={{ ...inputNovo, width: 64, fontFamily: mono, textAlign: "center" }} />
             <span>pagantes?</span>
             {simArrecadado != null ? (
               <span>Arrecadado <b style={{ color: "#0B2545" }}>{dinheiro(simArrecadado, moeda)}</b>, resultado <Resultado valor={simResultado} moeda={moeda} /></span>
