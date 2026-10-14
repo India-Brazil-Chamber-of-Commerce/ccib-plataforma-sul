@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Plus, X, ArrowLeft, ChevronRight, CalendarCheck, Wallet, Receipt, Scale, Users, Handshake, ListChecks, Calculator, CheckSquare, Square, Trash2, Ticket, NotebookPen } from "lucide-react";
+import { Plus, X, ArrowLeft, ChevronRight, CalendarCheck, Wallet, Receipt, Scale, Users, Handshake, ListChecks, Calculator, CheckSquare, Square, Trash2, Ticket, NotebookPen, Landmark } from "lucide-react";
 import { ESTADOS, RESPONSAVEIS, STATUS_PROJETO } from "../constants";
 import { inputStyle, labelStyle, filterInputStyle } from "../styles";
 import { Field } from "../components/ui";
@@ -50,6 +50,12 @@ const STATUS_PATROCINIO = {
   negociacao: { label: "Em negociação", color: "#B8752E" },
   confirmado: { label: "Confirmado", color: "#2F6FB0" },
   pago: { label: "Pago", color: "#0E7C3A" },
+};
+const PAPEIS_INSTITUICAO = ["Correalizadora", "Apoio institucional", "Anfitriã / cede o espaço", "Divulgação", "Conteúdo / palestrantes", "Outro"];
+const STATUS_INSTITUICAO = {
+  a_confirmar: { label: "A confirmar", color: "#B8752E" },
+  confirmada: { label: "Confirmada", color: "#0E7C3A" },
+  nao_participa: { label: "Não participa", color: "#8992A6" },
 };
 const STATUS_PARTICIPANTE = {
   confirmada: { label: "Confirmada", color: "#0E7C3A" },
@@ -106,12 +112,14 @@ export function calcularEvento(p) {
   const faltaCaptar = Math.max(0, gasto - arrecadado);
   const custoPorParticipante = inscritos ? gasto / inscritos : null;
   const participantes = p.participantes || [];
+  const instituicoes = p.instituicoes || [];
   const etapas = p.etapas || [];
   const temDados = arrecadado > 0 || gasto > 0;
   return {
     moeda: MOEDA, valorIngresso, inscritos, metaPublico, metaPatrocinio, receitaIngressos, patrocinios, receitaPatrocinio, potencialPatrocinio,
     arrecadado, gasto, gastoPago, outrasMoedas: [...outrasMoedas], porCategoria, resultado, margem, faltaCaptar, custoPorParticipante,
     participantes, confirmadas: participantes.filter((x) => x.status === "confirmada").length,
+    instituicoes, instituicoesConfirmadas: instituicoes.filter((x) => x.status === "confirmada").length,
     etapasFeitas: etapas.filter((e) => e.feito).length, etapasTotal: etapas.length || CHECKLIST_PADRAO.length, temDados,
   };
 }
@@ -158,6 +166,7 @@ function EventoResumo({ p, c, abrir }) {
               ["Inscrições", dinheiro(c.receitaIngressos, c.moeda)],
               ["Custos", dinheiro(c.gasto, c.moeda)],
               ["Empresas", `${c.confirmadas} confirmada${c.confirmadas === 1 ? "" : "s"}`],
+              ["Instituições parceiras", `${c.instituicoes.length}${c.instituicoes.length ? ` (${c.instituicoesConfirmadas} confirmada${c.instituicoesConfirmadas === 1 ? "" : "s"})` : ""}`],
               ["Checklist", `${c.etapasFeitas}/${c.etapasTotal}`],
             ].map(([rotulo, valor]) => (
               <div key={rotulo} style={{ background: "#FAFBFC", border: "1px solid #EEF1F5", borderRadius: 8, padding: "7px 10px" }}>
@@ -185,6 +194,14 @@ function EventoDetalhe({ p, patch, voltar, remover }) {
 
   const [novoPat, setNovoPat] = useState({ empresa: "", cota: "Patrocínio", valor: "" });
   const [novoPart, setNovoPart] = useState({ empresa: "", representante: "" });
+  const instituicoes = c.instituicoes;
+  const [novaInst, setNovaInst] = useState({ nome: "", papel: "Apoio institucional", responsabilidades: "" });
+  const addInst = () => {
+    const nome = novaInst.nome.trim();
+    if (!nome) return;
+    patch({ instituicoes: [...instituicoes, { id: novoId("inst"), nome, papel: novaInst.papel, contato: "", responsabilidades: novaInst.responsabilidades.trim(), status: "a_confirmar" }] });
+    setNovaInst({ nome: "", papel: novaInst.papel, responsabilidades: "" });
+  };
   const [novoCusto, setNovoCusto] = useState({ categoria: "Local / espaço", descricao: "", quantidade: "", valorUnitario: "" });
   const [novaEtapa, setNovaEtapa] = useState("");
 
@@ -379,8 +396,49 @@ function EventoDetalhe({ p, patch, voltar, remover }) {
             <input value={novoPat.valor} placeholder="Valor (R$)" inputMode="decimal" onChange={(e) => setNovoPat((s) => ({ ...s, valor: e.target.value }))} onKeyDown={(e) => { if (e.key === "Enter") addPat(); }} style={{ ...inputNovo, flex: "0 1 120px" }} />
             <button onClick={addPat} className="ccib-btn" style={btnLinha}><Plus size={14} /> Patrocinador</button>
           </div>
-          <Field label="Parceiros e apoio institucional (observações)">
-            <input className="ccib-input" style={inputStyle} value={p.parceiros || ""} placeholder="Ex: FIERGS, SEBRAE, associações setoriais..." onChange={(e) => patch({ parceiros: e.target.value })} />
+        </div>
+
+        {/* Instituições parceiras */}
+        <div style={secao}>
+          <TituloSecao icon={Landmark} extra={instituicoes.length > 0 && <span style={{ fontFamily: mono, fontSize: 11, color: "#566175" }}>{c.instituicoesConfirmadas}/{instituicoes.length} confirmadas</span>}>Instituições parceiras</TituloSecao>
+          <div style={{ fontSize: 11.5, color: "#566175", marginBottom: 10 }}>Federações, associações, governos e outras entidades que apoiam o evento. Em "Responsável por", registre o que cada uma assumiu (ex.: ceder o auditório, divulgar à base de associados, indicar palestrante, coffee break).</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 10 }}>
+            {instituicoes.length === 0 && <div style={{ fontSize: 12.5, color: "#8992A6" }}>Nenhuma instituição parceira cadastrada.</div>}
+            {instituicoes.map((x) => {
+              const st = STATUS_INSTITUICAO[x.status] || STATUS_INSTITUICAO.a_confirmar;
+              return (
+                <div key={x.id} style={{ ...linhaItem, flexDirection: "column", alignItems: "stretch", gap: 6, padding: "8px 12px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                    <Landmark size={14} style={{ color: "#8992A6", flexShrink: 0 }} />
+                    <input className="ccib-input" value={x.nome} placeholder="Instituição" onChange={(e) => patchItem("instituicoes", instituicoes, x.id, { nome: e.target.value })} style={{ ...inputLinha, flex: "2 1 160px", fontWeight: 600, color: "#0B2545" }} />
+                    <select value={x.papel || ""} onChange={(e) => patchItem("instituicoes", instituicoes, x.id, { papel: e.target.value })} style={{ ...inputLinha, flex: "0 1 190px", fontSize: 12, color: "#566175" }}>
+                      <option value="">Papel…</option>
+                      {[...new Set([...PAPEIS_INSTITUICAO, x.papel].filter(Boolean))].map((k) => <option key={k} value={k}>{k}</option>)}
+                    </select>
+                    <input className="ccib-input" value={x.contato || ""} placeholder="Contato (nome, e-mail)" onChange={(e) => patchItem("instituicoes", instituicoes, x.id, { contato: e.target.value })} style={{ ...inputLinha, flex: "2 1 160px", fontSize: 12.5 }} />
+                    <select value={x.status || "a_confirmar"} onChange={(e) => patchItem("instituicoes", instituicoes, x.id, { status: e.target.value })} style={{ ...inputLinha, flex: "0 1 120px", fontSize: 12, fontWeight: 600, color: st.color }}>
+                      {Object.entries(STATUS_INSTITUICAO).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
+                    </select>
+                    <button onClick={() => { if (window.confirm(`Remover a instituição "${x.nome || "sem nome"}"?`)) patch({ instituicoes: instituicoes.filter((y) => y.id !== x.id) }); }} title="Remover instituição" style={btnRemover}><X size={14} /></button>
+                  </div>
+                  <label style={{ display: "flex", flexDirection: "column", gap: 3, paddingLeft: 22 }}>
+                    <span style={{ ...labelStyle, marginBottom: 0 }}>Responsável por</span>
+                    <textarea value={x.responsabilidades || ""} rows={2} placeholder="Ex: ceder o auditório; divulgar aos associados; coffee break; indicar palestrante" onChange={(e) => patchItem("instituicoes", instituicoes, x.id, { responsabilidades: e.target.value })} style={{ ...filterInputStyle, width: "100%", boxSizing: "border-box", resize: "vertical", fontSize: 12.5, lineHeight: 1.45, padding: "6px 10px" }} />
+                  </label>
+                </div>
+              );
+            })}
+          </div>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>
+            <input value={novaInst.nome} placeholder="Instituição (ex: FIERGS, SEBRAE)" onChange={(e) => setNovaInst((s) => ({ ...s, nome: e.target.value }))} onKeyDown={(e) => { if (e.key === "Enter") addInst(); }} style={{ ...inputNovo, flex: "2 1 180px" }} />
+            <select value={novaInst.papel} onChange={(e) => setNovaInst((s) => ({ ...s, papel: e.target.value }))} style={{ ...inputNovo, flex: "0 1 190px" }}>
+              {PAPEIS_INSTITUICAO.map((k) => <option key={k} value={k}>{k}</option>)}
+            </select>
+            <input value={novaInst.responsabilidades} placeholder="Responsável por..." onChange={(e) => setNovaInst((s) => ({ ...s, responsabilidades: e.target.value }))} onKeyDown={(e) => { if (e.key === "Enter") addInst(); }} style={{ ...inputNovo, flex: "3 1 200px" }} />
+            <button onClick={addInst} className="ccib-btn" style={btnLinha}><Plus size={14} /> Instituição</button>
+          </div>
+          <Field label="Observações gerais sobre parceiros">
+            <input className="ccib-input" style={inputStyle} value={p.parceiros || ""} placeholder="Anotações gerais..." onChange={(e) => patch({ parceiros: e.target.value })} />
           </Field>
         </div>
 
@@ -537,6 +595,7 @@ function novoEvento() {
     etapas: [],
     participantes: [],
     patrocinios: [],
+    instituicoes: [],
     custos: [],
     resultados: "",
     notas: "",
