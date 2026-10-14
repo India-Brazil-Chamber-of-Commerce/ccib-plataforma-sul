@@ -4,7 +4,7 @@ import { storage, EVENTO_ATUALIZADO } from "./storage";
 import { SEED_PROJECTS } from "../data/seeds";
 
 // Listas do projeto que recebem itens novos da semente (por id do item)
-const LISTAS_SEMENTE = ["participantes", "empresasVisitadas", "etapas", "custos"];
+const LISTAS_SEMENTE = ["participantes", "empresasVisitadas", "etapas", "custos", "patrocinios"];
 
 // Preenche os campos que ainda não existem no projeto salvo e acrescenta às listas os itens-semente
 // novos. Os ids já aplicados ficam em _seedItens, para que um item removido na plataforma não volte.

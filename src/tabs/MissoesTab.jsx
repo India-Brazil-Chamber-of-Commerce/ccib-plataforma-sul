@@ -20,8 +20,8 @@ const card = {
 const secao = { ...card, padding: "18px 22px" };
 
 // Cores das duas séries (validadas para daltonismo); os valores aparecem sempre escritos ao lado
-const COR_RECEITA = "#2F6FB0";
-const COR_CUSTO = "#E8742B";
+export const COR_RECEITA = "#2F6FB0";
+export const COR_CUSTO = "#E8742B";
 
 const MOEDAS = ["BRL", "USD", "INR"];
 const CATEGORIAS_CUSTO = ["Passagens", "Diárias", "Hospedagem", "Alimentação", "Transporte local", "Intérprete / tradução", "Inscrições / taxas", "Materiais", "Outros"];
@@ -41,7 +41,7 @@ const btnRemover = { background: "transparent", border: "none", cursor: "pointer
 const linhaItem = { display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", background: "#FFFFFF", border: "1px solid #E6E9EF", borderRadius: 8, padding: "6px 10px" };
 const inputLinha = { ...inputStyle, borderBottom: "none", padding: "2px" };
 const inputNovo = { ...filterInputStyle, padding: "6px 10px", fontSize: 12.5 };
-const novoId = (prefixo) => `${prefixo}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+export const novoId = (prefixo) => `${prefixo}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
 
 // Aceita "1.234,56", "1234,56" e "1234.56"
 export function num(v) {
@@ -53,9 +53,9 @@ export function num(v) {
   const n = parseFloat(s);
   return Number.isFinite(n) ? n : null;
 }
-const paraTexto = (n) => (n == null ? "" : String(Math.round(n * 100) / 100).replace(".", ","));
+export const paraTexto = (n) => (n == null ? "" : String(Math.round(n * 100) / 100).replace(".", ","));
 
-function dinheiro(n, moeda) {
+export function dinheiro(n, moeda) {
   if (n == null) return "—";
   try {
     return new Intl.NumberFormat("pt-BR", { style: "currency", currency: moeda || "BRL", maximumFractionDigits: Math.abs(n) >= 1000 ? 0 : 2 }).format(n);
@@ -64,13 +64,13 @@ function dinheiro(n, moeda) {
   }
 }
 
-function periodo(p) {
+export function periodo(p) {
   if (p.dataPrevista && p.dataFim && p.dataFim !== p.dataPrevista) return `${formatDate(p.dataPrevista)} a ${formatDate(p.dataFim)}`;
   if (p.dataPrevista) return formatDate(p.dataPrevista);
   return "Data a definir";
 }
 
-const totalCusto = (c) => {
+export const totalCusto = (c) => {
   const q = num(c.quantidade);
   const u = num(c.valorUnitario);
   if (u != null) return (q != null ? q : 1) * u;
@@ -133,11 +133,11 @@ export function calcularMissao(p) {
   return { pm, moeda, valorBase, meta, participantes, pagantes, nPart, nManual, valorDe, receitaParticipantes, extras, arrecadado, gasto, gastoPago, semCambio: [...semCambio], porCategoria, resultado, margem, custoPorPagante, equilibrio, temDados, converter };
 }
 
-function Chip({ children, color = "#566175", bg = "#EEF1F5" }) {
+export function Chip({ children, color = "#566175", bg = "#EEF1F5" }) {
   return <span style={{ fontFamily: mono, fontSize: 10.5, fontWeight: 600, color, background: bg, borderRadius: 999, padding: "3px 10px" }}>{children}</span>;
 }
 
-function TituloSecao({ icon: Icon, children, extra }) {
+export function TituloSecao({ icon: Icon, children, extra }) {
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14, flexWrap: "wrap" }}>
       {Icon && <Icon size={16} style={{ color: "#B8752E" }} />}
@@ -147,7 +147,7 @@ function TituloSecao({ icon: Icon, children, extra }) {
   );
 }
 
-function Kpi({ label, valor, sub, cor = "#0B2545", icon: Icon }) {
+export function Kpi({ label, valor, sub, cor = "#0B2545", icon: Icon }) {
   return (
     <div style={{ flex: "1 1 160px", background: "#FAFBFC", border: "1px solid #EEF1F5", borderTop: `3px solid ${cor}`, borderRadius: 12, padding: "12px 14px" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 6, ...labelStyle, marginBottom: 6 }}>{Icon && <Icon size={12} style={{ color: cor }} />} {label}</div>
@@ -157,7 +157,7 @@ function Kpi({ label, valor, sub, cor = "#0B2545", icon: Icon }) {
   );
 }
 
-function Resultado({ valor, moeda, grande }) {
+export function Resultado({ valor, moeda, grande }) {
   if (valor == null) return <span>—</span>;
   const positivo = valor >= 0;
   const Icone = positivo ? TrendingUp : TrendingDown;
@@ -168,7 +168,7 @@ function Resultado({ valor, moeda, grande }) {
   );
 }
 
-function Barra({ valor, max, cor, rotulo, titulo }) {
+export function Barra({ valor, max, cor, rotulo, titulo }) {
   const pct = max > 0 ? Math.max(valor > 0 ? 1.5 : 0, (valor / max) * 100) : 0;
   return (
     <div title={titulo} style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -190,16 +190,16 @@ function Legenda() {
 }
 
 // Comparativo entre missões, em ordem de data: mostra a evolução de uma missão para a outra
-function EvolucaoMissoes({ missoes, abrir }) {
+export function EvolucaoMissoes({ missoes, abrir, titulo = "Evolução das missões", vazio, semNome = "(missão sem nome)" }) {
   const comDados = missoes.filter((m) => m.c.temDados);
   const porMoeda = {};
   comDados.forEach((m) => { (porMoeda[m.c.moeda] = porMoeda[m.c.moeda] || []).push(m); });
   return (
     <div style={{ ...secao, marginBottom: 22 }}>
-      <TituloSecao icon={TrendingUp} extra={<Legenda />}>Evolução das missões</TituloSecao>
+      <TituloSecao icon={TrendingUp} extra={<Legenda />}>{titulo}</TituloSecao>
       {comDados.length === 0 && (
         <div style={{ fontSize: 13, color: "#8992A6", lineHeight: 1.5 }}>
-          Assim que houver valor por participante, empresas pagantes ou custos lançados, cada missão aparece aqui com o arrecadado, o gasto e o resultado, em ordem de data.
+          {vazio || "Assim que houver valor por participante, empresas pagantes ou custos lançados, cada missão aparece aqui com o arrecadado, o gasto e o resultado, em ordem de data."}
         </div>
       )}
       {Object.entries(porMoeda).map(([moeda, lista]) => {
@@ -210,7 +210,7 @@ function EvolucaoMissoes({ missoes, abrir }) {
             {lista.map((m) => (
               <div key={m.p.id} onClick={() => abrir(m.p.id)} className="ccib-row" style={{ cursor: "pointer", borderRadius: 8, padding: "4px 6px" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap", marginBottom: 6 }}>
-                  <span style={{ fontSize: 13.5, fontWeight: 600, color: "#0B2545" }}>{m.p.nome || "(missão sem nome)"} <span style={{ fontFamily: mono, fontSize: 11, color: "#8992A6", fontWeight: 400 }}>{periodo(m.p)}</span></span>
+                  <span style={{ fontSize: 13.5, fontWeight: 600, color: "#0B2545" }}>{m.p.nome || semNome} <span style={{ fontFamily: mono, fontSize: 11, color: "#8992A6", fontWeight: 400 }}>{periodo(m.p)}</span></span>
                   <span style={{ fontSize: 12.5 }}><Resultado valor={m.c.resultado} moeda={moeda} /></span>
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
@@ -251,7 +251,7 @@ function lerLogo(arquivo) {
   });
 }
 
-function LogoMissao({ logo, tamanho = 42, onChange }) {
+export function LogoMissao({ logo, tamanho = 42, onChange, alt = "Logo da missão", icone: Icone = Plane, textoRemover = "Remover a logo desta missão?" }) {
   const ref = useRef(null);
   const [erro, setErro] = useState("");
   const escolher = async (e) => {
@@ -266,8 +266,8 @@ function LogoMissao({ logo, tamanho = 42, onChange }) {
     }
   };
   const caixa = { width: logo ? "auto" : tamanho, minWidth: tamanho, maxWidth: tamanho * 2.2, padding: logo ? "0 6px" : 0, height: tamanho, borderRadius: tamanho > 60 ? 14 : 12, background: logo ? "#FFFFFF" : "#EAF1FA", border: logo ? "1px solid #E6E9EF" : "none", color: COR_RECEITA, display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0, overflow: "hidden" };
-  const imagem = logo ? <img src={logo} alt="Logo da missão" style={{ height: "86%", width: "auto", maxWidth: tamanho * 2.2 - 12, objectFit: "contain" }} /> : null;
-  if (!onChange) return <span style={caixa}>{imagem || <Plane size={Math.round(tamanho * 0.48)} />}</span>;
+  const imagem = logo ? <img src={logo} alt={alt} style={{ height: "86%", width: "auto", maxWidth: tamanho * 2.2 - 12, objectFit: "contain" }} /> : null;
+  if (!onChange) return <span style={caixa}>{imagem || <Icone size={Math.round(tamanho * 0.48)} />}</span>;
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, flexShrink: 0 }}>
       <button onClick={() => ref.current && ref.current.click()} title={logo ? "Trocar logo" : "Adicionar logo"} style={{ ...caixa, cursor: "pointer", border: logo ? caixa.border : "1.5px dashed #9DB6D6", flexDirection: "column", gap: 4 }}>
@@ -277,7 +277,7 @@ function LogoMissao({ logo, tamanho = 42, onChange }) {
       {logo && (
         <div style={{ display: "flex", gap: 10, fontSize: 11 }}>
           <button onClick={() => ref.current && ref.current.click()} style={{ background: "none", border: "none", padding: 0, color: "#2F6FB0", cursor: "pointer", fontSize: 11 }}>Trocar</button>
-          <button onClick={() => { if (window.confirm("Remover a logo desta missão?")) onChange(null); }} style={{ background: "none", border: "none", padding: 0, color: "#B5533C", cursor: "pointer", fontSize: 11 }}>Remover</button>
+          <button onClick={() => { if (window.confirm(textoRemover)) onChange(null); }} style={{ background: "none", border: "none", padding: 0, color: "#B5533C", cursor: "pointer", fontSize: 11 }}>Remover</button>
         </div>
       )}
       {erro && <div style={{ fontSize: 11, color: "#B5533C", maxWidth: tamanho + 40, textAlign: "center" }}>{erro}</div>}
@@ -286,7 +286,7 @@ function LogoMissao({ logo, tamanho = 42, onChange }) {
 }
 
 // Saldo final em verde (lucro) ou vermelho (prejuízo), sempre com ícone e texto
-function SaldoFinal({ c }) {
+export function SaldoFinal({ c }) {
   if (!c.temDados) {
     return <div style={{ marginTop: 10, fontSize: 12.5, color: "#8992A6", background: "#F7F8FA", borderRadius: 8, padding: "9px 12px" }}>Saldo final: sem valores lançados ainda</div>;
   }

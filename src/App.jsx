@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
-import { Loader2, Building2, CalendarDays, LayoutGrid, Users, Contact, FolderKanban, TrendingUp, Plane } from "lucide-react";
+import { Loader2, Building2, CalendarDays, LayoutGrid, Users, Contact, TrendingUp, Plane, CalendarCheck } from "lucide-react";
 import { STORAGE_MEMBERS, STORAGE_EVENTS, STORAGE_MEETINGS, STORAGE_PARTNERS, STORAGE_CONTACTS, STORAGE_PROJECTS, ESTADOS, STATUS_MEMBER } from "./constants";
 import { SEED_CONTACTS, SEED_EVENTS, REMOVED_EVENTS, FORCE_EVENT_UPDATES, FORCE_MEMBER_UPDATES, APPEND_MEMBER_NOTES, MERGE_MEMBERS, NEGOCIOS_HUBSPOT, SEED_MEMBERS, ENSURE_MEMBERS } from "./data/seeds";
 import { SEED_MEETINGS, REMOVED_MEETINGS } from "./data/seedMeetings";
@@ -8,7 +8,7 @@ import { useGoogleFonts } from "./lib/useGoogleFonts";
 import LOGO_URL from "./assets/logo-ccib.png";
 import { storage, EVENTO_ATUALIZADO } from "./lib/storage";
 import { callMcpForJson, MCP_HUBSPOT, MCP_MICROSOFT_365 } from "./lib/claude";
-import ProjetosTab from "./tabs/ProjetosTab";
+import EventosRegionalTab from "./tabs/EventosRegionalTab";
 import MissoesTab from "./tabs/MissoesTab";
 import VisaoGeralTab from "./tabs/VisaoGeralTab";
 import EmpresasTab from "./tabs/EmpresasTab";
@@ -643,7 +643,7 @@ export default function App() {
     { id: "contatos", label: "Contatos", icon: Contact },
     { id: "reunioes", label: "Reuniões", icon: Users },
     { id: "eventos", label: "Eventos", icon: CalendarDays },
-    { id: "projetos", label: "Projetos", icon: FolderKanban },
+    { id: "projetos", label: "Eventos Regional Sul", icon: CalendarCheck },
     { id: "missoes", label: "Missões", icon: Plane },
   ];
 
@@ -758,7 +758,7 @@ export default function App() {
           <PipelineTab members={members} patchMember={patchMember} addPipelineItem={addPipelineItem} abrirEmpresa={abrirEmpresa} />
         )}
 
-        {tab === "projetos" && <ProjetosTab abrirMissao={(id) => { setMissaoAberta(id); setTab("missoes"); window.scrollTo({ top: 0 }); }} />}
+        {tab === "projetos" && <EventosRegionalTab />}
 
         {tab === "missoes" && <MissoesTab key={missaoAberta || "lista"} abertaInicial={missaoAberta} limparAbertaInicial={() => setMissaoAberta(null)} />}
 
