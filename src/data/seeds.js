@@ -218,6 +218,7 @@ export const NOMES_HUBSPOT_PROSPECCAO = [
   "Erva Mate Paraná",
   "Universidade Positivo",
   "iCities",
+  "Neoking Foods",
 ];
 
 export const ESTADOS_CONHECIDOS = {
@@ -248,6 +249,7 @@ export const ESTADOS_CONHECIDOS = {
   "Taurus": "RS",
   "TCS": "PR",
   "WEG": "SC",
+  "Neoking Foods": "RS",
 };
 
 export const FORCE_MEMBER_UPDATES = {
@@ -446,6 +448,7 @@ export const NEGOCIOS_HUBSPOT = [
   { empresa: "Cotton Baby", situacao: "perdido", etapa: "Negócio perdido", valor: "", data: "2025-06-17" },
   { empresa: "iCities", situacao: "negociacao", etapa: "Proposta Enviada / Em negociação", valor: "US$ 2.100", data: "2026-10-31" },
   { empresa: "United Carbon Solutions", situacao: "negociacao", etapa: "Proposta Enviada / Em negociação", valor: "US$ 2.100", data: "2026-10-31" },
+  { empresa: "Neoking Foods", situacao: "negociacao", etapa: "Proposta Enviada / Em negociação", valor: "US$ 2.100", data: "2026-11-13" },
 ];
 
 // Projetos da Regional Sul. Entram uma vez (por id) e depois podem ser editados livremente na aba Projetos.
