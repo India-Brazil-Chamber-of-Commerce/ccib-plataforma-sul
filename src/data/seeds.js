@@ -2,6 +2,7 @@ import imgWebinarMarthaBeckerCriseNaoTemHora from "../assets/eventos/webinar-mar
 import imgExpoIndustria2026 from "../assets/eventos/expo-industria-2026.jpg";
 import imgFniSc from "../assets/eventos/fni-sc.jpg";
 import logoIndiaHealth from "../assets/missoes/india-health.webp";
+import logoWebinarMarthaBecker from "../assets/eventos-regional/webinar-martha-becker.webp";
 import imgHappyHourIrip from "../assets/eventos/happy-hour-irip.jpg";
 import imgSaoJoseDasNacoes from "../assets/eventos/sao-jose-das-nacoes.webp";
 import imgCafeDasNacoes from "../assets/eventos/cafe-das-nacoes.jpg";
@@ -496,6 +497,30 @@ export const SEED_PROJECTS = [
     custos: [],
     resultados: "",
     notas: "",
+    createdAt: Date.now(),
+  },
+  {
+    // Evento do programa de Compliance (registrado também na Plataforma de Compliance), realizado por Bianca e Gustavo
+    id: "seed-p-webinar-martha-becker",
+    nome: "Webinar Crise Não Marca Hora - Martha Becker",
+    logo: logoWebinarMarthaBecker,
+    descricao: "Como preparar sua empresa para momentos decisivos: conversa sobre estratégia, comunicação e os desafios de proteger marcas e negócios em tempos de incerteza. Evento aberto ao público.",
+    status: "concluido",
+    responsavel: "ambos",
+    estado: "",
+    local: "Online · Microsoft Teams",
+    dataPrevista: "2026-09-01",
+    horario: "09:00",
+    parceiros: "",
+    etapas: [],
+    participantes: [
+      { id: "seed-pt-mb-1", empresa: "Martha Becker", representante: "Martha Becker", cargo: "Palestrante", observacoes: "Autora do livro \"Crise Não Marca Hora\"; especialista em gestão de crises", status: "confirmada" },
+    ],
+    patrocinios: [],
+    instituicoes: [],
+    custos: [],
+    resultados: "",
+    notas: "Evento do programa de Compliance da CCIB, trazido da Plataforma de Compliance (eventos passados: resultado \"Concluído\"). Realizado por Bianca e Gustavo.",
     createdAt: Date.now(),
   },
   {
