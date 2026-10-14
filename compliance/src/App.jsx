@@ -49,41 +49,54 @@ export default function App() {
   const [tab, setTab] = useState("visao");
   const [db, setDb] = useState(null);
   const [saveState, setSaveState] = useState("salvo");
+  const [compartilhado, setCompartilhado] = useState(false);
   const timers = useRef({});
   const pending = useRef({});
 
-  useEffect(() => {
-    (async () => {
-      const entries = await Promise.all(
-        Object.entries(STORAGE).map(async ([nome, key]) => {
-          try {
-            const r = await storage.get(key, true);
-            if (r && r.value) return [nome, JSON.parse(r.value)];
-          } catch (e) {
-            console.error(`Falha ao carregar ${nome}`, e);
-          }
-          if (SEEDS[nome] === undefined) return [nome, undefined];
-          // Primeira vez: grava os dados iniciais
-          try {
-            await storage.set(key, JSON.stringify(SEEDS[nome]), true);
-          } catch (e) {
-            console.error(`Falha ao gravar dados iniciais de ${nome}`, e);
-          }
-          return [nome, SEEDS[nome]];
-        })
-      );
-      const dados = Object.fromEntries(entries);
-      if (dados.eventos === undefined) {
-        dados.eventos = migrarEventos(dados.eventosFuturos, dados.eventosPassados);
+  const carregar = useCallback(async () => {
+    const entries = await Promise.all(
+      Object.entries(STORAGE).map(async ([nome, key]) => {
         try {
-          await storage.set(STORAGE.eventos, JSON.stringify(dados.eventos), true);
+          const r = await storage.get(key, true);
+          if (r && r.value) return [nome, JSON.parse(r.value)];
         } catch (e) {
-          console.error("Falha ao gravar eventos", e);
+          console.error(`Falha ao carregar ${nome}`, e);
         }
+        if (SEEDS[nome] === undefined) return [nome, undefined];
+        // Primeira vez: grava os dados iniciais
+        try {
+          await storage.set(key, JSON.stringify(SEEDS[nome]), true);
+        } catch (e) {
+          console.error(`Falha ao gravar dados iniciais de ${nome}`, e);
+        }
+        return [nome, SEEDS[nome]];
+      })
+    );
+    const dados = Object.fromEntries(entries);
+    if (dados.eventos === undefined) {
+      dados.eventos = migrarEventos(dados.eventosFuturos, dados.eventosPassados);
+      try {
+        await storage.set(STORAGE.eventos, JSON.stringify(dados.eventos), true);
+      } catch (e) {
+        console.error("Falha ao gravar eventos", e);
       }
-      setDb(dados);
-    })();
+    }
+    setDb(dados);
+    setCompartilhado(storage.ehCompartilhado());
   }, []);
+
+  useEffect(() => {
+    carregar();
+  }, [carregar]);
+
+  // Ao voltar para a aba, busca o que os colegas salvaram (se não houver edição pendente)
+  useEffect(() => {
+    const aoVoltar = () => {
+      if (document.visibilityState === "visible" && Object.keys(pending.current).length === 0) carregar();
+    };
+    document.addEventListener("visibilitychange", aoVoltar);
+    return () => document.removeEventListener("visibilitychange", aoVoltar);
+  }, [carregar]);
 
   const flush = useCallback(async (nome) => {
     const lista = pending.current[nome];
@@ -165,7 +178,7 @@ export default function App() {
         <div className="topbar">
           <h2>{atual.label}</h2>
           <span className={`save-state${saveState === "erro" ? " err" : ""}`}>
-            {saveState === "salvando" ? "Salvando..." : saveState === "erro" ? "Erro ao salvar" : "Salvo"}
+            {saveState === "salvando" ? "Salvando..." : saveState === "erro" ? "Erro ao salvar" : compartilhado ? "Salvo para todos" : "Salvo neste navegador"}
           </span>
         </div>
         <div className="content">
