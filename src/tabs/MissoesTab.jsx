@@ -362,11 +362,13 @@ function MissaoDetalhe({ p, patch, voltar, abrirFicha }) {
   const patchItem = (campo, lista, id, mudanca) => patch({ [campo]: lista.map((x) => (x.id === id ? { ...x, ...mudanca } : x)) });
   // Ao mudar quantidade ou valor unitário, o total fica gravado em "valor" (usado também na aba Projetos)
   const patchCusto = (cst, mudanca) => {
-    const novo = { ...cst, ...mudanca };
+    const { virtual, ...resto } = cst;
+    const novo = { ...resto, ...mudanca };
+    if (virtual) novo.id = novoId("c");
     const q = num(novo.quantidade);
     const u = num(novo.valorUnitario);
     if (("quantidade" in mudanca || "valorUnitario" in mudanca) && u != null) novo.valor = paraTexto((q != null ? q : 1) * u);
-    patch({ custos: custos.map((x) => (x.id === cst.id ? novo : x)) });
+    patch({ custos: virtual ? [...custos, novo] : custos.map((x) => (x.id === cst.id ? novo : x)) });
   };
 
   const [novoPart, setNovoPart] = useState({ empresa: "", representante: "" });
@@ -386,16 +388,15 @@ function MissaoDetalhe({ p, patch, voltar, abrirFicha }) {
     patch({ receitasExtras: [...extras, { id: novoId("r"), descricao, valor: novaReceita.valor }] });
     setNovaReceita({ descricao: "", valor: "" });
   };
-  const [tiposModelo, setTiposModelo] = useState(["Passagens", "Diárias", "Hospedagem", "Alimentação", "Transporte local"]);
-  const [mostrarModelo, setMostrarModelo] = useState(false);
-  const categoriasUsadas = new Set(custos.map((x) => x.categoria));
-  const preencherModelo = () => {
-    const novos = CATEGORIAS_CUSTO.filter((cat) => tiposModelo.includes(cat) && !categoriasUsadas.has(cat)).map((cat) => ({
-      id: novoId("c"), categoria: cat, descricao: DESCRICAO_PADRAO[cat] || cat, quantidade: "", valorUnitario: "", valor: "", moeda, situacao: "previsto",
-    }));
-    if (novos.length) patch({ custos: [...custos, ...novos] });
-    setMostrarModelo(false);
-  };
+  // Todos os tipos de gasto aparecem sempre como linha. Tipo sem lançamento é uma linha vazia
+  // que só vira custo gravado quando alguém preenche algo nela.
+  const linhasCusto = [];
+  CATEGORIAS_CUSTO.forEach((cat) => {
+    const doTipo = custos.filter((x) => (x.categoria || "Outros") === cat);
+    if (doTipo.length === 0) linhasCusto.push({ chave: `tipo-${cat}`, cst: { id: null, virtual: true, categoria: cat, descricao: DESCRICAO_PADRAO[cat] || "", quantidade: "", valorUnitario: "", valor: "", moeda, situacao: "previsto" } });
+    doTipo.forEach((x, i) => linhasCusto.push({ chave: i === 0 ? `tipo-${cat}` : x.id, cst: x }));
+  });
+  custos.filter((x) => !CATEGORIAS_CUSTO.includes(x.categoria || "Outros")).forEach((x) => linhasCusto.push({ chave: x.id, cst: x }));
 
   const addCusto = () => {
     const q = num(novoCusto.quantidade);
@@ -554,49 +555,17 @@ function MissaoDetalhe({ p, patch, voltar, abrirFicha }) {
         {/* Custos */}
         <div style={secao}>
           <TituloSecao icon={Receipt} extra={<span style={{ fontFamily: mono, fontSize: 12, fontWeight: 600, color: "#0B2545" }}>{dinheiro(c.gasto, moeda)}</span>}>Valor gasto</TituloSecao>
-          <div style={{ fontSize: 11.5, color: "#566175", marginBottom: 10 }}>Cada custo é quantidade × valor unitário (ex.: 4 passagens × R$ 6.500, ou 8 diárias × R$ 350). Marque como "Pago" quando o pagamento sair.</div>
-          <div style={{ marginBottom: 12 }}>
-            {!mostrarModelo ? (
-              <button onClick={() => setMostrarModelo(true)} className="ccib-btn" style={{ ...btnLinha, borderStyle: "dashed" }}><Plus size={14} /> Preencher com tipos de gasto</button>
-            ) : (
-              <div style={{ background: "#FBF7F1", border: "1px solid #F0E2CF", borderRadius: 10, padding: "12px 14px" }}>
-                <div style={{ ...labelStyle, color: "#B8752E" }}>Selecione os tipos de gasto desta missão</div>
-                <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>
-                  {CATEGORIAS_CUSTO.filter((cat) => cat !== "Outros").map((cat) => {
-                    const ja = categoriasUsadas.has(cat);
-                    const marcado = ja || tiposModelo.includes(cat);
-                    return (
-                      <button
-                        key={cat}
-                        disabled={ja}
-                        title={ja ? "Já existe uma linha desse tipo" : ""}
-                        onClick={() => setTiposModelo((t) => (t.includes(cat) ? t.filter((x) => x !== cat) : [...t, cat]))}
-                        style={{ display: "inline-flex", alignItems: "center", gap: 6, border: `1px solid ${marcado ? "#0B2545" : "#D6DAE2"}`, background: marcado ? "#0B2545" : "#FFFFFF", color: marcado ? "#FFFFFF" : "#566175", opacity: ja ? 0.5 : 1, borderRadius: 999, padding: "5px 12px", fontSize: 12.5, cursor: ja ? "default" : "pointer" }}
-                      >
-                        {marcado ? "✓" : "+"} {cat === "Hospedagem" ? "Hospedagem (hotel)" : cat}
-                      </button>
-                    );
-                  })}
-                </div>
-                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                  <button onClick={preencherModelo} className="ccib-btn ccib-btn-solid" style={{ ...btnLinha, background: "#0B2545", color: "#FFFFFF" }}>Criar linhas selecionadas</button>
-                  <button onClick={() => setMostrarModelo(false)} className="ccib-btn" style={{ ...btnLinha, border: "none", color: "#566175" }}>Cancelar</button>
-                </div>
-                <div style={{ fontSize: 11.5, color: "#8992A6", marginTop: 8 }}>Cada tipo vira uma linha pronta; depois é só preencher quantidade e valor unitário.</div>
-              </div>
-            )}
-          </div>
+          <div style={{ fontSize: 11.5, color: "#566175", marginBottom: 10 }}>Todos os tipos de gasto já aparecem abaixo: preencha a quantidade e o valor unitário (ex.: 4 passagens × R$ 6.500, ou 8 diárias × R$ 350). Para mais de um lançamento do mesmo tipo, use a linha "+ Custo" no final. Marque como "Pago" quando o pagamento sair.</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 10 }}>
-            {custos.length === 0 && !mostrarModelo && <div style={{ fontSize: 12.5, color: "#8992A6" }}>Nenhum custo lançado. Use "Preencher com tipos de gasto" para criar as linhas de uma vez.</div>}
-            {custos.map((cst) => {
+            {linhasCusto.map(({ chave, cst }) => {
               const t = totalCusto(cst);
               const sit = SITUACAO_CUSTO[cst.situacao] || SITUACAO_CUSTO.previsto;
               return (
-                <div key={cst.id} style={linhaItem}>
-                  <select value={cst.categoria || "Outros"} onChange={(e) => patchCusto(cst, { categoria: e.target.value })} style={{ ...inputLinha, flex: "1 1 120px", fontSize: 12, color: "#566175" }}>
+                <div key={chave} style={{ ...linhaItem, background: cst.virtual ? "#FCFCFD" : "#FFFFFF" }}>
+                  <select value={cst.categoria || "Outros"} onChange={(e) => patchCusto(cst, { categoria: e.target.value })} style={{ ...inputLinha, flex: "0 1 140px", minWidth: 110, fontSize: 12, color: "#566175" }}>
                     {[...new Set([...CATEGORIAS_CUSTO, cst.categoria || "Outros"])].map((k) => <option key={k} value={k}>{k}</option>)}
                   </select>
-                  <input className="ccib-input" value={cst.descricao || ""} placeholder="Descrição" onChange={(e) => patchCusto(cst, { descricao: e.target.value })} style={{ ...inputLinha, flex: "3 1 160px" }} />
+                  <input className="ccib-input" value={cst.descricao || ""} placeholder="Descrição" onChange={(e) => patchCusto(cst, { descricao: e.target.value })} style={{ ...inputLinha, flex: "3 1 110px", minWidth: 0 }} />
                   <input className="ccib-input" value={cst.quantidade || ""} inputMode="decimal" placeholder="Qtd" title="Quantidade" onChange={(e) => patchCusto(cst, { quantidade: e.target.value })} style={{ ...inputLinha, flex: "0 0 48px", fontFamily: mono, textAlign: "center" }} />
                   <span style={{ color: "#8992A6", fontSize: 12 }}>×</span>
                   <select value={cst.moeda || "BRL"} onChange={(e) => patchCusto(cst, { moeda: e.target.value })} style={{ ...inputLinha, flex: "0 0 58px", fontFamily: mono, fontSize: 12 }}>
@@ -607,7 +576,7 @@ function MissaoDetalhe({ p, patch, voltar, abrirFicha }) {
                   <select value={cst.situacao || "previsto"} onChange={(e) => patchCusto(cst, { situacao: e.target.value })} style={{ ...inputLinha, flex: "0 0 84px", fontSize: 12, fontWeight: 600, color: sit.color }}>
                     {Object.entries(SITUACAO_CUSTO).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
                   </select>
-                  <button onClick={() => patch({ custos: custos.filter((x) => x.id !== cst.id) })} title="Remover custo" style={btnRemover}><X size={14} /></button>
+                  {cst.virtual ? <span style={{ width: 14, flexShrink: 0 }} /> : <button onClick={() => patch({ custos: custos.filter((x) => x.id !== cst.id) })} title="Limpar / remover custo" style={btnRemover}><X size={14} /></button>}
                 </div>
               );
             })}
