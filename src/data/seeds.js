@@ -70,7 +70,7 @@ export const SEED_EVENTS = [
     nome: "FNI SC - Florianópolis",
     data: "2026-11-12",
     horario: "08:00 – 12:00",
-    local: "Florianópolis/SC",
+    local: "Auditório AEMFLO / CDL SJ",
     tipo: "Webinar/Seminário",
     status: "planejado",
     descricao: "",
@@ -136,6 +136,7 @@ export const FORCE_EVENT_UPDATES = {
   },
   "FNI SC - Florianópolis": {
     data: "2026-11-12",
+    local: "Auditório AEMFLO / CDL SJ",
     horario: "08:00 – 12:00",
   },
   "Happy Hour IRIP": {
@@ -452,6 +453,12 @@ export const NEGOCIOS_HUBSPOT = [
   { empresa: "Neoking Foods", situacao: "negociacao", etapa: "Proposta Enviada / Em negociação", valor: "US$ 2.100", data: "2026-11-13" },
 ];
 
+// Correções pontuais em projetos já salvos: o campo só muda se ainda tiver exatamente o valor antigo
+// (assim uma edição feita na plataforma depois não é sobrescrita).
+export const CORRIGIR_PROJETOS = {
+  "seed-p-fazendo-negocios-india-sc": { local: { de: "Florianópolis/SC", para: "Auditório AEMFLO / CDL SJ" } },
+};
+
 // Projetos da Regional Sul. Entram uma vez (por id) e depois podem ser editados livremente na aba Projetos.
 export const SEED_PROJECTS = [
   {
@@ -461,7 +468,7 @@ export const SEED_PROJECTS = [
     status: "planejamento",
     responsavel: "ambos",
     estado: "SC",
-    local: "Florianópolis/SC",
+    local: "Auditório AEMFLO / CDL SJ",
     dataPrevista: "2026-11-12",
     horario: "08:00 – 12:00",
     parceiros: "Possível patrocínio: Alexander Advogados (a confirmar)",

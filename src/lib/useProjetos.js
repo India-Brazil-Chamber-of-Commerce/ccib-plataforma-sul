@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { STORAGE_PROJECTS } from "../constants";
 import { storage, EVENTO_ATUALIZADO } from "./storage";
-import { SEED_PROJECTS } from "../data/seeds";
+import { SEED_PROJECTS, CORRIGIR_PROJETOS } from "../data/seeds";
 
 // Listas do projeto que recebem itens novos da semente (por id do item)
 const LISTAS_SEMENTE = ["participantes", "empresasVisitadas", "etapas", "custos", "patrocinios"];
@@ -61,6 +61,12 @@ export function useProjetos() {
       let mudou = false;
       const porId = new Map(SEED_PROJECTS.map((p) => [p.id, p]));
       const lista = salvos.map((p) => {
+        const correcoes = CORRIGIR_PROJETOS[p.id];
+        if (correcoes) {
+          Object.entries(correcoes).forEach(([campo, { de, para }]) => {
+            if (p[campo] === de) { p = { ...p, [campo]: para }; mudou = true; }
+          });
+        }
         const seed = porId.get(p.id);
         if (!seed) return p;
         const [mesclado, alterou] = mesclarSemente(p, seed);
