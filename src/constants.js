@@ -10,6 +10,10 @@ export const STORAGE_CONTACTS = "ccib-sul-contatos";
 
 export const STORAGE_PROJECTS = "ccib-sul-projetos";
 
+export const STORAGE_LEMBRETES = "ccib-sul-lembretes";
+
+export const STORAGE_LEMBRETES_SEMENTES = "ccib-sul-lembretes-sementes";
+
 export const ESTADOS = ["PR", "SC", "RS", "Outro"];
 
 export const RESPONSAVEIS = [

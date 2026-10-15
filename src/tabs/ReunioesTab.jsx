@@ -1,5 +1,6 @@
 import React from "react";
-import { Plus, Trash2, RefreshCw, ChevronLeft, ChevronRight, Clock, MapPin, Video, Users } from "lucide-react";
+import { Plus, Trash2, RefreshCw, ChevronLeft, ChevronRight, Clock, MapPin, Video, Users, Bell } from "lucide-react";
+import Lembretes, { useLembretes } from "../components/Lembretes";
 import { RESPONSAVEIS, STATUS_MEETING } from "../constants";
 import { inputStyle } from "../styles";
 import { Field } from "../components/ui";
@@ -182,6 +183,13 @@ export default function ReunioesTab({
   syncingTeams,
 }) {
   const { offset, count } = meetingWeeks;
+  const [lembretes, atualizarLembretes] = useLembretes();
+  const lembretesPorDia = new Map();
+  (lembretes || []).forEach((l) => {
+    if (!l.data || l.feito) return;
+    if (!lembretesPorDia.has(l.data)) lembretesPorDia.set(l.data, []);
+    lembretesPorDia.get(l.data).push(l);
+  });
   const today = new Date();
   const todayStr = toDateStr(today);
   const firstMonday = addDays(mondayOf(today), offset * 7);
@@ -213,7 +221,8 @@ export default function ReunioesTab({
   const toggle = (id) => setSelectedMeetingId(selectedMeetingId === id ? null : id);
 
   return (
-    <div>
+    <div style={{ display: "flex", gap: 24, alignItems: "flex-start", flexWrap: "wrap" }}>
+    <div style={{ flex: "1 1 560px", minWidth: 0 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap", marginBottom: 16 }}>
         <button
           onClick={syncTeamsCalendar}
@@ -287,8 +296,9 @@ export default function ReunioesTab({
           {week.days.map((day) => {
             const dateStr = toDateStr(day);
             const list = byDate.get(dateStr) || [];
+            const lemDia = lembretesPorDia.get(dateStr) || [];
             const weekend = day.getDay() === 0 || day.getDay() === 6;
-            if (weekend && list.length === 0) return null;
+            if (weekend && list.length === 0 && lemDia.length === 0) return null;
             const isToday = dateStr === todayStr;
             const isPast = dateStr < todayStr;
             return (
@@ -304,7 +314,12 @@ export default function ReunioesTab({
                   <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, opacity: 0.8 }}>{isToday ? "hoje" : MONTHS_SHORT[day.getMonth()]}</div>
                 </div>
                 <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 8, justifyContent: "center" }}>
-                  {list.length === 0 && (
+                  {lemDia.map((l) => (
+                    <span key={l.id} title="Lembrete" style={{ display: "inline-flex", alignItems: "flex-start", gap: 6, alignSelf: "flex-start", background: "#FBF3EA", border: "1px solid #F0E2CF", color: "#8A5A22", borderRadius: 8, padding: "5px 10px", fontSize: 12, lineHeight: 1.35 }}>
+                      <Bell size={13} style={{ flexShrink: 0, marginTop: 1 }} /> {l.texto}
+                    </span>
+                  ))}
+                  {list.length === 0 && lemDia.length === 0 && (
                     <span style={{ fontSize: 12.5, color: "#A3ABBB", fontStyle: "italic" }}>Sem reuniões</span>
                   )}
                   {list.map((m) => (
@@ -343,6 +358,10 @@ export default function ReunioesTab({
           </div>
         </div>
       )}
+    </div>
+    <aside style={{ flex: "0 1 320px", minWidth: 280, position: "sticky", top: 16 }}>
+      <Lembretes lembretes={lembretes} atualizar={atualizarLembretes} />
+    </aside>
     </div>
   );
 }

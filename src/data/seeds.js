@@ -453,6 +453,12 @@ export const NEGOCIOS_HUBSPOT = [
   { empresa: "Neoking Foods", situacao: "negociacao", etapa: "Proposta Enviada / Em negociação", valor: "US$ 2.100", data: "2026-11-13" },
 ];
 
+// Lembretes da aba Reuniões. Entram uma vez (por id); depois podem ser editados ou apagados na plataforma.
+export const SEED_LEMBRETES = [
+  { id: "seed-lem-audaces-fni-sc", data: "2026-10-19", texto: "Entrar em contato com a AUDACES sobre o convite do FNI SC", responsavel: "ambos", feito: false, createdAt: Date.now() },
+  { id: "seed-lem-mariah-india-tech", data: "2026-10-20", texto: "Entrar em contato com a Mariah sobre a India Tech", responsavel: "ambos", feito: false, createdAt: Date.now() },
+];
+
 // Correções pontuais em projetos já salvos: o campo só muda se ainda tiver exatamente o valor antigo
 // (assim uma edição feita na plataforma depois não é sobrescrita).
 export const CORRIGIR_PROJETOS = {

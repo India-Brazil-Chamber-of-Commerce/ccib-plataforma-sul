@@ -753,7 +753,7 @@ export default function App() {
         )}
       </div>
 
-      <div style={{ maxWidth: tab === "pipeline" ? 1500 : 1020, margin: "0 auto" }}>
+      <div style={{ maxWidth: tab === "pipeline" ? 1500 : tab === "reunioes" ? 1380 : 1020, margin: "0 auto" }}>
         {tab === "pipeline" && (
           <PipelineTab members={members} patchMember={patchMember} addPipelineItem={addPipelineItem} abrirEmpresa={abrirEmpresa} />
         )}
