@@ -308,8 +308,15 @@ export default function App() {
         setorAdded = true;
         return { ...c, setor: "Saúde" };
       });
+      // Observações definidas depois na semente entram só se o contato salvo ainda não tem o campo
+      const obsSemente = new Map(SEED_CONTACTS.filter((s) => s.observacoes).map((s) => [s.id, s.observacoes]));
+      let obsAdded = false;
+      for (let i = 0; i < mergedContacts.length; i++) {
+        const c = mergedContacts[i];
+        if (obsSemente.has(c.id) && c.observacoes === undefined) { mergedContacts[i] = { ...c, observacoes: obsSemente.get(c.id) }; obsAdded = true; }
+      }
       setContacts(mergedContacts);
-      if (missingContactSeeds.length > 0 || setorAdded) {
+      if (missingContactSeeds.length > 0 || setorAdded || obsAdded) {
         await persistContacts(mergedContacts);
       }
     } catch (e) {

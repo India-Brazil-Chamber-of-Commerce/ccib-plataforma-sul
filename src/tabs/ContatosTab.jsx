@@ -1,5 +1,5 @@
 import React from "react";
-import { Plus, Trash2, ChevronDown, Contact, Download } from "lucide-react";
+import { Plus, Trash2, ChevronDown, Contact, Download, StickyNote } from "lucide-react";
 import { inputStyle, labelStyle, filterInputStyle } from "../styles";
 import { Field, HubspotSyncBar } from "../components/ui";
 
@@ -7,7 +7,7 @@ function filtrarContatos(contacts, contactSearch) {
   const q = contactSearch.trim().toLowerCase();
   return (contacts || []).filter((c) => {
     if (!q) return true;
-    return c.nome.toLowerCase().includes(q) || (c.empresa || "").toLowerCase().includes(q) || (c.cargo || "").toLowerCase().includes(q) || (c.setor || "").toLowerCase().includes(q) || (c.tipo || "").toLowerCase().includes(q);
+    return c.nome.toLowerCase().includes(q) || (c.empresa || "").toLowerCase().includes(q) || (c.cargo || "").toLowerCase().includes(q) || (c.setor || "").toLowerCase().includes(q) || (c.tipo || "").toLowerCase().includes(q) || (c.observacoes || "").toLowerCase().includes(q);
   }).sort((a, b) => a.nome.localeCompare(b.nome));
 }
 
@@ -21,9 +21,10 @@ async function baixarExcel(lista) {
     Cargo: c.cargo || "",
     "E-mail": c.email || "",
     Telefone: c.telefone || "",
+    "Observações": c.observacoes || "",
   }));
-  const ws = XLSX.utils.json_to_sheet(linhas, { header: ["Nome", "Empresa", "Setor", "Tipo", "Cargo", "E-mail", "Telefone"] });
-  ws["!cols"] = [{ wch: 32 }, { wch: 30 }, { wch: 18 }, { wch: 14 }, { wch: 28 }, { wch: 34 }, { wch: 18 }];
+  const ws = XLSX.utils.json_to_sheet(linhas, { header: ["Nome", "Empresa", "Setor", "Tipo", "Cargo", "E-mail", "Telefone", "Observações"] });
+  ws["!cols"] = [{ wch: 32 }, { wch: 30 }, { wch: 18 }, { wch: 14 }, { wch: 28 }, { wch: 34 }, { wch: 18 }, { wch: 60 }];
   ws["!autofilter"] = { ref: ws["!ref"] };
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, "Contatos");
@@ -146,8 +147,8 @@ export default function ContatosTab({
                         alignItems: "center",
                       }}
                     >
-                      <span style={{ fontSize: 13, fontWeight: 500, color: "#1B2438", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", paddingRight: 8 }}>
-                        {c.nome || "(sem nome)"}
+                      <span title={c.observacoes || undefined} style={{ fontSize: 13, fontWeight: 500, color: "#1B2438", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", paddingRight: 8 }}>
+                        {c.nome || "(sem nome)"}{c.observacoes ? <StickyNote size={11} style={{ color: "#B8752E", marginLeft: 6, verticalAlign: "-1px" }} /> : null}
                       </span>
                       <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 11.5, color: "#566175", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", paddingRight: 8 }}>
                         {c.empresa || "—"}
@@ -223,6 +224,17 @@ export default function ContatosTab({
                           </Field>
                           <Field label="Telefone">
                             <input className="ccib-input" style={inputStyle} value={c.telefone} placeholder="+91 00000 00000" onChange={(e) => patchContact(c.id, { telefone: e.target.value })} />
+                          </Field>
+                        </div>
+                        <div style={{ display: "flex", gap: 14, alignItems: "flex-end", marginTop: 12 }}>
+                          <Field label="Observações (outros e-mails e telefones, endereço, contexto do contato)">
+                            <textarea
+                              value={c.observacoes || ""}
+                              rows={3}
+                              placeholder="Ex.: segundo e-mail, telefone do escritório, endereço, onde conheceu, próximos passos..."
+                              onChange={(e) => patchContact(c.id, { observacoes: e.target.value })}
+                              style={{ ...inputStyle, border: "1px solid #E3E6EC", borderRadius: 6, padding: "8px 10px", resize: "vertical", lineHeight: 1.45, background: "#FFFFFF" }}
+                            />
                           </Field>
                           <button
                             onClick={() => removeContact(c.id)}
