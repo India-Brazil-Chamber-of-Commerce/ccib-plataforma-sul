@@ -26,6 +26,7 @@ export const SEED_CONTACTS = [
   { id: "seed-c-15", nome: "Prashant Dinde", empresa: "CDAC", cargo: "Associate Director (Pune)", email: "", telefone: "91 9822650512", setor: "Governamental", tipo: "Instituição", createdAt: Date.now() },
   { id: "seed-c-16", nome: "Ethirajan Magesh", empresa: "CDAC", cargo: "General Director", email: "dg@cdac.in", telefone: "91 9884184667", setor: "Governamental", tipo: "Instituição", createdAt: Date.now() },
   { id: "seed-c-17", nome: "Parminder Singh", empresa: "VVDN", cargo: "Business Development", email: "parminder.singh@vvdntech.in", telefone: "91 7042520185", setor: "Tecnologia", tipo: "Empresa", createdAt: Date.now() },
+  { id: "seed-c-18", nome: "Digvijay Bishnoi", empresa: "Medicamen Biotech / Shivalik Rasayan", cargo: "Business Development Executive", email: "digvijay@medicamen.com", telefone: "91 8800839079", setor: "Saúde", tipo: "Empresa", createdAt: Date.now() },
 ];
 
 export const SEED_EVENTS = [
