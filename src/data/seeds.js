@@ -461,6 +461,7 @@ export const NEGOCIOS_HUBSPOT = [
 export const SEED_LEMBRETES = [
   { id: "seed-lem-audaces-fni-sc", data: "2026-10-19", texto: "Entrar em contato com a AUDACES sobre o convite do FNI SC", responsavel: "ambos", feito: false, createdAt: Date.now() },
   { id: "seed-lem-mariah-india-tech", data: "2026-10-20", texto: "Entrar em contato com a Mariah sobre a India Tech", responsavel: "ambos", feito: false, createdAt: Date.now() },
+  { id: "seed-lem-fernando-distribuidor-cosmeticos", data: "", texto: "Lembrar ao Fernando de nos passar o nome e o contato do distribuidor carioca de cosméticos", responsavel: "bianca", feito: false, createdAt: Date.now() },
 ];
 
 // Correções pontuais em projetos já salvos: o campo só muda se ainda tiver exatamente o valor antigo
