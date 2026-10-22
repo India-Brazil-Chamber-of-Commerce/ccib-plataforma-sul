@@ -1,13 +1,29 @@
-import React from "react";
-import { Plus, Trash2, ChevronDown, Contact, Download, StickyNote } from "lucide-react";
+import React, { useState } from "react";
+import { Plus, Trash2, ChevronDown, Contact, Download, StickyNote, X } from "lucide-react";
 import { inputStyle, labelStyle, filterInputStyle } from "../styles";
 import { Field, HubspotSyncBar } from "../components/ui";
 
-function filtrarContatos(contacts, contactSearch) {
+// Filtros por coluna: "" mostra todos, VAZIO mostra só os contatos sem o campo preenchido
+const VAZIO = "__vazio";
+const COLUNAS_FILTRO = [
+  { campo: "empresa", rotulo: "Empresa" },
+  { campo: "setor", rotulo: "Setor" },
+  { campo: "tipo", rotulo: "Tipo" },
+  { campo: "pais", rotulo: "País" },
+];
+const FILTROS_VAZIOS = { empresa: "", setor: "", tipo: "", pais: "" };
+
+function filtrarContatos(contacts, contactSearch, filtros = FILTROS_VAZIOS) {
   const q = contactSearch.trim().toLowerCase();
   return (contacts || []).filter((c) => {
+    for (const { campo } of COLUNAS_FILTRO) {
+      const f = filtros[campo];
+      if (!f) continue;
+      const v = (c[campo] || "").trim();
+      if (f === VAZIO ? v !== "" : v !== f) return false;
+    }
     if (!q) return true;
-    return c.nome.toLowerCase().includes(q) || (c.empresa || "").toLowerCase().includes(q) || (c.cargo || "").toLowerCase().includes(q) || (c.setor || "").toLowerCase().includes(q) || (c.tipo || "").toLowerCase().includes(q) || (c.observacoes || "").toLowerCase().includes(q);
+    return c.nome.toLowerCase().includes(q) || (c.empresa || "").toLowerCase().includes(q) || (c.cargo || "").toLowerCase().includes(q) || (c.setor || "").toLowerCase().includes(q) || (c.tipo || "").toLowerCase().includes(q) || (c.pais || "").toLowerCase().includes(q) || (c.observacoes || "").toLowerCase().includes(q);
   }).sort((a, b) => a.nome.localeCompare(b.nome));
 }
 
@@ -21,10 +37,11 @@ async function baixarExcel(lista) {
     Cargo: c.cargo || "",
     "E-mail": c.email || "",
     Telefone: c.telefone || "",
+    "País": c.pais || "",
     "Observações": c.observacoes || "",
   }));
-  const ws = XLSX.utils.json_to_sheet(linhas, { header: ["Nome", "Empresa", "Setor", "Tipo", "Cargo", "E-mail", "Telefone", "Observações"] });
-  ws["!cols"] = [{ wch: 32 }, { wch: 30 }, { wch: 18 }, { wch: 14 }, { wch: 28 }, { wch: 34 }, { wch: 18 }, { wch: 60 }];
+  const ws = XLSX.utils.json_to_sheet(linhas, { header: ["Nome", "Empresa", "Setor", "Tipo", "Cargo", "E-mail", "Telefone", "País", "Observações"] });
+  ws["!cols"] = [{ wch: 32 }, { wch: 30 }, { wch: 18 }, { wch: 14 }, { wch: 28 }, { wch: 34 }, { wch: 18 }, { wch: 14 }, { wch: 60 }];
   ws["!autofilter"] = { ref: ws["!ref"] };
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, "Contatos");
@@ -46,6 +63,9 @@ export default function ContatosTab({
   setContactSearch,
   toggleContactExpand,
 }) {
+  const [filtros, setFiltros] = useState(FILTROS_VAZIOS);
+  const filtrosAtivos = COLUNAS_FILTRO.filter(({ campo }) => filtros[campo]).length;
+  const algumFiltro = filtrosAtivos > 0 || contactSearch.trim() !== "";
   return (
       <div>
         <HubspotSyncBar
@@ -58,7 +78,7 @@ export default function ContatosTab({
         />
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 18, alignItems: "center", justifyContent: "space-between" }}>
           <input
-            placeholder="Buscar por nome, empresa, setor ou cargo..."
+            placeholder="Buscar por nome, empresa, setor, cargo ou país..."
             value={contactSearch}
             onChange={(e) => setContactSearch(e.target.value)}
             style={{ ...filterInputStyle, flex: "1 1 300px" }}
@@ -66,12 +86,12 @@ export default function ContatosTab({
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           <button
             onClick={() => {
-              const lista = filtrarContatos(contacts, contactSearch);
+              const lista = filtrarContatos(contacts, contactSearch, filtros);
               if (!lista.length) { window.alert("Não há contatos para exportar."); return; }
               baixarExcel(lista).catch((e) => { console.error("Falha ao gerar o Excel", e); window.alert("Não foi possível gerar o arquivo Excel."); });
             }}
             className="ccib-btn"
-            title={contactSearch.trim() ? "Baixa só os contatos filtrados pela busca" : "Baixa todos os contatos"}
+            title={algumFiltro ? "Baixa só os contatos filtrados" : "Baixa todos os contatos"}
             style={{
               display: "flex", alignItems: "center", gap: 6,
               background: "transparent", color: "#0B2545", border: "1px solid #0B2545",
@@ -95,14 +115,55 @@ export default function ContatosTab({
         </div>
 
         {(() => {
+          const total = (contacts || []).length;
+          const opcoes = (campo) => [...new Set((contacts || []).map((c) => (c[campo] || "").trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+          const temVazio = (campo) => (contacts || []).some((c) => !(c[campo] || "").trim());
+          const contagem = filtrarContatos(contacts, contactSearch, filtros).length;
+          return (
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center", marginTop: -8, marginBottom: 16 }}>
+              {COLUNAS_FILTRO.map(({ campo, rotulo }) => (
+                <select
+                  key={campo}
+                  aria-label={`Filtrar por ${rotulo}`}
+                  value={filtros[campo]}
+                  onChange={(e) => setFiltros((f) => ({ ...f, [campo]: e.target.value }))}
+                  style={{
+                    ...filterInputStyle, padding: "7px 10px", cursor: "pointer", maxWidth: 220,
+                    ...(filtros[campo] ? { borderColor: "#0B2545", background: "#0B25450A", fontWeight: 500 } : {}),
+                  }}
+                >
+                  <option value="">{rotulo}: todos</option>
+                  {opcoes(campo).map((v) => <option key={v} value={v}>{v}</option>)}
+                  {temVazio(campo) && <option value={VAZIO}>{rotulo}: não informado</option>}
+                </select>
+              ))}
+              {filtrosAtivos > 0 && (
+                <button
+                  onClick={() => setFiltros(FILTROS_VAZIOS)}
+                  className="ccib-btn"
+                  style={{ display: "flex", alignItems: "center", gap: 4, background: "transparent", border: "none", color: "#566175", fontSize: 12.5, cursor: "pointer", padding: "6px 4px" }}
+                >
+                  <X size={13} /> Limpar filtros
+                </button>
+              )}
+              <span style={{ marginLeft: "auto", fontFamily: "'IBM Plex Mono', monospace", fontSize: 11.5, color: "#8992A6" }}>
+                {algumFiltro ? `${contagem} de ${total} contatos` : `${total} contatos`}
+              </span>
+            </div>
+          );
+        })()}
+
+        {(() => {
           const setorSuggestions = [...new Set((contacts || []).map((c) => c.setor).filter(Boolean))].sort();
-          const filtered = filtrarContatos(contacts, contactSearch);
+          const filtered = filtrarContatos(contacts, contactSearch, filtros);
 
           if (filtered.length === 0) {
             return (
               <div className="ccib-fade-in" style={{ padding: "48px 0", textAlign: "center", color: "#B7BEC9" }}>
                 <Contact size={28} style={{ marginBottom: 10, opacity: 0.6 }} />
-                <div style={{ fontSize: 13, color: "#8992A6" }}>Nenhum contato encontrado. Clique em "Novo contato" ou puxe do HubSpot.</div>
+                <div style={{ fontSize: 13, color: "#8992A6" }}>
+                  {algumFiltro ? "Nenhum contato com esses filtros." : 'Nenhum contato encontrado. Clique em "Novo contato" ou puxe do HubSpot.'}
+                </div>
               </div>
             );
           }
