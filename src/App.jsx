@@ -315,8 +315,18 @@ export default function App() {
         const c = mergedContacts[i];
         if (obsSemente.has(c.id) && c.observacoes === undefined) { mergedContacts[i] = { ...c, observacoes: obsSemente.get(c.id) }; obsAdded = true; }
       }
+      // País definido depois na semente entra só se o contato salvo ainda não tem o campo
+      const paisSemente = new Map(SEED_CONTACTS.filter((s) => s.pais).map((s) => [s.id, s.pais]));
+      const paisPorEmail = new Map(SEED_CONTACTS.filter((s) => s.pais && s.email).map((s) => [s.email.trim().toLowerCase(), s.pais]));
+      let paisAdded = false;
+      for (let i = 0; i < mergedContacts.length; i++) {
+        const c = mergedContacts[i];
+        if (c.pais !== undefined) continue;
+        const pais = paisSemente.get(c.id) || paisPorEmail.get((c.email || "").trim().toLowerCase());
+        if (pais) { mergedContacts[i] = { ...c, pais }; paisAdded = true; }
+      }
       setContacts(mergedContacts);
-      if (missingContactSeeds.length > 0 || setorAdded || obsAdded) {
+      if (missingContactSeeds.length > 0 || setorAdded || obsAdded || paisAdded) {
         await persistContacts(mergedContacts);
       }
     } catch (e) {

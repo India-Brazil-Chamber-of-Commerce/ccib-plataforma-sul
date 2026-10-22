@@ -112,7 +112,7 @@ export default function ContatosTab({
               <div
                 style={{
                   display: "grid",
-                  gridTemplateColumns: "1fr 1fr 0.7fr 1.1fr 1.3fr 0.8fr 36px",
+                  gridTemplateColumns: "1fr 1fr 0.7fr 1.2fr 1.4fr 0.7fr 0.6fr 36px",
                   gap: 0,
                   padding: "9px 14px",
                   background: "#0B2545",
@@ -125,6 +125,7 @@ export default function ContatosTab({
                 <span style={{ ...labelStyle, marginBottom: 0, color: "rgba(255,255,255,0.7)" }}>Cargo</span>
                 <span style={{ ...labelStyle, marginBottom: 0, color: "rgba(255,255,255,0.7)" }}>E-mail</span>
                 <span style={{ ...labelStyle, marginBottom: 0, color: "rgba(255,255,255,0.7)" }}>Telefone</span>
+                <span style={{ ...labelStyle, marginBottom: 0, color: "rgba(255,255,255,0.7)" }}>País</span>
                 <span />
               </div>
 
@@ -138,7 +139,7 @@ export default function ContatosTab({
                       className="ccib-row"
                       style={{
                         display: "grid",
-                        gridTemplateColumns: "1fr 1fr 0.7fr 1.1fr 1.3fr 0.8fr 36px",
+                        gridTemplateColumns: "1fr 1fr 0.7fr 1.2fr 1.4fr 0.7fr 0.6fr 36px",
                         gap: 0,
                         padding: "10px 14px",
                         cursor: "pointer",
@@ -170,6 +171,9 @@ export default function ContatosTab({
                       </span>
                       <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, color: "#8992A6", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", paddingRight: 8 }}>
                         {c.telefone || "—"}
+                      </span>
+                      <span style={{ fontSize: 12, color: "#8992A6", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", paddingRight: 8 }}>
+                        {c.pais || "—"}
                       </span>
                       <ChevronDown
                         size={14}
@@ -224,6 +228,9 @@ export default function ContatosTab({
                           </Field>
                           <Field label="Telefone">
                             <input className="ccib-input" style={inputStyle} value={c.telefone} placeholder="+91 00000 00000" onChange={(e) => patchContact(c.id, { telefone: e.target.value })} />
+                          </Field>
+                          <Field label="País">
+                            <input className="ccib-input" style={inputStyle} value={c.pais || ""} placeholder="Ex.: Índia" onChange={(e) => patchContact(c.id, { pais: e.target.value })} />
                           </Field>
                         </div>
                         <div style={{ display: "flex", gap: 14, alignItems: "flex-end", marginTop: 12 }}>
