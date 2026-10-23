@@ -784,6 +784,10 @@ export default function App() {
             ativos={ativos}
             byEstado={byEstado}
             members={members}
+            meetings={meetings}
+            events={events}
+            contacts={contacts}
+            irPara={setTab}
             upcomingEvents={upcomingEvents}
             upcomingMeetings={upcomingMeetings}
           />

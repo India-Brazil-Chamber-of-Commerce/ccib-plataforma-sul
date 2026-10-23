@@ -91,3 +91,14 @@
   from { opacity: 0; transform: translateY(4px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+.ccib-kpi {
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+.ccib-kpi:hover,
+.ccib-kpi:focus-visible {
+  transform: translateY(-2px);
+  border-color: #C9D3E0 !important;
+  box-shadow: 0 2px 4px rgba(11,37,69,0.06), 0 16px 32px -8px rgba(11,37,69,0.18) !important;
+  outline: none;
+}
