@@ -126,12 +126,6 @@ function foiRealizada(m, hoje, agoraHHMM) {
   return !!fim && fim.padStart(5, "0") <= agoraHHMM;
 }
 
-const valorUSD = (txt) => {
-  const n = Number(String(txt || "").replace(/[^\d,]/g, "").replace(",", "."));
-  return Number.isFinite(n) ? n : 0;
-};
-const usd = (n) => `US$ ${Math.round(n).toLocaleString("pt-BR")}`;
-
 function calcularNumeros({ meetings, events, contacts, members }) {
   const agora = new Date();
   const hoje = isoLocal(agora);
@@ -185,7 +179,6 @@ function calcularNumeros({ meetings, events, contacts, members }) {
     ativos: ms.filter((m) => m.status === "ativo").length,
     emNegociacao: negociacao.length,
     emProspeccao: ms.filter((m) => m.status === "prospeccao").length,
-    valorNegociacao: negociacao.reduce((t, m) => t + valorUSD(m.valorNegocio), 0),
     vencidos: vencidos.length,
     proximoEvento,
     diasAteEvento,
@@ -257,12 +250,12 @@ function NumerosEstrategicos({ n, irPara }) {
         title="Abrir a aba Empresas"
       />
       <Kpi
-        rotulo="Pipeline em negociação"
-        valor={usd(n.valorNegociacao)}
+        rotulo="Negócios em negociação"
+        valor={n.emNegociacao}
         destaque={n.vencidos > 0 ? (
           <span style={{ fontFamily: mono, fontSize: 11.5, color: "#C1502E", fontWeight: 600 }}>⚠ {n.vencidos} com previsão vencida</span>
         ) : null}
-        detalhe={`${n.emNegociacao} negócio${n.emNegociacao === 1 ? "" : "s"} em aberto`}
+        detalhe={n.vencidos > 0 ? "Atualize a previsão no HubSpot" : "Todos com previsão em dia"}
         onClick={() => irPara("pipeline")}
         title="Abrir a aba Pipeline"
       />
