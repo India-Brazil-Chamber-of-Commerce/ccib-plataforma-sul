@@ -133,6 +133,7 @@ export const SEEDS = {
 // A chave é um trecho do nome do evento, sem diferenciar maiúsculas.
 export const CONVITES_EVENTOS = {
   "jornada do compliance": "/eventos/jornada-do-compliance-2026.png",
+  "martha becker": "/eventos/webinar-crise-nao-marca-hora-martha-becker.webp",
 };
 
 export function aplicarConvites(eventos) {
