@@ -134,6 +134,7 @@ export const SEEDS = {
 export const CONVITES_EVENTOS = {
   "jornada do compliance": "/eventos/jornada-do-compliance-2026.png",
   "martha becker": "/eventos/webinar-crise-nao-marca-hora-martha-becker.webp",
+  "compliance week": "/eventos/compliance-week-2025.png",
 };
 
 export function aplicarConvites(eventos) {
