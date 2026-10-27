@@ -401,6 +401,17 @@ export default function App() {
     }
     updateMembers([...(members || []), { ...blankMember(), nome: nome.trim(), status: "prospeccao", responsavel: "ambos" }]);
   };
+  // Empresa que entra no funil já numa etapa (ex.: sugestão vinda de reunião do Teams)
+  const adicionarComEtapa = (nome, patch) => {
+    const chave = nome.trim().toLowerCase();
+    const existente = (members || []).find((m) => (m.nome || "").trim().toLowerCase() === chave);
+    if (existente) {
+      const notas = [existente.notas, patch.notas].filter(Boolean).join("\n");
+      patchMember(existente.id, { ...patch, notas });
+      return;
+    }
+    updateMembers([...(members || []), { ...blankMember(), nome: nome.trim(), responsavel: "ambos", ...patch }]);
+  };
   const abrirEmpresa = (id) => {
     const m = (members || []).find((x) => x.id === id);
     setMemberFilterEstado("todos");
@@ -774,7 +785,7 @@ export default function App() {
 
       <div style={{ maxWidth: tab === "pipeline" ? 1500 : tab === "reunioes" ? 1380 : 1020, margin: "0 auto" }}>
         {tab === "pipeline" && (
-          <PipelineTab members={members} patchMember={patchMember} addPipelineItem={addPipelineItem} abrirEmpresa={abrirEmpresa} />
+          <PipelineTab members={members} patchMember={patchMember} addPipelineItem={addPipelineItem} adicionarComEtapa={adicionarComEtapa} abrirEmpresa={abrirEmpresa} />
         )}
 
         {tab === "projetos" && <EventosRegionalTab />}

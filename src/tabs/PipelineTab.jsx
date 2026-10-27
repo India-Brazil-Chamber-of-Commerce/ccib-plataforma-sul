@@ -4,6 +4,7 @@ import { RESPONSAVEIS } from "../constants";
 import { filterInputStyle } from "../styles";
 import { formatDate } from "../lib/format";
 import DestaquesReuniao from "../components/DestaquesReuniao";
+import SugestoesTeams from "../components/SugestoesTeams";
 
 const mono = "'IBM Plex Mono', monospace";
 const serif = "'Fraunces', serif";
@@ -68,11 +69,16 @@ function Kpi({ valor, label, cor = "#0B2545", alerta }) {
   );
 }
 
-function Cartao({ m, etapa, hoje, mover, abrirEmpresa }) {
+function Cartao({ m, etapa, hoje, mover, abrirEmpresa, arrastando }) {
   const vencida = m.status === "negociacao" && m.dataNegocio && m.dataNegocio < hoje;
   const valor = m.valorNegocio || "";
   return (
-    <div style={{ background: "#FFFFFF", border: `1px solid ${vencida ? "#F1C9BE" : "#E6E9EF"}`, borderLeft: `4px solid ${etapa.color}`, borderRadius: 10, padding: "10px 12px", boxShadow: "0 2px 6px -2px rgba(11,37,69,0.10)" }}>
+    <div
+      draggable
+      onDragStart={(ev) => { ev.dataTransfer.setData("text/plain", m.id); ev.dataTransfer.effectAllowed = "move"; arrastando(m.id); }}
+      onDragEnd={() => arrastando(null)}
+      title="Arraste para outra coluna para mudar a etapa"
+      style={{ cursor: "grab", background: "#FFFFFF", border: `1px solid ${vencida ? "#F1C9BE" : "#E6E9EF"}`, borderLeft: `4px solid ${etapa.color}`, borderRadius: 10, padding: "10px 12px", boxShadow: "0 2px 6px -2px rgba(11,37,69,0.10)" }}>
       <button
         onClick={abrirEmpresa}
         title="Abrir na aba Empresas"
@@ -100,13 +106,16 @@ function Cartao({ m, etapa, hoje, mover, abrirEmpresa }) {
         {ETAPAS_PIPELINE.filter((e) => e.key !== etapa.key).map((e) => <option key={e.key} value={e.key}>{e.label}</option>)}
         <option value="ganho">✓ Ganho: virou associado</option>
         <option value="perdido">✕ Perdido: vai para o histórico</option>
+        <option value="tirar">Tirar do pipeline</option>
       </select>
     </div>
   );
 }
 
-export default function PipelineTab({ members, patchMember, addPipelineItem, abrirEmpresa }) {
+export default function PipelineTab({ members, patchMember, addPipelineItem, adicionarComEtapa, abrirEmpresa }) {
   const [busca, setBusca] = useState("");
+  const [arrastado, setArrastado] = useState(null);
+  const [colunaAlvo, setColunaAlvo] = useState(null);
   const [resp, setResp] = useState("todos");
   const [novo, setNovo] = useState("");
   const hoje = new Date().toISOString().slice(0, 10);
@@ -133,12 +142,31 @@ export default function PipelineTab({ members, patchMember, addPipelineItem, abr
       if (window.confirm(`Marcar ${m.nome} como perdido? A empresa vai para o Histórico de prospecção.`)) patchMember(m.id, { status: "perdido", etapaNegocio: "Negócio perdido", dataNegocio: m.dataNegocio || hoje });
       return;
     }
+    if (destino === "tirar") {
+      if (window.confirm(`Tirar ${m.nome} do pipeline? A empresa continua cadastrada (como inativa) na aba Empresas, nada é apagado.`)) patchMember(m.id, { status: "inativo" });
+      return;
+    }
     if (destino === "prospeccao") {
       patchMember(m.id, { status: "prospeccao" });
       return;
     }
     const servicos = (m.etapaNegocio || "").includes("(serviços)") ? " (serviços)" : "";
     patchMember(m.id, { status: "negociacao", etapaNegocio: ETAPA_TEXTO[destino] + servicos });
+  };
+
+  // Sugestão do Teams movida para uma etapa: entra no funil já na coluna escolhida
+  const moverSugestao = (nome, destino, notas) => {
+    const patch = destino === "prospeccao" ? { status: "prospeccao" } : { status: "negociacao", etapaNegocio: ETAPA_TEXTO[destino] };
+    adicionarComEtapa(nome, { ...patch, notas });
+  };
+
+  const soltar = (ev, destino) => {
+    ev.preventDefault();
+    setColunaAlvo(null);
+    const id = ev.dataTransfer.getData("text/plain") || arrastado;
+    const m = members.find((x) => x.id === id);
+    setArrastado(null);
+    if (m && etapaDoPipeline(m) !== destino) mover(m, destino);
   };
 
   const adicionar = () => {
@@ -160,6 +188,8 @@ export default function PipelineTab({ members, patchMember, addPipelineItem, abr
       </div>
 
       <DestaquesReuniao members={members} abrirEmpresa={abrirEmpresa} />
+
+      <SugestoesTeams members={members} etapas={ETAPAS_PIPELINE.filter((e) => e.key !== "prospeccao")} moverSugestao={moverSugestao} />
 
       <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 18 }}>
         <Kpi valor={itens.length} label="Prospects no funil" />
@@ -206,7 +236,12 @@ export default function PipelineTab({ members, patchMember, addPipelineItem, abr
         {ETAPAS_PIPELINE.map((e) => {
           const col = itens.filter((m) => etapaDoPipeline(m) === e.key);
           return (
-            <div key={e.key} style={{ flex: "1 1 0", minWidth: 172, background: "#F7F8FA", border: "1px solid #E6E9EF", borderRadius: 12, padding: 10, display: "flex", flexDirection: "column", gap: 8, maxHeight: 640 }}>
+            <div
+              key={e.key}
+              onDragOver={(ev) => { if (arrastado) { ev.preventDefault(); if (colunaAlvo !== e.key) setColunaAlvo(e.key); } }}
+              onDragLeave={(ev) => { if (!ev.currentTarget.contains(ev.relatedTarget)) setColunaAlvo(null); }}
+              onDrop={(ev) => soltar(ev, e.key)}
+              style={{ flex: "1 1 0", minWidth: 172, background: colunaAlvo === e.key ? `${e.color}14` : "#F7F8FA", border: colunaAlvo === e.key ? `1px dashed ${e.color}` : "1px solid #E6E9EF", borderRadius: 12, transition: "background-color 0.12s ease", padding: 10, display: "flex", flexDirection: "column", gap: 8, maxHeight: 640 }}>
               <div style={{ padding: "2px 4px 6px", borderBottom: `3px solid ${e.color}` }}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6 }}>
                   <span style={{ fontSize: 12.5, fontWeight: 700, color: "#0B2545" }}>{e.label}</span>
@@ -217,7 +252,7 @@ export default function PipelineTab({ members, patchMember, addPipelineItem, abr
               <div style={{ display: "flex", flexDirection: "column", gap: 8, overflowY: "auto" }}>
                 {col.length === 0 && <div style={{ fontSize: 12, color: "#B7BEC9", padding: "8px 4px" }}>Nenhuma empresa.</div>}
                 {col.map((m) => (
-                  <Cartao key={m.id} m={m} etapa={e} hoje={hoje} mover={mover} abrirEmpresa={() => abrirEmpresa(m.id)} />
+                  <Cartao key={m.id} m={m} etapa={e} hoje={hoje} mover={mover} abrirEmpresa={() => abrirEmpresa(m.id)} arrastando={setArrastado} />
                 ))}
               </div>
             </div>
@@ -225,7 +260,7 @@ export default function PipelineTab({ members, patchMember, addPipelineItem, abr
         })}
       </div>
       <div style={{ fontSize: 11.5, color: "#8992A6", marginTop: 6 }}>
-        Ganhos vão para Associados ativos e perdidos para o Histórico de prospecção, na aba Empresas. Clique no nome para editar todos os dados da empresa.
+        Arraste um card para outra coluna (ou use "Mover para…") para mudar a etapa. Ganhos vão para Associados ativos e perdidos para o Histórico de prospecção, na aba Empresas. Clique no nome para editar todos os dados da empresa.
       </div>
     </div>
   );

@@ -16,6 +16,8 @@ export const STORAGE_LEMBRETES_SEMENTES = "ccib-sul-lembretes-sementes";
 
 export const STORAGE_DESTAQUES = "ccib-sul-destaques";
 
+export const STORAGE_SUGESTOES_TRATADAS = "ccib-sul-sugestoes-teams-tratadas";
+
 export const ESTADOS = ["PR", "SC", "RS", "Outro"];
 
 export const RESPONSAVEIS = [

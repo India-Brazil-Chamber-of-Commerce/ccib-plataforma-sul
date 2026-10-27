@@ -647,3 +647,34 @@ export const SEED_PROJECTS = [
     createdAt: Date.now(),
   },
 ];
+
+// Empresas vistas em reuniões do Teams (agenda da Bianca) que ainda não estão na plataforma.
+// Aparecem na aba Pipeline como sugestões: cada uma pode ser movida para uma etapa do funil ou excluída.
+// A rotina diária acrescenta novas ao final; não reutilize ids.
+export const SUGESTOES_TEAMS = [
+  { id: "teams-sug-wsi", empresa: "WSI Comex", reunioes: [{ data: "2026-07-03", assunto: "Reunião: CCIB + WSI" }, { data: "2026-07-28", assunto: "Reunião: CCIB + WSI + Do Sul Pneus" }], participantes: "Edson Almeida" },
+  { id: "teams-sug-idb", empresa: "IDB do Brasil", reunioes: [{ data: "2026-07-06", assunto: "Reunião: CCIB + IDB do Brasil" }], participantes: "" },
+  { id: "teams-sug-anahp", empresa: "ANAHP", reunioes: [{ data: "2026-07-14", assunto: "Reunião: CCIB + ANAHP" }], participantes: "Thiago Camargo" },
+  { id: "teams-sug-dio7", empresa: "DIO7 Business Group", reunioes: [{ data: "2026-07-23", assunto: "Alinhamento DIO7 Business Group + CCIB" }], participantes: "Dionathan Reis Lima" },
+  { id: "teams-sug-tiaraju", empresa: "Grupo Tiaraju", reunioes: [{ data: "2026-07-24", assunto: "CCIB | Alinhamento Missão India Health" }], participantes: "Thaciane Mendes" },
+  { id: "teams-sug-symco", empresa: "SYMCO", reunioes: [{ data: "2026-08-04", assunto: "Reunião: CCIB + SYMCO" }, { data: "2026-09-02", assunto: "Reunião Alinhamento - India Health" }], participantes: "Gallani" },
+  { id: "teams-sug-alko", empresa: "Alko do Brasil", reunioes: [{ data: "2026-08-12", assunto: "Reunião India Health | Alko do Brasil" }], participantes: "Juliana Komel" },
+  { id: "teams-sug-umang", empresa: "Umang Software", reunioes: [{ data: "2026-08-20", assunto: "[Ext] IBCC <> UMANG Software" }], participantes: "Mangirish, Oscar" },
+  { id: "teams-sug-biokan", empresa: "Biokan", reunioes: [{ data: "2026-08-21", assunto: "Reunião: CCIB + Biokan" }, { data: "2026-08-27", assunto: "India Health | Alinhamento CCIB & Biokan" }], participantes: "Marcos Rabellino" },
+  { id: "teams-sug-docile", empresa: "Docile", reunioes: [{ data: "2026-08-25", assunto: "[Ext] CCIB <> Docile" }], participantes: "Bernardo Kranz" },
+  { id: "teams-sug-forx", empresa: "Forx Peças Agrícolas", reunioes: [{ data: "2026-09-17", assunto: "Reunião: CCIB + FORX PEÇAS AGRÍCOLAS" }, { data: "2026-09-22", assunto: "Reunião: CCIB + FORX" }], participantes: "" },
+  { id: "teams-sug-stars", empresa: "Aceleradora Stars", reunioes: [{ data: "2026-09-23", assunto: "Reunião: CCIB Sul & Stars" }], participantes: "Guilherme Quinta" },
+  { id: "teams-sug-ibv", empresa: "IBV", reunioes: [{ data: "2026-10-01", assunto: "IBCC <> IBV - Upcoming Projects" }], participantes: "Harinath Viswanathan" },
+  { id: "teams-sug-brg", empresa: "BRG Advogados", reunioes: [{ data: "2026-10-02", assunto: "Reunião: CCIB + BRG + UCS" }], participantes: "Guilherme Recka, Yasmin Duma" },
+  { id: "teams-sug-ferraz", empresa: "Ferraz Support", reunioes: [{ data: "2026-10-08", assunto: "Reunião: CCIB + FERRAZ SUPPORT" }], participantes: "" },
+  { id: "teams-sug-stcp", empresa: "STCP", reunioes: [{ data: "2026-10-09", assunto: "Reunião: CCIB + STCP" }], participantes: "Romulo Lisboa, J. Matos" },
+  { id: "teams-sug-sasplastic", empresa: "Sas Plastic", reunioes: [{ data: "2026-10-22", assunto: "Reunião: CCIB Sul & Sas Plastic" }], participantes: "Carolina Bueno, Carine Nissola" },
+  { id: "teams-sug-aoi", empresa: "AOI (Asset Outcomes International)", reunioes: [{ data: "2026-10-22", assunto: "Reunião: CCIB + AOI" }], participantes: "Augusto Buffulin" },
+  { id: "teams-sug-globaldoctors", empresa: "Global Doctors", reunioes: [{ data: "2026-10-23", assunto: "Reunião CCIB & Daniel Meucci" }], participantes: "Daniel Meucci, Marcelo Meucci" },
+  { id: "teams-sug-prezotto", empresa: "ECHS Prezotto", reunioes: [{ data: "2026-10-23", assunto: "Reunião: CCIB + ECHS PREZOTTO" }], participantes: "" },
+  { id: "teams-sug-maringatech", empresa: "Maringatech", reunioes: [{ data: "2026-10-26", assunto: "Reunião: CCIB + MARINGATECH" }], participantes: "Diretoria" },
+  { id: "teams-sug-inov", empresa: "Inov", reunioes: [{ data: "2026-10-26", assunto: "Reunião: CCIB + Inov" }], participantes: "Marketing" },
+  { id: "teams-sug-ofertanacional", empresa: "Oferta Nacional", reunioes: [{ data: "2026-10-27", assunto: "Reunião: CCIB + PAUL LEO" }], participantes: "Paul Leo" },
+  { id: "teams-sug-greenimports", empresa: "Green Imports", reunioes: [{ data: "2026-10-27", assunto: "Reunião: CCIB + GREEN IMPORTS" }], participantes: "" },
+  { id: "teams-sug-unishipping", empresa: "Unishipping", reunioes: [{ data: "2026-10-28", assunto: "CCIB - Jornada do Compliance" }], participantes: "G. Veloso, F. Souza, J. Filgueira" },
+];
