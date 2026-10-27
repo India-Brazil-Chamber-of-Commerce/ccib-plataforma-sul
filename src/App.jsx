@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { Loader2, Building2, CalendarDays, LayoutGrid, Users, Contact, TrendingUp, Plane, CalendarCheck } from "lucide-react";
 import { STORAGE_MEMBERS, STORAGE_EVENTS, STORAGE_MEETINGS, STORAGE_PARTNERS, STORAGE_CONTACTS, STORAGE_PROJECTS, ESTADOS, STATUS_MEMBER } from "./constants";
-import { SEED_CONTACTS, SEED_EVENTS, REMOVED_EVENTS, FORCE_EVENT_UPDATES, FORCE_MEMBER_UPDATES, APPEND_MEMBER_NOTES, MERGE_MEMBERS, NEGOCIOS_HUBSPOT, SEED_MEMBERS, ENSURE_MEMBERS } from "./data/seeds";
+import { SEED_CONTACTS, REMOVED_CONTACTS, SEED_EVENTS, REMOVED_EVENTS, FORCE_EVENT_UPDATES, FORCE_MEMBER_UPDATES, APPEND_MEMBER_NOTES, MERGE_MEMBERS, NEGOCIOS_HUBSPOT, SEED_MEMBERS, ENSURE_MEMBERS } from "./data/seeds";
 import { SEED_MEETINGS, REMOVED_MEETINGS } from "./data/seedMeetings";
 import { blankContact, blankMeeting, blankPartner, blankMember, blankEvent } from "./lib/factories";
 import { useGoogleFonts } from "./lib/useGoogleFonts";
@@ -295,7 +295,9 @@ export default function App() {
     }
     try {
       const r = await safeGet(STORAGE_CONTACTS, true);
-      const parsedContacts = r && r.value ? JSON.parse(r.value) : [];
+      const salvosContatos = r && r.value ? JSON.parse(r.value) : [];
+      const parsedContacts = salvosContatos.filter((c) => !REMOVED_CONTACTS.ids.includes(c.id));
+      const contatosRemovidos = parsedContacts.length !== salvosContatos.length;
       // Um contato-semente só entra se ainda não existir (mesmo id ou mesmo e-mail, quando houver e-mail)
       const existingIds = new Set(parsedContacts.map((c) => c.id));
       const existingEmails = new Set(parsedContacts.map((c) => (c.email || "").trim().toLowerCase()).filter(Boolean));
@@ -326,7 +328,7 @@ export default function App() {
         if (pais) { mergedContacts[i] = { ...c, pais }; paisAdded = true; }
       }
       setContacts(mergedContacts);
-      if (missingContactSeeds.length > 0 || setorAdded || obsAdded || paisAdded) {
+      if (missingContactSeeds.length > 0 || setorAdded || obsAdded || paisAdded || contatosRemovidos) {
         await persistContacts(mergedContacts);
       }
     } catch (e) {
