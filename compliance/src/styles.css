@@ -434,7 +434,8 @@ ul.tasklist li:hover .icon-btn{ opacity:1; }
 }
 .evento-card:hover{ transform:translateY(-2px); border-color:var(--gold-500); box-shadow:0 8px 20px rgba(11,30,61,0.10); }
 .evento-foto{ aspect-ratio:16/9; background:var(--cream-50); display:flex; align-items:center; justify-content:center; overflow:hidden; border-bottom:1px solid var(--line); }
-.evento-foto img{ width:100%; height:100%; object-fit:cover; display:block; }
+/* contain: mostra o convite inteiro, sem cortar o texto */
+.evento-foto img{ width:100%; height:100%; object-fit:contain; display:block; background:#fff; }
 .evento-foto.vazia{ color:var(--gold-500); background:linear-gradient(135deg, #F6F1E4 0%, #EFE6CF 100%); }
 .evento-card-corpo{ padding:14px 16px 16px; }
 .evento-status{ display:flex; align-items:center; gap:8px; margin-bottom:8px; }

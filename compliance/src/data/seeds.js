@@ -128,6 +128,25 @@ export const SEEDS = {
   duvidas: [],
 };
 
+// Convites colocados pela equipe técnica: aplicados uma única vez por evento (campo conviteAplicado),
+// então quem trocar ou remover a imagem na plataforma não é sobrescrito depois.
+// A chave é um trecho do nome do evento, sem diferenciar maiúsculas.
+export const CONVITES_EVENTOS = {
+  "jornada do compliance": "/eventos/jornada-do-compliance-2026.png",
+};
+
+export function aplicarConvites(eventos) {
+  let mudou = false;
+  const lista = eventos.map((e) => {
+    const nome = (e.evento || "").toLowerCase();
+    const trecho = Object.keys(CONVITES_EVENTOS).find((k) => nome.includes(k));
+    if (!trecho || e.conviteAplicado === CONVITES_EVENTOS[trecho]) return e;
+    mudou = true;
+    return { ...e, convite: CONVITES_EVENTOS[trecho], conviteAplicado: CONVITES_EVENTOS[trecho] };
+  });
+  return { lista, mudou };
+}
+
 // "18/11/2026" ou "2026-11-18" vira "2026-11-18"; qualquer outro texto ("Novembro/2026") não é data exata
 function paraIso(texto) {
   const s = String(texto || "").trim();
