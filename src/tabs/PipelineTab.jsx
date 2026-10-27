@@ -3,6 +3,7 @@ import { Plus, AlertTriangle } from "lucide-react";
 import { RESPONSAVEIS } from "../constants";
 import { filterInputStyle } from "../styles";
 import { formatDate } from "../lib/format";
+import DestaquesReuniao from "../components/DestaquesReuniao";
 
 const mono = "'IBM Plex Mono', monospace";
 const serif = "'Fraunces', serif";
@@ -157,6 +158,8 @@ export default function PipelineTab({ members, patchMember, addPipelineItem, abr
           </div>
         </div>
       </div>
+
+      <DestaquesReuniao members={members} abrirEmpresa={abrirEmpresa} />
 
       <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 18 }}>
         <Kpi valor={itens.length} label="Prospects no funil" />
