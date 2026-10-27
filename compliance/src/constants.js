@@ -7,7 +7,6 @@ export const STORAGE = {
   treinamentosAnuais: "ccib-compliance-treinamentos-anuais",
   treinamentosPendentes: "ccib-compliance-treinamentos-pendentes",
   treinamentos: "ccib-compliance-treinamentos",
-  dueDiligence: "ccib-compliance-due-diligence",
   conflitos: "ccib-compliance-conflitos",
   brindes: "ccib-compliance-brindes",
   agentes: "ccib-compliance-agentes-publicos",
@@ -26,9 +25,6 @@ export const CANAL_DENUNCIAS_URL = "https://sgcompliance.net/sg/camara-de-comerc
 export const STATUS_POLITICA = ["Vigente", "Em revisão", "Vencida", "Rascunho"];
 export const CATEGORIAS_POLITICA = ["Institucional", "Ética e conduta", "Terceiros", "Governança", "Conduta comercial", "Outro"];
 export const STATUS_ANUAL = ["Concluído", "Em andamento", "Pendente"];
-export const TIPOS_DUE_DILIGENCE = ["Novo associado", "Fornecedor", "Parceiro", "Patrocinador", "Outro"];
-export const NIVEIS_RISCO = ["Baixo", "Médio", "Alto"];
-export const STATUS_DUE_DILIGENCE = ["Em andamento", "Finalizada", "Reprovada"];
 export const NATUREZAS_CONFLITO = [
   "Relação familiar com associado/fornecedor",
   "Participação societária",

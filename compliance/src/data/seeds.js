@@ -44,10 +44,6 @@ export const SEED_TREINAMENTOS = [
   { id: id("t"), data: "2026-09-22", treinamento: "Onboarding CCIB", participantes: "Gabriela Amud", duracao: "40 min", observacoes: "" },
 ];
 
-export const SEED_DUE_DILIGENCE = [
-  { id: id("dd"), empresa: "Galaxy Infra & Engineering", tipo: "Novo associado", solicitante: "Escritório Índia", risco: "Médio", status: "Finalizada", observacoes: "" },
-];
-
 export const SEED_EVENTOS_FUTUROS = [
   { id: id("ef"), evento: "Jornada do Compliance", tipo: "Jornada/Semana de compliance", data: "Novembro/2026", local: "", status: "Previsto", convite: "" },
 ];
@@ -111,7 +107,7 @@ export const FAQ = [
   },
   {
     pergunta: "Uma empresa candidata a associada tem um processo judicial. O que fazer?",
-    resposta: "Abra uma due diligence no módulo correspondente antes de prosseguir com a associação, detalhando o processo identificado.",
+    resposta: "Antes de prosseguir com a associação, informe a área de compliance da Câmara, detalhando o processo identificado.",
   },
 ];
 
@@ -123,7 +119,6 @@ export const SEEDS = {
   treinamentosAnuais: SEED_TREINAMENTOS_ANUAIS,
   treinamentosPendentes: SEED_TREINAMENTOS_PENDENTES,
   treinamentos: SEED_TREINAMENTOS,
-  dueDiligence: SEED_DUE_DILIGENCE,
   conflitos: [],
   brindes: [],
   agentes: [],
