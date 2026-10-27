@@ -489,6 +489,7 @@ export const NEGOCIOS_HUBSPOT = [
   { empresa: "Neoking Foods", situacao: "negociacao", etapa: "Proposta Enviada / Em negociação", valor: "US$ 2.100", data: "2026-11-13" },
   { empresa: "SoftExpert", situacao: "negociacao", etapa: "Proposta Enviada / Em negociação", valor: "US$ 2.100", data: "2026-11-27" },
   { empresa: "TsuruTrading", situacao: "negociacao", etapa: "Proposta Enviada / Em negociação", valor: "US$ 4.020", data: "2026-11-27" },
+  { empresa: "Vada Agro", situacao: "negociacao", etapa: "Proposta Enviada / Em negociação", valor: "US$ 2.100", data: "2026-10-31" },
 ];
 
 // Lembretes da aba Reuniões. Entram uma vez (por id); depois podem ser editados ou apagados na plataforma.
