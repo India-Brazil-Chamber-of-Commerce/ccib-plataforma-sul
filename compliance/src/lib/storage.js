@@ -20,7 +20,9 @@ let remotoDisponivel = null;
 
 async function remotoGet(key) {
   const res = await fetch(`/api/dados?key=${encodeURIComponent(key)}`, { cache: "no-store" });
-  if (res.status === 404 || res.status === 503) {
+  // Sem a API (ex.: npm run dev / vite preview, que devolvem a página HTML) ou sem banco
+  const ehJson = (res.headers.get("content-type") || "").includes("application/json");
+  if (res.status === 404 || res.status === 503 || (res.ok && !ehJson)) {
     remotoDisponivel = false;
     return undefined;
   }
@@ -37,6 +39,10 @@ async function remotoSet(key, value) {
     // Permite terminar o envio mesmo se a aba for fechada (o navegador limita a 64 KB)
     keepalive: value.length < 60000,
   });
+  if (res.status === 404 || res.status === 503) {
+    remotoDisponivel = false;
+    return;
+  }
   if (!res.ok) throw new Error(`Falha ao salvar ${key} (${res.status})`);
 }
 

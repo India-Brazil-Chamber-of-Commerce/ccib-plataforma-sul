@@ -7,7 +7,6 @@ import LOGO_URL from "./assets/logo-ccib.png";
 import VisaoGeralTab from "./tabs/VisaoGeralTab";
 import PoliticasTab from "./tabs/PoliticasTab";
 import TreinamentosTab from "./tabs/TreinamentosTab";
-import DueDiligenceTab from "./tabs/DueDiligenceTab";
 import ConflitosTab from "./tabs/ConflitosTab";
 import BrindesTab from "./tabs/BrindesTab";
 import AgentesPublicosTab from "./tabs/AgentesPublicosTab";
@@ -24,7 +23,6 @@ const MENU = [
     itens: [
       { id: "politicas", label: "Políticas e documentos", Tab: PoliticasTab },
       { id: "treinamentos", label: "Treinamentos", Tab: TreinamentosTab },
-      { id: "due", label: "Due diligence", Tab: DueDiligenceTab },
       { id: "conflitos", label: "Conflitos de interesse", Tab: ConflitosTab },
       { id: "brindes", label: "Brindes e hospitalidades", Tab: BrindesTab },
       { id: "agentes", label: "Agentes Públicos", Tab: AgentesPublicosTab },

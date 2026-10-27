@@ -1,6 +1,6 @@
 # Plataforma de Compliance (CCIB)
 
-Painel do programa de compliance da Câmara de Comércio Índia Brasil (CCIB): políticas, treinamentos, due diligence, conflitos de interesse, brindes, agentes públicos, Pacto Global, eventos e canais de dúvidas e denúncias.
+Painel do programa de compliance da Câmara de Comércio Índia Brasil (CCIB): políticas, treinamentos, conflitos de interesse, brindes, agentes públicos, Pacto Global, eventos e canais de dúvidas e denúncias.
 
 Segue o mesmo modelo da Plataforma Regional Sul (pasta raiz deste repositório), mas é um site separado, com dados e senha próprios.
 
