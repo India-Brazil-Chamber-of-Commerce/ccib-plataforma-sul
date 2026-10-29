@@ -3,6 +3,7 @@ import { Ship, Package, MapPin, BarChart3, FileSpreadsheet } from "lucide-react"
 import { filterInputStyle, labelStyle } from "../styles";
 import { COMERCIO_SUL_INDIA } from "../data/comercioSulIndia";
 import { PRODUTOS_SH4, DESCRICOES_SH4 } from "../data/comercioProdutos";
+import { CIDADES, CIDADES_PRODUTOS } from "../data/comercioCidades";
 
 // Nome curto do SH4 para o ranking (a descrição completa fica no texto ao passar o mouse)
 function nomeCurto(desc) {
@@ -11,6 +12,11 @@ function nomeCurto(desc) {
   const corte = t.slice(0, 90).search(/[,;(]\s[^,;(]*$/);
   return (corte > 30 ? t.slice(0, corte) : t.slice(0, 87)).trim().replace(/[.,;]+$/, "") + "…";
 }
+
+const fluxoDe = (f) => (f === "e" ? "exportacao" : "importacao");
+// Municípios e os principais produtos de cada um (consulta "Por Município" do Comex Stat)
+const CIDADES_LISTA = Object.entries(CIDADES).flatMap(([uf, linhas]) => linhas.map(([ano, f, cidade, valor]) => ({ ano, uf, fluxo: fluxoDe(f), cidade, valor })));
+const CIDADES_PROD = Object.entries(CIDADES_PRODUTOS).flatMap(([uf, linhas]) => linhas.map(([ano, f, cidade, codigo, valor]) => ({ ano, uf, fluxo: fluxoDe(f), cidade, codigo, valor })));
 
 // Produtos de cada estado, no mesmo formato dos demais dados da aba
 const PRODUTOS = Object.entries(PRODUTOS_SH4).flatMap(([uf, linhas]) =>
@@ -68,13 +74,19 @@ function Kpi({ label, valor, sub, cor = "#0B2545" }) {
 }
 
 // Ranking com barra horizontal, valor e participação no total
-function Ranking({ itens, total, cor, vazio }) {
+function Ranking({ itens, total, cor, vazio, detalhe }) {
+  const [aberto, setAberto] = useState(null);
   if (!itens.length) return <div style={{ fontSize: 13, color: "#8992A6" }}>{vazio}</div>;
   const max = Math.max(...itens.map((i) => i.valor));
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
       {itens.map((i, n) => (
-        <div key={i.chave} title={`${i.completo || i.nome}: ${usd(i.valor)} (${total ? pct(i.valor / total) : "-"} do total)`}>
+        <div
+          key={i.chave}
+          title={`${i.completo || i.nome}: ${usd(i.valor)} (${total ? pct(i.valor / total) : "-"} do total)${detalhe ? " · clique para ver os produtos" : ""}`}
+          onClick={detalhe ? () => setAberto(aberto === i.chave ? null : i.chave) : undefined}
+          style={detalhe ? { cursor: "pointer", borderRadius: 8, background: aberto === i.chave ? "#F7F8FA" : "transparent", padding: aberto === i.chave ? "6px 6px 8px" : 0, margin: aberto === i.chave ? "-6px" : 0 } : undefined}
+        >
           <div style={{ display: "flex", alignItems: "flex-start", gap: 8, marginBottom: 4 }}>
             <span style={{ fontFamily: mono, fontSize: 10.5, color: "#8992A6", width: 18 }}>{n + 1}</span>
             <span style={{ flex: 1, minWidth: 0, fontSize: 13, color: "#1B2438", lineHeight: 1.35, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
@@ -87,6 +99,7 @@ function Ranking({ itens, total, cor, vazio }) {
           <div style={{ marginLeft: 26, height: 8, background: "#F1F3F7", borderRadius: 4 }}>
             <div style={{ width: `${Math.max(1.5, (i.valor / max) * 100)}%`, height: "100%", background: cor, borderRadius: 4 }} />
           </div>
+          {detalhe && aberto === i.chave && <div style={{ marginLeft: 26, marginTop: 8 }}>{detalhe(i)}</div>}
         </div>
       ))}
     </div>
@@ -189,7 +202,28 @@ export default function ComercioTab() {
   const todosProdutos = [...dados.produtos, ...PRODUTOS];
   const ufsComProdutos = UFS.filter((e) => todosProdutos.some((x) => x.uf === e.uf));
   const produtos = agrupar(todosProdutos.filter((x) => doAno(x) && daUf(x) && x.fluxo === fluxo), (x) => x.codigo || x.produto, (x) => nomeCurto(x.produto), (x) => x.codigo || "");
-  const cidades = agrupar(dados.cidades.filter((x) => doAno(x) && daUf(x) && x.fluxo === fluxo), (x) => `${x.cidade}/${x.uf}`, (x) => x.cidade, (x) => (uf === "sul" ? x.uf : ""));
+  const todasCidades = [...dados.cidades, ...CIDADES_LISTA];
+  const ufsComCidades = UFS.filter((e) => todasCidades.some((x) => x.uf === e.uf && x.fluxo === fluxo));
+  const cidades = agrupar(todasCidades.filter((x) => doAno(x) && daUf(x) && x.fluxo === fluxo), (x) => `${x.cidade}/${x.uf}`, (x) => x.cidade, (x) => (uf === "sul" ? x.uf : ""));
+  // Base do % das cidades: soma dos municípios (o município é o da empresa, não o da origem do produto)
+  const totalCidades = cidades.reduce((s, c) => s + c.valor, 0);
+  const produtosDaCidade = (c) => {
+    const [nomeCid, ufCid] = c.chave.split("/");
+    const lista = CIDADES_PROD.filter((x) => doAno(x) && x.fluxo === fluxo && x.uf === ufCid && x.cidade === nomeCid).sort((a, b) => b.valor - a.valor);
+    if (!lista.length) return <div style={{ fontSize: 12, color: "#8992A6" }}>Sem detalhe de produtos para esta cidade.</div>;
+    return (
+      <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+        <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: "0.06em", textTransform: "uppercase", color: "#8992A6" }}>Principais produtos de {nomeCid}</div>
+        {lista.map((p) => (
+          <div key={p.codigo} title={DESCRICOES_SH4[p.codigo] || p.codigo} style={{ display: "flex", gap: 8, fontSize: 12, color: "#566175" }}>
+            <span style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{nomeCurto(DESCRICOES_SH4[p.codigo] || p.codigo)}</span>
+            <span style={{ fontFamily: mono, fontSize: 11.5 }}>{usd(p.valor)}</span>
+            <span style={{ fontFamily: mono, fontSize: 11, width: 44, textAlign: "right" }}>{p.valor / c.valor < 0.01 ? "<1%" : pct(p.valor / c.valor, 0)}</span>
+          </div>
+        ))}
+      </div>
+    );
+  };
   const totalFluxo = fluxo === "exportacao" ? exp : imp;
   const baseRanking = totalFluxo || soma(produtos);
 
@@ -269,10 +303,22 @@ export default function ComercioTab() {
               <Ranking itens={produtos.slice(0, 10)} total={baseRanking} cor={cor} vazio={ufsComProdutos.some((e) => uf === "sul" || e.uf === uf) ? "Sem dados de produtos para este filtro." : "Produtos deste estado ainda não carregados."} />
             </div>
             <div style={card}>
-              <Titulo icon={MapPin} extra={<span style={{ fontFamily: mono, fontSize: 10.5, color: "#8992A6" }}>% do total com a Índia</span>}>
-                Cidades mais representativas
+              <Titulo icon={MapPin} extra={<span style={{ fontFamily: mono, fontSize: 10.5, color: "#8992A6" }}>% do total dos municípios</span>}>
+                Cidades mais representativas · {FLUXOS[fluxo].curto.toLowerCase()}
               </Titulo>
-              <Ranking itens={cidades.slice(0, 10)} total={baseRanking} cor={cor} vazio="Sem dados de cidades para este filtro." />
+              {cidades.length > 0 && (
+                <div style={{ fontSize: 11.5, color: "#8992A6", marginTop: -6, marginBottom: 12, lineHeight: 1.45 }}>
+                  Município da empresa exportadora ou importadora, por isso a soma das cidades ({usd(totalCidades)}) difere do total por estado de origem do produto. Clique numa cidade para ver o que ela {fluxo === "exportacao" ? "exporta" : "importa"}.
+                  {uf === "sul" && ufsComCidades.length < UFS.length ? ` Cidades carregadas até agora: ${ufsComCidades.map((e) => e.nome).join(", ")}.` : ""}
+                </div>
+              )}
+              <Ranking
+                itens={cidades.slice(0, 10)}
+                total={totalCidades}
+                cor={cor}
+                detalhe={produtosDaCidade}
+                vazio={ufsComCidades.some((e) => uf === "sul" || e.uf === uf) ? "Sem dados de cidades para este filtro." : `${FLUXOS[fluxo].curto} por cidade ${uf === "sul" ? "da Região Sul" : UFS.find((e) => e.uf === uf).de} ainda não carregadas.`}
+              />
             </div>
           </div>
 
