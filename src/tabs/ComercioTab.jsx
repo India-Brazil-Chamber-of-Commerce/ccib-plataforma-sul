@@ -80,7 +80,9 @@ function Ranking({ itens, total, cor, vazio }) {
 }
 
 // Exportações e importações por ano, lado a lado
-function Evolucao({ anos, linhas }) {
+function Evolucao({ anos, linhas, parciais = [] }) {
+  const muitos = anos.length > 10;
+  const gap = muitos ? 4 : 18;
   const max = Math.max(1, ...linhas.flatMap((l) => [l.exp, l.imp]));
   const alt = 160;
   return (
@@ -92,18 +94,28 @@ function Evolucao({ anos, linhas }) {
           </span>
         ))}
       </div>
-      <div style={{ display: "flex", alignItems: "flex-end", gap: 18, height: alt + 26, borderBottom: "1px solid #D6DAE2", padding: "0 6px" }}>
-        {linhas.map((l) => (
-          <div key={l.ano} style={{ flex: 1, minWidth: 0, display: "flex", justifyContent: "center", alignItems: "flex-end", gap: 4, height: "100%" }}>
-            {[["exp", COR_EXP, "Exportações"], ["imp", COR_IMP, "Importações"]].map(([k, cor, nome]) => (
-              <div key={k} title={`${l.ano} · ${nome}: ${usd(l[k])}`} style={{ width: "40%", maxWidth: 34, height: l[k] ? Math.max(3, (l[k] / max) * alt) : 0, background: cor, borderRadius: "4px 4px 0 0" }} />
-            ))}
-          </div>
+      <div style={{ display: "flex", alignItems: "flex-end", gap, height: alt + 26, borderBottom: "1px solid #D6DAE2", padding: "0 6px" }}>
+        {linhas.map((l) => {
+          const parcial = parciais.includes(l.ano);
+          return (
+            <div key={l.ano} style={{ flex: 1, minWidth: 0, display: "flex", justifyContent: "center", alignItems: "flex-end", gap: muitos ? 1 : 4, height: "100%", opacity: parcial ? 0.45 : 1 }}>
+              {[["exp", COR_EXP, "Exportações"], ["imp", COR_IMP, "Importações"]].map(([k, cor, nome]) => (
+                <div key={k} title={`${l.ano}${parcial ? " (parcial)" : ""} · ${nome}: ${usd(l[k])}`} style={{ width: "46%", maxWidth: 34, height: l[k] ? Math.max(2, (l[k] / max) * alt) : 0, background: cor, borderRadius: muitos ? "2px 2px 0 0" : "4px 4px 0 0" }} />
+              ))}
+            </div>
+          );
+        })}
+      </div>
+      <div style={{ display: "flex", gap, padding: "6px 6px 0" }}>
+        {anos.map((a, i) => (
+          <span key={a} style={{ flex: 1, minWidth: 0, textAlign: "center", fontFamily: mono, fontSize: muitos ? 9.5 : 11, color: "#566175", visibility: !muitos || i % 2 === (anos.length - 1) % 2 ? "visible" : "hidden" }}>
+            {muitos ? `'${String(a).slice(2)}` : a}
+          </span>
         ))}
       </div>
-      <div style={{ display: "flex", gap: 18, padding: "6px 6px 0" }}>
-        {anos.map((a) => <span key={a} style={{ flex: 1, textAlign: "center", fontFamily: mono, fontSize: 11, color: "#566175" }}>{a}</span>)}
-      </div>
+      {parciais.some((a) => anos.includes(a)) && (
+        <div style={{ fontSize: 11.5, color: "#8992A6", marginTop: 8 }}>Barras mais claras: ano ainda em andamento ({parciais.filter((a) => anos.includes(a)).join(", ")}).</div>
+      )}
     </div>
   );
 }
@@ -128,8 +140,13 @@ export default function ComercioTab() {
     const s = new Set([...dados.totais, ...dados.produtos, ...dados.cidades].map((x) => x.ano).filter(Boolean));
     return [...s].sort((a, b) => a - b);
   }, [dados]);
-  const [ano, setAno] = useState(() => (anos.length ? anos[anos.length - 1] : null));
-  const [uf, setUf] = useState("sul");
+  const parciais = dados.anosParciais || [];
+  const completos = anos.filter((a) => !parciais.includes(a));
+  const ufsComDados = UFS.filter((e) => [...dados.totais, ...dados.produtos, ...dados.cidades].some((x) => x.uf === e.uf));
+  const [ano, setAno] = useState(() => (completos.length ? completos[completos.length - 1] : anos[anos.length - 1] ?? null));
+  // Enquanto só houver um estado carregado, a aba abre nele
+  const [uf, setUf] = useState(() => (ufsComDados.length === 1 ? ufsComDados[0].uf : "sul"));
+  const rotuloAno = (a) => `${a}${parciais.includes(a) ? " (parcial)" : ""}`;
   const [fluxo, setFluxo] = useState("exportacao");
 
   const temDados = anos.length > 0;
@@ -164,7 +181,7 @@ export default function ComercioTab() {
     const linhas = dados.totais.filter((x) => doAno(x) && x.uf === e.uf && x.fluxo === fluxo);
     const v = soma(linhas);
     const m = linhas.reduce((s, x) => s + (Number(x.valorMundo) || 0), 0);
-    return { ...e, valor: v, part: m ? v / m : null };
+    return { ...e, valor: v, part: m ? v / m : null, semDados: !ufsComDados.some((u) => u.uf === e.uf) };
   });
   const totalEstados = porEstado.reduce((s, e) => s + e.valor, 0);
 
@@ -191,7 +208,7 @@ export default function ComercioTab() {
         {temDados && (
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             <select aria-label="Ano" value={ano ?? ""} onChange={(e) => setAno(Number(e.target.value))} style={{ ...filterInputStyle, width: "auto" }}>
-              {anos.map((a) => <option key={a} value={a}>{a}</option>)}
+              {[...anos].reverse().map((a) => <option key={a} value={a}>{rotuloAno(a)}</option>)}
             </select>
             <select aria-label="Estado" value={uf} onChange={(e) => setUf(e.target.value)} style={{ ...filterInputStyle, width: "auto" }}>
               <option value="sul">Região Sul</option>
@@ -210,9 +227,15 @@ export default function ComercioTab() {
 
       {!temDados ? <SemDados /> : (
         <>
+          {ufsComDados.length < UFS.length && (
+            <div style={{ background: "#FFF7EE", border: "1px solid #F6DFC4", borderRadius: 10, padding: "10px 14px", fontSize: 12.5, color: "#7A4E1C", marginBottom: 16 }}>
+              Dados carregados até agora: {ufsComDados.map((e) => e.nome).join(", ")}. Totais por estado, sem produtos e cidades ainda.
+              {uf === "sul" ? " Em \"Região Sul\", os números somam só os estados já carregados." : ""}
+            </div>
+          )}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 200px), 1fr))", gap: 14, marginBottom: 22 }}>
-            <Kpi label={`Exportações para a Índia · ${ano}`} valor={usd(exp)} cor={COR_EXP} sub={partExp != null ? `${pct(partExp, 2)} das exportações ${deUf}` : nomeUf} />
-            <Kpi label={`Importações da Índia · ${ano}`} valor={usd(imp)} cor={COR_IMP} sub={partImp != null ? `${pct(partImp, 2)} das importações ${deUf}` : nomeUf} />
+            <Kpi label={`Exportações para a Índia · ${rotuloAno(ano)}`} valor={usd(exp)} cor={COR_EXP} sub={partExp != null ? `${pct(partExp, 2)} das exportações ${deUf}` : nomeUf} />
+            <Kpi label={`Importações da Índia · ${rotuloAno(ano)}`} valor={usd(imp)} cor={COR_IMP} sub={partImp != null ? `${pct(partImp, 2)} das importações ${deUf}` : nomeUf} />
             <Kpi label="Corrente de comércio" valor={usd(exp + imp)} cor="#B8752E" sub="exportações + importações" />
             <Kpi label="Saldo comercial" valor={usd(exp - imp)} cor={exp - imp >= 0 ? COR_EXP : "#C1502E"} sub={`${exp - imp >= 0 ? "superávit" : "déficit"} ${deUf} com a Índia`} />
           </div>
@@ -234,20 +257,20 @@ export default function ComercioTab() {
 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 420px), 1fr))", gap: 18 }}>
             <div style={card}>
-              <Titulo icon={MapPin}>Por estado · {FLUXOS[fluxo].curto.toLowerCase()} {ano}</Titulo>
+              <Titulo icon={MapPin}>Por estado · {FLUXOS[fluxo].curto.toLowerCase()} {rotuloAno(ano)}</Titulo>
               <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                 {porEstado.map((e) => (
                   <div key={e.uf} title={`${e.nome}: ${usd(e.valor)}`}>
                     <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 5 }}>
                       <span style={{ width: 10, height: 10, borderRadius: 3, background: e.cor }} />
                       <span style={{ flex: 1, fontSize: 13.5, color: "#1B2438" }}>{e.nome}</span>
-                      <span style={{ fontFamily: mono, fontSize: 12.5, color: "#0B2545", fontWeight: 600 }}>{usd(e.valor)}</span>
+                      <span style={{ fontFamily: mono, fontSize: 12.5, color: e.semDados ? "#B7BEC9" : "#0B2545", fontWeight: 600 }}>{e.semDados ? "sem dados" : usd(e.valor)}</span>
                     </div>
                     <div style={{ height: 10, background: "#F1F3F7", borderRadius: 5 }}>
                       <div style={{ width: totalEstados ? `${(e.valor / totalEstados) * 100}%` : 0, height: "100%", background: e.cor, borderRadius: 5 }} />
                     </div>
                     <div style={{ fontSize: 11.5, color: "#8992A6", marginTop: 4 }}>
-                      {totalEstados ? `${pct(e.valor / totalEstados)} do Sul` : ""}{e.part != null ? ` · Índia = ${pct(e.part, 2)} da pauta do estado` : ""}
+                      {e.semDados ? "Dados ainda não carregados" : totalEstados && ufsComDados.length === UFS.length ? `${pct(e.valor / totalEstados)} do Sul` : ""}{e.part != null ? ` · Índia = ${pct(e.part, 2)} da pauta do estado` : ""}
                     </div>
                   </div>
                 ))}
@@ -255,7 +278,7 @@ export default function ComercioTab() {
             </div>
             <div style={card}>
               <Titulo icon={BarChart3}>Evolução anual · {nomeUf}</Titulo>
-              <Evolucao anos={anos} linhas={evolucao} />
+              <Evolucao anos={anos} linhas={evolucao} parciais={parciais} />
             </div>
           </div>
         </>
