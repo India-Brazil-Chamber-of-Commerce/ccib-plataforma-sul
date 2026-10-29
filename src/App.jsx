@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import React, { useState, useEffect, useCallback, useMemo, useRef, Suspense, lazy } from "react";
 import { Loader2, Building2, CalendarDays, LayoutGrid, Users, Contact, TrendingUp, Plane, CalendarCheck, Ship } from "lucide-react";
 import { STORAGE_MEMBERS, STORAGE_EVENTS, STORAGE_MEETINGS, STORAGE_PARTNERS, STORAGE_CONTACTS, STORAGE_PROJECTS, ESTADOS, STATUS_MEMBER } from "./constants";
 import { SEED_CONTACTS, REMOVED_CONTACTS, SEED_EVENTS, REMOVED_EVENTS, FORCE_EVENT_UPDATES, FORCE_MEMBER_UPDATES, APPEND_MEMBER_NOTES, MERGE_MEMBERS, NEGOCIOS_HUBSPOT, SEED_MEMBERS, ENSURE_MEMBERS } from "./data/seeds";
@@ -10,7 +10,8 @@ import { storage, EVENTO_ATUALIZADO } from "./lib/storage";
 import { callMcpForJson, MCP_HUBSPOT, MCP_MICROSOFT_365 } from "./lib/claude";
 import EventosRegionalTab from "./tabs/EventosRegionalTab";
 import MissoesTab from "./tabs/MissoesTab";
-import ComercioTab from "./tabs/ComercioTab";
+// A aba de comércio traz muitos dados do Comex Stat: carrega só quando é aberta
+const ComercioTab = lazy(() => import("./tabs/ComercioTab"));
 import VisaoGeralTab from "./tabs/VisaoGeralTab";
 import EmpresasTab from "./tabs/EmpresasTab";
 import PipelineTab from "./tabs/PipelineTab";
@@ -792,7 +793,11 @@ export default function App() {
 
         {tab === "projetos" && <EventosRegionalTab />}
 
-        {tab === "comercio" && <ComercioTab />}
+        {tab === "comercio" && (
+          <Suspense fallback={<div style={{ display: "flex", alignItems: "center", gap: 10, color: "#8992A6", fontSize: 13, padding: "40px 0", justifyContent: "center" }}><Loader2 className="animate-spin" size={18} /> Carregando dados de comércio...</div>}>
+            <ComercioTab />
+          </Suspense>
+        )}
 
         {tab === "missoes" && <MissoesTab key={missaoAberta || "lista"} abertaInicial={missaoAberta} limparAbertaInicial={() => setMissaoAberta(null)} />}
 
