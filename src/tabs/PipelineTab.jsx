@@ -69,12 +69,49 @@ function Kpi({ valor, label, cor = "#0B2545", alerta }) {
   );
 }
 
-function Cartao({ m, etapa, hoje, mover, abrirEmpresa, arrastando }) {
+// Nota curtinha no próprio cartão (ex.: "ligar dia 05/11"), editável sem abrir a ficha
+function NotaRapida({ texto, salvar, setEditando, editando }) {
+  const [rascunho, setRascunho] = useState(texto || "");
+  const concluir = () => { const t = rascunho.trim(); if (t !== (texto || "")) salvar(t); setEditando(false); };
+  if (editando) {
+    return (
+      <input
+        autoFocus
+        value={rascunho}
+        maxLength={120}
+        placeholder="Nota rápida (Enter salva, Esc cancela)"
+        onChange={(e) => setRascunho(e.target.value)}
+        onBlur={concluir}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") concluir();
+          if (e.key === "Escape") { setRascunho(texto || ""); setEditando(false); }
+        }}
+        aria-label="Nota rápida"
+        style={{ ...filterInputStyle, width: "100%", boxSizing: "border-box", marginTop: 7, padding: "3px 7px", fontSize: 11.5, background: "#FFFBEA" }}
+      />
+    );
+  }
+  return (
+    <button
+      type="button"
+      onClick={() => { setRascunho(texto || ""); setEditando(true); }}
+      title={texto ? "Editar nota" : "Adicionar nota rápida"}
+      style={texto
+        ? { display: "block", width: "100%", textAlign: "left", marginTop: 7, background: "#FFF8DC", border: "1px solid #F3E3A6", borderRadius: 5, padding: "3px 7px", fontSize: 11.5, color: "#5C4A12", lineHeight: 1.35, cursor: "text" }
+        : { display: "block", marginTop: 6, background: "none", border: "none", padding: 0, fontSize: 11, color: "#B7BEC9", cursor: "pointer" }}
+    >
+      {texto || "+ nota"}
+    </button>
+  );
+}
+
+function Cartao({ m, etapa, hoje, mover, abrirEmpresa, arrastando, salvarNota }) {
+  const [editandoNota, setEditandoNota] = useState(false);
   const vencida = m.status === "negociacao" && m.dataNegocio && m.dataNegocio < hoje;
   const valor = m.valorNegocio || "";
   return (
     <div
-      draggable
+      draggable={!editandoNota}
       onDragStart={(ev) => { ev.dataTransfer.setData("text/plain", m.id); ev.dataTransfer.effectAllowed = "move"; arrastando(m.id); }}
       onDragEnd={() => arrastando(null)}
       title="Arraste para outra coluna para mudar a etapa"
@@ -97,6 +134,7 @@ function Cartao({ m, etapa, hoje, mover, abrirEmpresa, arrastando }) {
         <span style={{ fontFamily: mono, fontSize: 10.5, color: "#FFFFFF", background: "#0B2545", borderRadius: 5, padding: "2px 7px" }}>{responsavelLabel(m.responsavel)}</span>
       </div>
       {m.proximoPasso && <div style={{ fontSize: 12, color: "#566175", marginTop: 7, lineHeight: 1.4 }}>Próximo passo: {m.proximoPasso}</div>}
+      <NotaRapida texto={m.notaPipeline} salvar={salvarNota} editando={editandoNota} setEditando={setEditandoNota} />
       <select
         value=""
         onChange={(e) => e.target.value && mover(m, e.target.value)}
@@ -252,7 +290,7 @@ export default function PipelineTab({ members, patchMember, addPipelineItem, adi
               <div style={{ display: "flex", flexDirection: "column", gap: 8, overflowY: "auto" }}>
                 {col.length === 0 && <div style={{ fontSize: 12, color: "#B7BEC9", padding: "8px 4px" }}>Nenhuma empresa.</div>}
                 {col.map((m) => (
-                  <Cartao key={m.id} m={m} etapa={e} hoje={hoje} mover={mover} abrirEmpresa={() => abrirEmpresa(m.id)} arrastando={setArrastado} />
+                  <Cartao key={m.id} m={m} etapa={e} hoje={hoje} mover={mover} abrirEmpresa={() => abrirEmpresa(m.id)} arrastando={setArrastado} salvarNota={(t) => patchMember(m.id, { notaPipeline: t })} />
                 ))}
               </div>
             </div>
