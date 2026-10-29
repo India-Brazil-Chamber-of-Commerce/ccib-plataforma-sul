@@ -184,9 +184,22 @@ export default function ComercioTab() {
   const tot = (f) => totais.filter((x) => x.fluxo === f);
   const exp = soma(tot("exportacao"));
   const imp = soma(tot("importacao"));
-  const mundo = (f) => tot(f).reduce((s, x) => s + (Number(x.valorMundo) || 0), 0);
-  const partExp = mundo("exportacao") ? exp / mundo("exportacao") : null;
-  const partImp = mundo("importacao") ? imp / mundo("importacao") : null;
+  // Participação da Índia na pauta: o total com o mundo vem da consulta por município do Comex Stat,
+  // então a Índia também é somada pelos municípios (mesma base); sem dados de cidades, usa o total do estado.
+  const participacao = (ufs, f) => {
+    let indiaBase = 0, mundoBase = 0;
+    for (const u of ufs) {
+      const linha = dados.totais.find((x) => doAno(x) && x.uf === u && x.fluxo === f);
+      if (!linha || !linha.valorMundo) return null;
+      const cid = CIDADES_LISTA.filter((x) => doAno(x) && x.uf === u && x.fluxo === f);
+      indiaBase += cid.length ? soma(cid) : Number(linha.valorIndia) || 0;
+      mundoBase += Number(linha.valorMundo);
+    }
+    return mundoBase ? indiaBase / mundoBase : null;
+  };
+  const ufsFiltro = uf === "sul" ? UFS.map((e) => e.uf) : [uf];
+  const partExp = participacao(ufsFiltro, "exportacao");
+  const partImp = participacao(ufsFiltro, "importacao");
 
   // Agrupa por chave somando valores (para "Região Sul" juntar os três estados)
   const agrupar = (lista, chave, nome, extra) => {
@@ -230,8 +243,7 @@ export default function ComercioTab() {
   const porEstado = UFS.map((e) => {
     const linhas = dados.totais.filter((x) => doAno(x) && x.uf === e.uf && x.fluxo === fluxo);
     const v = soma(linhas);
-    const m = linhas.reduce((s, x) => s + (Number(x.valorMundo) || 0), 0);
-    return { ...e, valor: v, part: m ? v / m : null, semDados: !ufsComDados.some((u) => u.uf === e.uf) };
+    return { ...e, valor: v, part: participacao([e.uf], fluxo), semDados: !ufsComDados.some((u) => u.uf === e.uf) };
   });
   const totalEstados = porEstado.reduce((s, e) => s + e.valor, 0);
 
