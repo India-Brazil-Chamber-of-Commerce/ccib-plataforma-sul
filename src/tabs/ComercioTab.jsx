@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Ship, Package, MapPin, BarChart3, FileSpreadsheet } from "lucide-react";
+import { Ship, Package, MapPin, BarChart3, FileSpreadsheet, FileText } from "lucide-react";
 import { filterInputStyle, labelStyle } from "../styles";
 import { COMERCIO_SUL_INDIA } from "../data/comercioSulIndia";
 import { PRODUTOS_SH4, DESCRICOES_SH4 } from "../data/comercioProdutos";
@@ -352,6 +352,138 @@ function Evolucao({ linhas, parciais = [], anoSel, onAno }) {
   );
 }
 
+// Resumo de uma página (estado ou Região Sul) para imprimir ou salvar em PDF, gerado direto dos dados da aba
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+const mi = (v) => (v / 1e6).toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+// Corta no fim de uma palavra, sem deixar pontuação solta
+const cortar = (t, n) => (t.length <= n ? t : t.slice(0, n).replace(/\s+\S*$/, "").replace(/[\s.,;(]+$/, "") + "…");
+const sinal = (v) => `${v > 0 ? "+" : ""}${mi(v)}`;
+const varPct = (a, b) => (b ? `${a >= b ? "+" : ""}${(((a - b) / Math.abs(b)) * 100).toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%` : "");
+
+function resumoHTML(ufSel, ano) {
+  const dados = COMERCIO_SUL_INDIA;
+  const parciais = dados.anosParciais || [];
+  const ufs = ufSel === "sul" ? UFS.map((e) => e.uf) : [ufSel];
+  const info = ufSel === "sul" ? { nome: "Região Sul", de: "da Região Sul" } : UFS.find((e) => e.uf === ufSel);
+  const total = (a, f) => soma(dados.totais.filter((x) => x.ano === a && ufs.includes(x.uf) && x.fluxo === f));
+  const totalSul = (a, f) => soma(dados.totais.filter((x) => x.ano === a && x.fluxo === f));
+  const part = (f) => {
+    let india = 0, mundo = 0;
+    for (const u of ufs) {
+      const l = dados.totais.find((x) => x.ano === ano && x.uf === u && x.fluxo === f);
+      if (!l || !l.valorMundo) return null;
+      const cid = CIDADES_LISTA.filter((x) => x.ano === ano && x.uf === u && x.fluxo === f);
+      india += cid.length ? soma(cid) : Number(l.valorIndia) || 0;
+      mundo += Number(l.valorMundo);
+    }
+    return mundo ? india / mundo : null;
+  };
+  const ant = ano - 1;
+  const ultimo = Math.max(...dados.totais.map((x) => x.ano));
+  const mostraParcial = parciais.includes(ultimo) && ultimo > ano;
+  const linha = (a) => ({ e: total(a, "exportacao"), i: total(a, "importacao") });
+  const [L0, L1, LP] = [linha(ant), linha(ano), linha(ultimo)];
+  const pE = part("exportacao"), pI = part("importacao");
+
+  const top = (lista, chave, n = 5) => {
+    const m = new Map();
+    lista.forEach((x) => m.set(chave(x), (m.get(chave(x)) || 0) + x.valor));
+    const tot = [...m.values()].reduce((s, v) => s + v, 0);
+    return { tot, itens: [...m.entries()].sort((a, b) => b[1] - a[1]).slice(0, n) };
+  };
+  const prod = (f) => top(PRODUTOS.filter((x) => x.ano === ano && ufs.includes(x.uf) && x.fluxo === f), (x) => x.codigo);
+  const cid = (f) => top(CIDADES_LISTA.filter((x) => x.ano === ano && ufs.includes(x.uf) && x.fluxo === f), (x) => (ufSel === "sul" ? `${x.cidade} (${x.uf})` : x.cidade));
+  const [pe, pi] = [prod("exportacao"), prod("importacao")];
+  const baseProd = (f) => (f === "exportacao" ? L1.e : L1.i);
+  const linhasProd = [0, 1, 2, 3, 4].map((k) => {
+    const c = (p, f) => {
+      const it = p.itens[k];
+      if (!it) return "<td></td><td></td><td></td>";
+      return `<td>${esc(cortar(DESCRICOES_SH4[it[0]] || it[0], 62))} <span class="cod">${esc(it[0])}</span></td><td class="n">${mi(it[1])}</td><td class="n">${((it[1] / baseProd(f)) * 100).toLocaleString("pt-BR", { maximumFractionDigits: 1, minimumFractionDigits: 1 })}</td>`;
+    };
+    return `<tr>${c(pe, "exportacao")}${c(pi, "importacao")}</tr>`;
+  }).join("");
+  const listaCid = (r) => r.itens.map(([n, v]) => `${esc(n)} (${((v / r.tot) * 100).toLocaleString("pt-BR", { maximumFractionDigits: 1, minimumFractionDigits: 1 })}%)`).join(", ");
+
+  // Gráfico dos últimos 10 anos completos
+  const anosG = [...new Set(dados.totais.map((x) => x.ano))].filter((a) => !parciais.includes(a) && a <= ano).sort((a, b) => a - b).slice(-10);
+  const serie = anosG.map((a) => ({ a, ...linha(a) }));
+  const W = 680, H = 150, mx = Math.max(1, ...serie.flatMap((s) => [s.e, s.i])), passo = (W - 40) / serie.length, bw = Math.min(16, passo * 0.3);
+  const yv = (v) => H - 20 - (v / mx) * (H - 34);
+  const svg = `<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}"><line x1="40" x2="${W}" y1="${H - 20}" y2="${H - 20}" stroke="#B7BEC9"/>
+    <text x="36" y="${yv(mx) + 4}" text-anchor="end" class="ax">${mi(mx)}</text><text x="36" y="${H - 17}" text-anchor="end" class="ax">0</text>
+    ${serie.map((s, i) => { const x = 40 + passo * i + passo / 2; return `<rect x="${x - bw - 1}" y="${yv(s.e)}" width="${bw}" height="${H - 20 - yv(s.e)}" rx="2" fill="${COR_EXP}"/><rect x="${x + 1}" y="${yv(s.i)}" width="${bw}" height="${H - 20 - yv(s.i)}" rx="2" fill="${COR_IMP}"/><text x="${x}" y="${H - 5}" text-anchor="middle" class="ax${s.a === ano ? " b" : ""}">${s.a}</text>`; }).join("")}
+  </svg>`;
+  const g0 = serie[0], gN = serie[serie.length - 1];
+  const cresc = (a, b) => (b ? (a / b >= 2 ? `foram multiplicadas por ${(a / b).toLocaleString("pt-BR", { maximumFractionDigits: 1 })}` : `${a >= b ? "cresceram" : "caíram"} ${Math.abs(Math.round(((a - b) / b) * 100))}%`) : "");
+  const saldo = L1.e - L1.i;
+  const partSul = ufSel === "sul" ? "" : ` O estado responde por ${((L1.e / totalSul(ano, "exportacao")) * 100).toLocaleString("pt-BR", { maximumFractionDigits: 1 })}% das exportações e ${((L1.i / totalSul(ano, "importacao")) * 100).toLocaleString("pt-BR", { maximumFractionDigits: 1 })}% das importações do Sul com a Índia.`;
+  const pct2 = (v) => (v * 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+  return `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Resumo ${esc(info.nome)} e Índia ${ano}</title>
+<style>
+@page { size: A4; margin: 12mm 14mm; }
+* { box-sizing: border-box; }
+body { font-family: "IBM Plex Sans", Arial, sans-serif; color: #1B2438; font-size: 10.5px; line-height: 1.4; margin: 0; }
+.wrap { max-width: 190mm; margin: 0 auto; padding: 8px 0; }
+.faixa { height: 4px; background: linear-gradient(to right, #FF9933 33%, #FFFFFF 33% 66%, #0E7C3A 66%); border: 1px solid #eee; }
+header { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2px solid #0B2545; padding: 8px 0 6px; margin-bottom: 10px; }
+h1 { font-family: Georgia, serif; font-size: 20px; margin: 0; color: #0B2545; }
+.org { font-size: 9px; letter-spacing: .12em; text-transform: uppercase; color: #B8752E; font-weight: 600; }
+.meta { font-size: 9px; color: #566175; text-align: right; }
+.lead { font-size: 11.5px; margin: 0 0 10px; }
+.kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 10px; }
+.kpi { border: 1px solid #E6E9EF; border-top: 3px solid var(--c); border-radius: 6px; padding: 6px 8px; }
+.kpi .l { font-size: 8.5px; text-transform: uppercase; letter-spacing: .06em; color: #8992A6; }
+.kpi .v { font-family: Georgia, serif; font-size: 16px; font-weight: 600; color: #0B2545; }
+.kpi .s { font-size: 9px; color: #566175; }
+h2 { font-family: Georgia, serif; font-size: 12.5px; color: #0B2545; margin: 12px 0 5px; }
+table { width: 100%; border-collapse: collapse; font-size: 9.8px; }
+th { text-align: left; font-size: 8.5px; text-transform: uppercase; letter-spacing: .05em; color: #8992A6; border-bottom: 1px solid #D6DAE2; padding: 3px 4px; font-weight: 500; }
+td { padding: 3px 4px; border-bottom: 1px solid #F1F3F7; vertical-align: top; }
+.n { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.cod { color: #8992A6; font-size: 8.5px; }
+.ax { font-size: 9px; fill: #566175; } .ax.b { font-weight: 700; fill: #0B2545; }
+.leg { font-size: 9px; color: #566175; } .leg span { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin: 0 4px 0 10px; vertical-align: middle; }
+.fonte { margin-top: 12px; padding-top: 6px; border-top: 1px solid #E6E9EF; font-size: 8.5px; color: #8992A6; }
+.pos { color: ${COR_EXP}; } .neg { color: #C1502E; }
+@media screen { body { background: #F4F5F8; } .wrap { background: #fff; padding: 14mm; margin: 16px auto; box-shadow: 0 2px 12px rgba(0,0,0,.08); } }
+</style></head><body><div class="wrap">
+<div class="faixa"></div>
+<header><div><div class="org">Câmara de Comércio Índia Brasil (CCIB) · Regional Sul</div><h1>${esc(info.nome)} e Índia: comércio exterior ${ano}${parciais.includes(ano) ? " (parcial)" : ""}</h1></div>
+<div class="meta">Fonte: ${esc(dados.fonte)}<br>US$ FOB · atualizado em ${esc(dados.atualizadoEm)}</div></header>
+<p class="lead">Em ${ano}, ${ufSel === "sul" ? "a Região Sul" : ufSel === "SC" ? info.nome : `o ${info.nome}`} exportou <b>US$ ${mi(L1.e)} mi</b> para a Índia (${varPct(L1.e, L0.e)} sobre ${ant}) e importou <b>US$ ${mi(L1.i)} mi</b> (${varPct(L1.i, L0.i)}), com ${saldo >= 0 ? "superávit" : "déficit"} de <b class="${saldo >= 0 ? "pos" : "neg"}">US$ ${mi(Math.abs(saldo))} mi</b>.${pE != null && pI != null ? ` A Índia representa ${pct2(pE)}% das exportações e ${pct2(pI)}% das importações ${info.de}.` : ""}${partSul}</p>
+<div class="kpis">
+<div class="kpi" style="--c:${COR_EXP}"><div class="l">Exportações</div><div class="v">US$ ${mi(L1.e)} mi</div><div class="s">${varPct(L1.e, L0.e)} vs ${ant}</div></div>
+<div class="kpi" style="--c:${COR_IMP}"><div class="l">Importações</div><div class="v">US$ ${mi(L1.i)} mi</div><div class="s">${varPct(L1.i, L0.i)} vs ${ant}</div></div>
+<div class="kpi" style="--c:#B8752E"><div class="l">Corrente</div><div class="v">US$ ${mi(L1.e + L1.i)} mi</div><div class="s">${varPct(L1.e + L1.i, L0.e + L0.i)} vs ${ant}</div></div>
+<div class="kpi" style="--c:${saldo >= 0 ? COR_EXP : "#C1502E"}"><div class="l">Saldo</div><div class="v">US$ ${sinal(saldo)} mi</div><div class="s">era US$ ${sinal(L0.e - L0.i)} mi em ${ant}</div></div>
+</div>
+<h2>Evolução (US$ mi)</h2>
+<table><thead><tr><th>Indicador</th><th class="n">${ant}</th><th class="n">${ano}</th><th class="n">Var.</th>${mostraParcial ? `<th class="n">${ultimo} (parcial)</th>` : ""}</tr></thead><tbody>
+<tr><td>Exportações para a Índia</td><td class="n">${mi(L0.e)}</td><td class="n">${mi(L1.e)}</td><td class="n">${varPct(L1.e, L0.e)}</td>${mostraParcial ? `<td class="n">${mi(LP.e)}</td>` : ""}</tr>
+<tr><td>Importações da Índia</td><td class="n">${mi(L0.i)}</td><td class="n">${mi(L1.i)}</td><td class="n">${varPct(L1.i, L0.i)}</td>${mostraParcial ? `<td class="n">${mi(LP.i)}</td>` : ""}</tr>
+<tr><td>Corrente de comércio</td><td class="n">${mi(L0.e + L0.i)}</td><td class="n">${mi(L1.e + L1.i)}</td><td class="n">${varPct(L1.e + L1.i, L0.e + L0.i)}</td>${mostraParcial ? `<td class="n">${mi(LP.e + LP.i)}</td>` : ""}</tr>
+<tr><td>Saldo</td><td class="n">${sinal(L0.e - L0.i)}</td><td class="n">${sinal(saldo)}</td><td></td>${mostraParcial ? `<td class="n">${sinal(LP.e - LP.i)}</td>` : ""}</tr>
+</tbody></table>
+<div style="margin-top:8px"><div class="leg"><span style="background:${COR_EXP}"></span>Exportações<span style="background:${COR_IMP}"></span>Importações · ${g0.a} a ${gN.a}: exportações ${cresc(gN.e, g0.e)}; importações ${cresc(gN.i, g0.i)}</div>${svg}</div>
+<h2>Principais produtos ${ano} (SH4, US$ mi e % do total com a Índia)</h2>
+<table><thead><tr><th>Exporta para a Índia</th><th class="n">US$ mi</th><th class="n">%</th><th>Importa da Índia</th><th class="n">US$ mi</th><th class="n">%</th></tr></thead><tbody>${linhasProd}</tbody></table>
+<h2>Municípios ${ano} (% da soma municipal)</h2>
+<p style="margin:0 0 3px"><b>Exportadores:</b> ${listaCid(cid("exportacao")) || "sem dados"}.</p>
+<p style="margin:0"><b>Importadores:</b> ${listaCid(cid("importacao")) || "sem dados"}.</p>
+<div class="fonte">Fonte: ${esc(dados.fonte)}, valores em US$ FOB. Totais e produtos pela UF de origem do produto; municípios pela sede da empresa (a soma das cidades pode diferir do total). Participação da Índia calculada sobre a base municipal do Comex Stat.${parciais.length ? ` ${parciais.join(", ")}: ano parcial.` : ""} Gerado pela Plataforma CCIB Regional Sul em ${new Date().toLocaleDateString("pt-BR")}.</div>
+</div><script>window.onload=function(){setTimeout(function(){window.print()},300)}</script></body></html>`;
+}
+
+function abrirResumo(uf, ano) {
+  const w = window.open("", "_blank");
+  if (!w) { window.alert("O navegador bloqueou a nova janela. Permita pop-ups para esta página e tente de novo."); return; }
+  w.document.open();
+  w.document.write(resumoHTML(uf, ano));
+  w.document.close();
+}
+
 function SemDados() {
   return (
     <div style={{ ...card, textAlign: "center", padding: "40px 24px" }}>
@@ -511,6 +643,15 @@ export default function ComercioTab() {
             {UFS.map((e) => <option key={e.uf} value={e.uf}>{e.nome}</option>)}
           </select>
           <Segmentos rotulo="Fluxo" opcoes={opcoesFluxo} valor={fluxo} onChange={setFluxo} />
+          <button
+            type="button"
+            onClick={() => abrirResumo(uf, ano)}
+            title={`Abre um resumo de uma página ${deUf} em ${rotuloAno(ano)} para imprimir ou salvar em PDF`}
+            className="ccib-btn"
+            style={{ display: "flex", alignItems: "center", gap: 6, background: "#0B2545", color: "#FFFFFF", border: "1px solid #0B2545", borderRadius: 7, padding: "6px 12px", fontSize: 12.5, fontWeight: 500, cursor: "pointer" }}
+          >
+            <FileText size={14} /> Resumo de 1 página
+          </button>
           <span style={{ fontSize: 12, color: "#8992A6", marginLeft: "auto" }}>
             Mostrando <b style={{ color: "#0B2545" }}>{nomeUf}</b> · <b style={{ color: "#0B2545" }}>{rotuloAno(ano)}</b> · <b style={{ color: cor }}>{FLUXOS[fluxo].curto.toLowerCase()}</b>
           </span>
