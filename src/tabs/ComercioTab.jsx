@@ -2,6 +2,20 @@ import React, { useMemo, useState } from "react";
 import { Ship, Package, MapPin, BarChart3, FileSpreadsheet } from "lucide-react";
 import { filterInputStyle, labelStyle } from "../styles";
 import { COMERCIO_SUL_INDIA } from "../data/comercioSulIndia";
+import { PRODUTOS_SH4, DESCRICOES_SH4 } from "../data/comercioProdutos";
+
+// Nome curto do SH4 para o ranking (a descrição completa fica no texto ao passar o mouse)
+function nomeCurto(desc) {
+  const t = (desc || "").trim();
+  if (t.length <= 90) return t;
+  const corte = t.slice(0, 90).search(/[,;(]\s[^,;(]*$/);
+  return (corte > 30 ? t.slice(0, corte) : t.slice(0, 87)).trim().replace(/[.,;]+$/, "") + "…";
+}
+
+// Produtos de cada estado, no mesmo formato dos demais dados da aba
+const PRODUTOS = Object.entries(PRODUTOS_SH4).flatMap(([uf, linhas]) =>
+  linhas.map(([ano, f, codigo, valor]) => ({ ano, uf, fluxo: f === "e" ? "exportacao" : "importacao", codigo, produto: DESCRICOES_SH4[codigo] || codigo, valor }))
+);
 
 const mono = "'IBM Plex Mono', monospace";
 const serif = "'Fraunces', serif";
@@ -60,10 +74,10 @@ function Ranking({ itens, total, cor, vazio }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
       {itens.map((i, n) => (
-        <div key={i.chave} title={`${i.nome}: ${usd(i.valor)} (${total ? pct(i.valor / total) : "-"} do total)`}>
-          <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 4 }}>
+        <div key={i.chave} title={`${i.completo || i.nome}: ${usd(i.valor)} (${total ? pct(i.valor / total) : "-"} do total)`}>
+          <div style={{ display: "flex", alignItems: "flex-start", gap: 8, marginBottom: 4 }}>
             <span style={{ fontFamily: mono, fontSize: 10.5, color: "#8992A6", width: 18 }}>{n + 1}</span>
-            <span style={{ flex: 1, minWidth: 0, fontSize: 13, color: "#1B2438", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            <span style={{ flex: 1, minWidth: 0, fontSize: 13, color: "#1B2438", lineHeight: 1.35, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
               {i.nome}
               {i.extra && <span style={{ fontFamily: mono, fontSize: 10.5, color: "#8992A6", marginLeft: 6 }}>{i.extra}</span>}
             </span>
@@ -137,7 +151,7 @@ function SemDados() {
 export default function ComercioTab() {
   const dados = COMERCIO_SUL_INDIA;
   const anos = useMemo(() => {
-    const s = new Set([...dados.totais, ...dados.produtos, ...dados.cidades].map((x) => x.ano).filter(Boolean));
+    const s = new Set([...dados.totais, ...dados.produtos, ...PRODUTOS, ...dados.cidades].map((x) => x.ano).filter(Boolean));
     return [...s].sort((a, b) => a - b);
   }, [dados]);
   const parciais = dados.anosParciais || [];
@@ -166,13 +180,15 @@ export default function ComercioTab() {
     const m = new Map();
     lista.forEach((x) => {
       const k = chave(x);
-      const atual = m.get(k) || { chave: k, nome: nome(x), extra: extra ? extra(x) : "", valor: 0 };
+      const atual = m.get(k) || { chave: k, nome: nome(x), completo: x.produto || x.cidade || "", extra: extra ? extra(x) : "", valor: 0 };
       atual.valor += Number(x.valor) || 0;
       m.set(k, atual);
     });
     return [...m.values()].sort((a, b) => b.valor - a.valor);
   };
-  const produtos = agrupar(dados.produtos.filter((x) => doAno(x) && daUf(x) && x.fluxo === fluxo), (x) => x.codigo || x.produto, (x) => x.produto, (x) => x.codigo || "");
+  const todosProdutos = [...dados.produtos, ...PRODUTOS];
+  const ufsComProdutos = UFS.filter((e) => todosProdutos.some((x) => x.uf === e.uf));
+  const produtos = agrupar(todosProdutos.filter((x) => doAno(x) && daUf(x) && x.fluxo === fluxo), (x) => x.codigo || x.produto, (x) => nomeCurto(x.produto), (x) => x.codigo || "");
   const cidades = agrupar(dados.cidades.filter((x) => doAno(x) && daUf(x) && x.fluxo === fluxo), (x) => `${x.cidade}/${x.uf}`, (x) => x.cidade, (x) => (uf === "sul" ? x.uf : ""));
   const totalFluxo = fluxo === "exportacao" ? exp : imp;
   const baseRanking = totalFluxo || soma(produtos);
@@ -245,7 +261,12 @@ export default function ComercioTab() {
               <Titulo icon={Package} extra={<span style={{ fontFamily: mono, fontSize: 10.5, color: "#8992A6" }}>% do total com a Índia</span>}>
                 Principais produtos · {FLUXOS[fluxo].curto.toLowerCase()}
               </Titulo>
-              <Ranking itens={produtos.slice(0, 10)} total={baseRanking} cor={cor} vazio="Sem dados de produtos para este filtro." />
+              {uf === "sul" && ufsComProdutos.length > 0 && ufsComProdutos.length < UFS.length && (
+                <div style={{ fontSize: 11.5, color: "#B8752E", marginTop: -6, marginBottom: 12 }}>
+                  Produtos carregados até agora: {ufsComProdutos.map((e) => e.nome).join(", ")}. O % é sobre o total da Região Sul.
+                </div>
+              )}
+              <Ranking itens={produtos.slice(0, 10)} total={baseRanking} cor={cor} vazio={ufsComProdutos.some((e) => uf === "sul" || e.uf === uf) ? "Sem dados de produtos para este filtro." : "Produtos deste estado ainda não carregados."} />
             </div>
             <div style={card}>
               <Titulo icon={MapPin} extra={<span style={{ fontFamily: mono, fontSize: 10.5, color: "#8992A6" }}>% do total com a Índia</span>}>
