@@ -308,7 +308,10 @@ export default function ComercioTab() {
               </Titulo>
               {cidades.length > 0 && (
                 <div style={{ fontSize: 11.5, color: "#8992A6", marginTop: -6, marginBottom: 12, lineHeight: 1.45 }}>
-                  Município da empresa exportadora ou importadora, por isso a soma das cidades ({usd(totalCidades)}) difere do total por estado de origem do produto. Clique numa cidade para ver o que ela {fluxo === "exportacao" ? "exporta" : "importa"}.
+                  {totalFluxo && Math.abs(totalCidades - totalFluxo) / totalFluxo < 0.005
+                    ? `Município da empresa ${fluxo === "exportacao" ? "exportadora" : "importadora"}; a soma das cidades (${usd(totalCidades)}) bate com o total ${deUf}.`
+                    : `Município da empresa ${fluxo === "exportacao" ? "exportadora" : "importadora"}, por isso a soma das cidades (${usd(totalCidades)}) difere do total por estado de origem do produto.`}{" "}
+                  Clique numa cidade para ver o que ela {fluxo === "exportacao" ? "exporta" : "importa"}.
                   {uf === "sul" && ufsComCidades.length < UFS.length ? ` Cidades carregadas até agora: ${ufsComCidades.map((e) => e.nome).join(", ")}.` : ""}
                 </div>
               )}
