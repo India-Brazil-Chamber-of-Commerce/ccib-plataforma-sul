@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
-import { Loader2, Building2, CalendarDays, LayoutGrid, Users, Contact, TrendingUp, Plane, CalendarCheck } from "lucide-react";
+import { Loader2, Building2, CalendarDays, LayoutGrid, Users, Contact, TrendingUp, Plane, CalendarCheck, Ship } from "lucide-react";
 import { STORAGE_MEMBERS, STORAGE_EVENTS, STORAGE_MEETINGS, STORAGE_PARTNERS, STORAGE_CONTACTS, STORAGE_PROJECTS, ESTADOS, STATUS_MEMBER } from "./constants";
 import { SEED_CONTACTS, REMOVED_CONTACTS, SEED_EVENTS, REMOVED_EVENTS, FORCE_EVENT_UPDATES, FORCE_MEMBER_UPDATES, APPEND_MEMBER_NOTES, MERGE_MEMBERS, NEGOCIOS_HUBSPOT, SEED_MEMBERS, ENSURE_MEMBERS } from "./data/seeds";
 import { SEED_MEETINGS, REMOVED_MEETINGS } from "./data/seedMeetings";
@@ -10,6 +10,7 @@ import { storage, EVENTO_ATUALIZADO } from "./lib/storage";
 import { callMcpForJson, MCP_HUBSPOT, MCP_MICROSOFT_365 } from "./lib/claude";
 import EventosRegionalTab from "./tabs/EventosRegionalTab";
 import MissoesTab from "./tabs/MissoesTab";
+import ComercioTab from "./tabs/ComercioTab";
 import VisaoGeralTab from "./tabs/VisaoGeralTab";
 import EmpresasTab from "./tabs/EmpresasTab";
 import PipelineTab from "./tabs/PipelineTab";
@@ -675,6 +676,7 @@ export default function App() {
     { id: "eventos", label: "Eventos", icon: CalendarDays },
     { id: "projetos", label: "Eventos Regional Sul", icon: CalendarCheck },
     { id: "missoes", label: "Missões", icon: Plane },
+    { id: "comercio", label: "Comércio Sul e Índia", icon: Ship },
   ];
 
   return (
@@ -783,12 +785,14 @@ export default function App() {
         )}
       </div>
 
-      <div style={{ maxWidth: tab === "pipeline" ? 1500 : tab === "reunioes" ? 1380 : 1020, margin: "0 auto" }}>
+      <div style={{ maxWidth: tab === "pipeline" ? 1500 : tab === "comercio" ? 1240 : tab === "reunioes" ? 1380 : 1020, margin: "0 auto" }}>
         {tab === "pipeline" && (
           <PipelineTab members={members} patchMember={patchMember} addPipelineItem={addPipelineItem} adicionarComEtapa={adicionarComEtapa} abrirEmpresa={abrirEmpresa} />
         )}
 
         {tab === "projetos" && <EventosRegionalTab />}
+
+        {tab === "comercio" && <ComercioTab />}
 
         {tab === "missoes" && <MissoesTab key={missaoAberta || "lista"} abertaInicial={missaoAberta} limparAbertaInicial={() => setMissaoAberta(null)} />}
 
