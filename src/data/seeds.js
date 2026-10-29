@@ -440,11 +440,11 @@ export const ENSURE_MEMBERS = [
 // "anterior" (ex.: anterior: { data: ["2026-09-30"], etapa: ["..."], situacao: ["negociacao"] }), acumulando todos os valores antigos.
 // O valor novo só substitui o antigo se ninguém o editou na plataforma. situacao: "negociacao", "perdido" ou "ativo" (ganho).
 export const NEGOCIOS_HUBSPOT = [
-  { empresa: "Preet Tratores", situacao: "negociacao", etapa: "Proposta Enviada / Em negociação", valor: "US$ 2.100", data: "2026-09-30" },
-  { empresa: "Konei Group", situacao: "negociacao", etapa: "Proposta Enviada / Em negociação", valor: "US$ 2.100", data: "2026-10-23", anterior: { data: ["2026-09-30"] } },
+  { empresa: "Preet Tratores", situacao: "perdido", etapa: "Negócio perdido", valor: "US$ 2.100", data: "2026-10-28", anterior: { situacao: ["negociacao"], etapa: ["Proposta Enviada / Em negociação"], data: ["2026-09-30"] } },
+  { empresa: "Konei Group", situacao: "perdido", etapa: "Negócio perdido", valor: "US$ 2.100", data: "2026-10-28", anterior: { situacao: ["negociacao"], etapa: ["Proposta Enviada / Em negociação"], data: ["2026-09-30", "2026-10-23"] } },
   { empresa: "Construfit", situacao: "ativo", etapa: "Negócio fechado (serviços)", valor: "US$ 300", data: "2026-10-14", anterior: { situacao: ["negociacao"], etapa: ["Proposta Aceita (serviços)"], data: ["2026-09-30"] } },
   { empresa: "COLVENBRASIL", situacao: "negociacao", etapa: "Proposta Enviada / Em negociação", valor: "US$ 2.100", data: "2026-10-31" },
-  { empresa: "Motherson", situacao: "negociacao", etapa: "Proposta Enviada / Em negociação", valor: "US$ 2.100", data: "2026-10-23", anterior: { data: ["2026-09-30"] } },
+  { empresa: "Motherson", situacao: "perdido", etapa: "Negócio perdido", valor: "US$ 2.100", data: "2026-10-28", anterior: { situacao: ["negociacao"], etapa: ["Proposta Enviada / Em negociação"], data: ["2026-09-30", "2026-10-23"] } },
   { empresa: "Try Brazil", situacao: "perdido", etapa: "Negócio perdido", valor: "US$ 2.100", data: "2026-09-18" },
   { empresa: "Rocket Logistics", situacao: "perdido", etapa: "Negócio perdido", valor: "US$ 2.100", data: "2026-09-21" },
   { empresa: "Latina Cobranças", situacao: "perdido", etapa: "Negócio perdido", valor: "US$ 300", data: "2026-09-23" },
