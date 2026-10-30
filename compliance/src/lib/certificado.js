@@ -52,11 +52,16 @@ function preencher(texto, valores) {
 }
 
 function pagina(modelo, pessoa, valores) {
+  // Assinatura "manuscrita": texto em caligrafia sobre a linha; nome e cargo abaixo ficam opcionais
   const assinaturas = (modelo.assinaturas || [])
-    .filter((a, i) => i === 0 || a.nome || a.cargo)
-    .map(
-      (a) => `<div class="ass"><div class="linha"></div><div class="ass-nome">${esc(a.nome) || '<span class="falta">[nome]</span>'}</div><div class="ass-cargo">${esc(a.cargo) || '<span class="falta">[cargo]</span>'}</div></div>`
-    )
+    .filter((a, i) => i === 0 || a.nome || a.cargo || a.manuscrita)
+    .map((a) => {
+      const manuscrita = a.manuscrita ? `<div class="manuscrita">${esc(a.manuscrita)}</div>` : "";
+      const falta = (txt) => (a.manuscrita ? "" : `<span class="falta">[${txt}]</span>`);
+      const nome = esc(a.nome) || falta("nome");
+      const cargo = esc(a.cargo) || falta("cargo");
+      return `<div class="ass">${manuscrita}<div class="linha"></div>${nome ? `<div class="ass-nome">${nome}</div>` : ""}${cargo ? `<div class="ass-cargo">${cargo}</div>` : ""}</div>`;
+    })
     .join("");
   const v = { ...valores, nome: pessoa.nome, funcao: (pessoa.funcao || "").toLowerCase() };
   return `<section class="pagina">
@@ -101,6 +106,8 @@ body { font-family: 'Inter', Arial, sans-serif; color: #1C2430; }
 .cidade { font-size: 11pt; color: #4B5563; margin-top: 6mm; }
 .assinaturas { display: flex; justify-content: center; gap: 22mm; margin-top: auto; width: 100%; }
 .ass { width: 70mm; text-align: center; }
+.assinaturas .ass:only-child { width: 100mm; }
+.manuscrita { font-family: 'Great Vibes', cursive; font-size: 24pt; line-height: 1.1; color: #10309A; margin-bottom: 1mm; white-space: nowrap; }
 .linha { border-top: 0.3mm solid #1C2430; margin-bottom: 2mm; }
 .ass-nome { font-size: 11pt; font-weight: 600; color: #0B1E3D; }
 .ass-cargo { font-size: 9.5pt; color: #4B5563; margin-top: 0.5mm; }
@@ -110,7 +117,7 @@ body { font-family: 'Inter', Arial, sans-serif; color: #1C2430; }
 
 const FONTES =
   '<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>' +
-  '<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;600&display=swap" rel="stylesheet">';
+  '<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Great+Vibes&family=Inter:wght@400;600&display=swap" rel="stylesheet">';
 
 export function htmlCertificados(modelo, pessoas, valores, { imprimir = false } = {}) {
   const lista = pessoas.length ? pessoas : [{ nome: "", funcao: "" }];
