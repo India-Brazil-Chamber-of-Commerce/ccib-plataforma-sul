@@ -161,14 +161,14 @@ function EventoResumo({ p, c, abrir }) {
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(118px, 1fr))", gap: 8, marginTop: 12 }}>
             {[
-              ["Público", `${c.inscritos ?? 0}${c.metaPublico ? ` de ${c.metaPublico}` : ""}`],
+              ["Público", `${c.inscritos ?? 0}${c.metaPublico ? ` de ${c.metaPublico}` : ""}`, "publico"],
               ["Patrocínio", dinheiro(c.receitaPatrocinio, c.moeda)],
-              ["Inscrições", dinheiro(c.receitaIngressos, c.moeda)],
+              ["Inscrições", dinheiro(c.receitaIngressos, c.moeda), "publico"],
               ["Custos", dinheiro(c.gasto, c.moeda)],
-              ["Empresas", `${c.confirmadas} confirmada${c.confirmadas === 1 ? "" : "s"}`],
+              ["Empresas", `${c.confirmadas} confirmada${c.confirmadas === 1 ? "" : "s"}`, "participantes"],
               ["Instituições parceiras", `${c.instituicoes.length}${c.instituicoes.length ? ` (${c.instituicoesConfirmadas} confirmada${c.instituicoesConfirmadas === 1 ? "" : "s"})` : ""}`],
-              ["Checklist", `${c.etapasFeitas}/${c.etapasTotal}`],
-            ].map(([rotulo, valor]) => (
+              ["Checklist", `${c.etapasFeitas}/${c.etapasTotal}`, "checklist"],
+            ].filter(([, , secao]) => !(p.secoesOcultas || []).includes(secao)).map(([rotulo, valor]) => (
               <div key={rotulo} style={{ background: "#FAFBFC", border: "1px solid #EEF1F5", borderRadius: 8, padding: "7px 10px" }}>
                 <div style={{ ...labelStyle, fontSize: 9, marginBottom: 2 }}>{rotulo}</div>
                 <div style={{ fontFamily: mono, fontSize: 12.5, fontWeight: 600, color: "#0B2545" }}>{valor}</div>
@@ -248,6 +248,8 @@ function Programacao({ itens, onChange }) {
   );
 }
 
+const SECOES_OPCIONAIS = [["publico", "Público e inscrições"], ["participantes", "Empresas participantes e palestrantes"], ["checklist", "Checklist de organização"], ["indicadores", "Indicadores"]];
+
 function EventoDetalhe({ p, patch, voltar, remover }) {
   const c = calcularEvento(p);
   const status = STATUS_PROJETO[p.status] || STATUS_PROJETO.ideia;
@@ -256,6 +258,10 @@ function EventoDetalhe({ p, patch, voltar, remover }) {
   const custos = p.custos || [];
   const etapas = p.etapas || [];
   const patchItem = (campo, lista, id, mudanca) => patch({ [campo]: lista.map((x) => (x.id === id ? { ...x, ...mudanca } : x)) });
+  // Seções que podem ser ocultadas por evento (os dados continuam guardados)
+  const ocultas = new Set(p.secoesOcultas || []);
+  const mostra = (k) => !ocultas.has(k);
+  const alternarSecao = (k) => patch({ secoesOcultas: ocultas.has(k) ? [...ocultas].filter((x) => x !== k) : [...ocultas, k] });
 
   const [novoPat, setNovoPat] = useState({ empresa: "", cota: "Patrocínio", valor: "" });
   const [novoPart, setNovoPart] = useState({ empresa: "", representante: "" });
@@ -397,7 +403,7 @@ function EventoDetalhe({ p, patch, voltar, remover }) {
         </div>
 
         {/* Público e inscrições */}
-        <div style={secao}>
+        <div style={{ ...secao, display: mostra("publico") ? undefined : "none" }}>
           <TituloSecao icon={Ticket} extra={<span style={{ fontFamily: mono, fontSize: 12, fontWeight: 600, color: "#0B2545" }}>{dinheiro(c.receitaIngressos, c.moeda)}</span>}>Público e inscrições</TituloSecao>
           <div style={{ display: "flex", gap: 18, flexWrap: "wrap", alignItems: "flex-end", marginBottom: 12 }}>
             <CampoNumero label="Meta de público" valor={p.metaPublico} onChange={(v) => patch({ metaPublico: v.replace(/[^\d]/g, "") })} largura={80} />
@@ -514,7 +520,7 @@ function EventoDetalhe({ p, patch, voltar, remover }) {
         </div>
 
         {/* Empresas e palestrantes */}
-        <div style={secao}>
+        <div style={{ ...secao, display: mostra("participantes") ? undefined : "none" }}>
           <TituloSecao icon={Users} extra={participantes.length > 0 && <span style={{ fontFamily: mono, fontSize: 11, color: "#566175" }}>{c.confirmadas}/{participantes.length} confirmadas</span>}>Empresas participantes e palestrantes</TituloSecao>
           <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 10 }}>
             {participantes.length === 0 && <div style={{ fontSize: 12.5, color: "#8992A6" }}>Nenhuma empresa cadastrada.</div>}
@@ -593,7 +599,7 @@ function EventoDetalhe({ p, patch, voltar, remover }) {
         </div>
 
         {/* Checklist */}
-        <div style={secao}>
+        <div style={{ ...secao, display: mostra("checklist") ? undefined : "none" }}>
           <TituloSecao icon={ListChecks} extra={<span style={{ fontFamily: mono, fontSize: 11, color: "#566175" }}>{feitas}/{lista.length} ({lista.length ? Math.round((feitas / lista.length) * 100) : 0}%)</span>}>Checklist de organização</TituloSecao>
           <div style={{ marginBottom: 12 }}><Progresso valor={feitas} max={lista.length} /></div>
           <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 10 }}>
@@ -623,7 +629,7 @@ function EventoDetalhe({ p, patch, voltar, remover }) {
         </div>
 
         {/* Indicadores */}
-        <div style={secao}>
+        <div style={{ ...secao, display: mostra("indicadores") ? undefined : "none" }}>
           <TituloSecao icon={Calculator}>Indicadores</TituloSecao>
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
             <Kpi icon={Scale} label="Falta captar para empatar" valor={c.gasto ? dinheiro(c.faltaCaptar, c.moeda) : "—"} sub={c.gasto ? (c.faltaCaptar ? "Custos menos receitas confirmadas" : "Custos já cobertos") : "Lance os custos"} />
@@ -639,6 +645,15 @@ function EventoDetalhe({ p, patch, voltar, remover }) {
           <textarea value={p.resultados || ""} placeholder="Novos associados, negócios, contatos, repercussão..." onChange={(e) => patch({ resultados: e.target.value })} rows={4} style={{ ...filterInputStyle, width: "100%", boxSizing: "border-box", resize: "vertical", marginBottom: 14, lineHeight: 1.5 }} />
           <span style={labelStyle}>Notas internas</span>
           <textarea value={p.notas || ""} placeholder="Observações..." onChange={(e) => patch({ notas: e.target.value })} rows={3} style={{ ...filterInputStyle, width: "100%", boxSizing: "border-box", resize: "vertical", lineHeight: 1.5 }} />
+        </div>
+
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", fontSize: 12, color: "#8992A6" }}>
+          <span>Seções deste evento (clique para mostrar ou ocultar):</span>
+          {SECOES_OPCIONAIS.map(([k, nome]) => (
+            <button key={k} type="button" onClick={() => alternarSecao(k)} aria-pressed={mostra(k)} style={{ border: `1px solid ${mostra(k) ? "#0B2545" : "#D6DAE2"}`, background: mostra(k) ? "#0B2545" : "transparent", color: mostra(k) ? "#FFFFFF" : "#8992A6", borderRadius: 14, padding: "3px 10px", fontSize: 11.5, cursor: "pointer", textDecoration: mostra(k) ? "none" : "line-through" }}>
+              {nome}
+            </button>
+          ))}
         </div>
 
         <div style={{ display: "flex", justifyContent: "flex-end" }}>
