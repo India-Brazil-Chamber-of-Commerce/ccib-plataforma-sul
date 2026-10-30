@@ -529,7 +529,7 @@ const PROGRAMACAO_FNI_SC_V2 = [
 const PROGRAMACAO_FNI_SC = [
       { id: "seed-prog-fni-sc-v2-1", inicio: "08:00", fim: "", titulo: "Credenciamento & Welcome Coffee", detalhes: "" },
       { id: "seed-prog-fni-sc-v2-2", inicio: "09:00", fim: "", titulo: "Abertura Institucional", detalhes: "" },
-      { id: "seed-prog-fni-sc-v2-3", inicio: "09:45", fim: "", titulo: "Painel 1: Empresas Brasileiras na Índia", detalhes: "Experiências, Desafios e Oportunidades\nWEG - Ivan Fiamoncini\nNIDEC - Guilherme Figueiredo | Gerente Sênior" },
+      { id: "seed-prog-fni-sc-v2-3", inicio: "09:45", fim: "", titulo: "Painel 1: Empresas Brasileiras na Índia", detalhes: "Experiências, Desafios e Oportunidades\nWEG - Ivan Fiamoncini\nNIDEC - Guilherme Figueiredo | Gerente Sênior\nNunesfarma Nesh - Fernando Silva | CEO" },
       { id: "seed-prog-fni-sc-v2-4", inicio: "10:30", fim: "", titulo: "Panorama Estratégico: SC & Índia", detalhes: "Secretaria de Estado da Indústria, do Comércio e do Serviço de Santa Catarina (SICOS)\nCâmara de Comércio Índia Brasil (CCIB)" },
       { id: "seed-prog-fni-sc-v2-5", inicio: "11:00", fim: "", titulo: "Painel 2 – Empresas Indianas no Brasil", detalhes: "ZOHO - Rodrigo Vaca | Diretor Geral Zoho Brasil\nNanofeed Animal Health e Nutrition - Lucas São Thiago Soares | CEO (Subsidiária da Indiana Orgonew Private Ltd. para Brasil e LATAM)\nTata Consultancy Services" },
       { id: "seed-prog-fni-sc-v2-6", inicio: "11:50", fim: "", titulo: "Encerramento", detalhes: "" },
@@ -563,6 +563,7 @@ export const CORRIGIR_ITENS = {
 export const ACRESCENTAR_LINHAS = {
   "seed-p-fazendo-negocios-india-sc": [
     { chave: "fni-sc-painel-1", lista: "programacao", tituloContem: "Painel 1", linhas: ["WEG - Ivan Fiamoncini", "NIDEC - Guilherme Figueiredo | Gerente Sênior"] },
+    { chave: "fni-sc-painel-1-nunesfarma", lista: "programacao", tituloContem: "Painel 1", linhas: ["Nunesfarma Nesh - Fernando Silva | CEO"] },
     { chave: "fni-sc-painel-2", lista: "programacao", tituloContem: "Painel 2", linhas: ["ZOHO - Rodrigo Vaca | Diretor Geral Zoho Brasil", "Nanofeed Animal Health e Nutrition - Lucas São Thiago Soares | CEO (Subsidiária da Indiana Orgonew Private Ltd. para Brasil e LATAM)", "Tata Consultancy Services"] },
   ],
 };
@@ -595,6 +596,7 @@ export const SEED_PROJECTS = [
       { id: "seed-pt-fni-sc-5", empresa: "Nanofeed Animal Health e Nutrition", representante: "Lucas São Thiago Soares", cargo: "CEO", observacoes: "Painel 2. Subsidiária da Indiana Orgonew Private Ltd. para Brasil e LATAM", status: "confirmada" },
       { id: "seed-pt-fni-sc-6", empresa: "Audaces", representante: "Matheus Diogo Fagundes", cargo: "Presidente Global", observacoes: "", status: "confirmada" },
       { id: "seed-pt-fni-sc-7", empresa: "Tata Consultancy Services", representante: "", cargo: "", observacoes: "Painel 2", status: "confirmada" },
+      { id: "seed-pt-fni-sc-8", empresa: "Nunesfarma Nesh", representante: "Fernando Silva", cargo: "CEO", observacoes: "Painel 1", status: "confirmada" },
     ],
     notas: "",
     createdAt: Date.now(),
