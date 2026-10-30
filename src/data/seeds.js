@@ -543,6 +543,30 @@ export const CORRIGIR_PROJETOS = {
   },
 };
 
+// Correções item a item em projetos já salvos (por id do item); o campo só muda se ainda tiver o valor antigo
+export const CORRIGIR_ITENS = {
+  "seed-p-fazendo-negocios-india-sc": {
+    programacao: {
+      "seed-prog-fni-sc-v2-3": { detalhes: { de: "Experiências, Desafios e Oportunidades", para: "Experiências, Desafios e Oportunidades\nWEG - Ivan Fiamoncini\nNIDEC - Guilherme Figueiredo | Gerente Sênior" } },
+      "seed-prog-fni-sc-v2-5": { detalhes: { de: "", para: "ZOHO - Rodrigo Vaca | Diretor Geral Zoho Brasil\nNanofeed Animal Health e Nutrition - Lucas São Thiago Soares | CEO (Subsidiária da Indiana Orgonew Private Ltd. para Brasil e LATAM)\nTata Consultancy Services" } },
+    },
+    participantes: {
+      "seed-pt-fni-sc-1": { representante: { de: "Rafael Oliveira", para: "Guilherme Figueiredo" }, cargo: { de: "", para: "Gerente Sênior" }, observacoes: { de: "", para: "Painel 1" } },
+      "seed-pt-fni-sc-2": { representante: { de: "", para: "Ivan Fiamoncini" }, status: { de: "a_confirmar", para: "confirmada" }, observacoes: { de: "", para: "Painel 1" } },
+      "seed-pt-fni-sc-4": { cargo: { de: "", para: "Diretor Geral Zoho Brasil" }, observacoes: { de: "", para: "Painel 2" } },
+      "seed-pt-fni-sc-5": { observacoes: { de: "Subsidiária da Indiana Orgonew Private Ltd. para Brasil e LATAM", para: "Painel 2. Subsidiária da Indiana Orgonew Private Ltd. para Brasil e LATAM" } },
+    },
+  },
+};
+
+// Linhas que precisam constar nos detalhes de itens de listas de projetos já salvos (item achado pelo título)
+export const ACRESCENTAR_LINHAS = {
+  "seed-p-fazendo-negocios-india-sc": [
+    { chave: "fni-sc-painel-1", lista: "programacao", tituloContem: "Painel 1", linhas: ["WEG - Ivan Fiamoncini", "NIDEC - Guilherme Figueiredo | Gerente Sênior"] },
+    { chave: "fni-sc-painel-2", lista: "programacao", tituloContem: "Painel 2", linhas: ["ZOHO - Rodrigo Vaca | Diretor Geral Zoho Brasil", "Nanofeed Animal Health e Nutrition - Lucas São Thiago Soares | CEO (Subsidiária da Indiana Orgonew Private Ltd. para Brasil e LATAM)", "Tata Consultancy Services"] },
+  ],
+};
+
 // Projetos da Regional Sul. Entram uma vez (por id) e depois podem ser editados livremente na aba Projetos.
 export const SEED_PROJECTS = [
   {
@@ -563,12 +587,13 @@ export const SEED_PROJECTS = [
     ],
     etapas: [],
     participantes: [
-      { id: "seed-pt-fni-sc-1", empresa: "NIDEC", representante: "Rafael Oliveira", cargo: "", observacoes: "", status: "confirmada" },
-      { id: "seed-pt-fni-sc-2", empresa: "WEG", representante: "", cargo: "", observacoes: "", status: "a_confirmar" },
+      { id: "seed-pt-fni-sc-1", empresa: "NIDEC", representante: "Guilherme Figueiredo", cargo: "Gerente Sênior", observacoes: "Painel 1", status: "confirmada" },
+      { id: "seed-pt-fni-sc-2", empresa: "WEG", representante: "Ivan Fiamoncini", cargo: "", observacoes: "Painel 1", status: "confirmada" },
       { id: "seed-pt-fni-sc-3", empresa: "ALEXANDER", representante: "Alexander Santana", cargo: "", observacoes: "", status: "confirmada" },
-      { id: "seed-pt-fni-sc-4", empresa: "ZOHO", representante: "Rodrigo Vaca", cargo: "", observacoes: "", status: "confirmada" },
-      { id: "seed-pt-fni-sc-5", empresa: "Nanofeed Animal Health e Nutrition", representante: "Lucas São Thiago Soares", cargo: "CEO", observacoes: "Subsidiária da Indiana Orgonew Private Ltd. para Brasil e LATAM", status: "confirmada" },
+      { id: "seed-pt-fni-sc-4", empresa: "ZOHO", representante: "Rodrigo Vaca", cargo: "Diretor Geral Zoho Brasil", observacoes: "Painel 2", status: "confirmada" },
+      { id: "seed-pt-fni-sc-5", empresa: "Nanofeed Animal Health e Nutrition", representante: "Lucas São Thiago Soares", cargo: "CEO", observacoes: "Painel 2. Subsidiária da Indiana Orgonew Private Ltd. para Brasil e LATAM", status: "confirmada" },
       { id: "seed-pt-fni-sc-6", empresa: "Audaces", representante: "Matheus Diogo Fagundes", cargo: "Presidente Global", observacoes: "", status: "confirmada" },
+      { id: "seed-pt-fni-sc-7", empresa: "Tata Consultancy Services", representante: "", cargo: "", observacoes: "Painel 2", status: "confirmada" },
     ],
     notas: "",
     createdAt: Date.now(),

@@ -1,13 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 import { STORAGE_PROJECTS } from "../constants";
 import { storage, EVENTO_ATUALIZADO } from "./storage";
-import { SEED_PROJECTS, CORRIGIR_PROJETOS } from "../data/seeds";
+import { SEED_PROJECTS, CORRIGIR_PROJETOS, CORRIGIR_ITENS, ACRESCENTAR_LINHAS } from "../data/seeds";
 
 // Listas do projeto que recebem itens novos da semente (por id do item)
 const LISTAS_SEMENTE = ["participantes", "empresasVisitadas", "etapas", "custos", "patrocinios", "programacao"];
 
 // Preenche os campos que ainda não existem no projeto salvo e acrescenta às listas os itens-semente
 // novos. Os ids já aplicados ficam em _seedItens, para que um item removido na plataforma não volte.
+const normalizarTexto = (t) => (t || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/\s+/g, " ").trim();
+
 export function mesclarSemente(p, seed) {
   const vistos = new Set(p._seedItens || []);
   const novo = { ...p };
@@ -76,6 +78,45 @@ export function useProjetos() {
             }
           });
         }
+        // Correções item a item (por id): o campo só muda se ainda tiver exatamente o valor antigo
+        const itens = CORRIGIR_ITENS[p.id];
+        if (itens) {
+          Object.entries(itens).forEach(([lista, porItem]) => {
+            if (!Array.isArray(p[lista])) return;
+            let alterouLista = false;
+            const nova = p[lista].map((x) => {
+              const campos = porItem[x.id];
+              if (!campos) return x;
+              let y = x;
+              Object.entries(campos).forEach(([campo, { de, para }]) => {
+                if ((y[campo] ?? "") === de && de !== para) { y = { ...y, [campo]: para }; alterouLista = true; }
+              });
+              return y;
+            });
+            if (alterouLista) { p = { ...p, [lista]: nova }; mudou = true; }
+          });
+        }
+        // Linhas que devem constar nos detalhes de um item (achado pelo título). Só acrescenta o que falta,
+        // uma única vez por regra (marcada em _seedItens), para não voltar se alguém apagar depois.
+        (ACRESCENTAR_LINHAS[p.id] || []).forEach((regra) => {
+          const marca = `linhas:${regra.chave}`;
+          if ((p._seedItens || []).includes(marca) || !Array.isArray(p[regra.lista])) return;
+          const alvo = p[regra.lista].find((x) => normalizarTexto(x.titulo).includes(normalizarTexto(regra.tituloContem)));
+          if (!alvo) return;
+          const atuais = (alvo.detalhes || "").split("\n");
+          const jaTem = (linha) => {
+            const empresa = normalizarTexto(linha.split(" - ")[0]);
+            return atuais.some((a) => normalizarTexto(a) === normalizarTexto(linha) || (empresa && normalizarTexto(a).startsWith(empresa)));
+          };
+          const faltam = regra.linhas.filter((l) => !jaTem(l));
+          const detalhes = [...atuais.filter((a) => a.trim()), ...faltam].join("\n");
+          p = {
+            ...p,
+            [regra.lista]: faltam.length ? p[regra.lista].map((x) => (x.id === alvo.id ? { ...x, detalhes } : x)) : p[regra.lista],
+            _seedItens: [...(p._seedItens || []), marca],
+          };
+          mudou = true;
+        });
         const seed = porId.get(p.id);
         if (!seed) return p;
         const [mesclado, alterou] = mesclarSemente(p, seed);
