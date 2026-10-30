@@ -1,6 +1,7 @@
 import imgWebinarMarthaBeckerCriseNaoTemHora from "../assets/eventos/webinar-martha-becker-crise-nao-tem-hora.jpg";
 import imgExpoIndustria2026 from "../assets/eventos/expo-industria-2026.jpg";
 import imgFniSc from "../assets/eventos/fni-sc.jpg";
+import imgFniScFlorianopolis from "../assets/eventos/fni-sc-florianopolis-convite.webp";
 import logoIndiaHealth from "../assets/missoes/india-health.webp";
 import logoWebinarMarthaBecker from "../assets/eventos-regional/webinar-martha-becker.webp";
 import imgHappyHourIrip from "../assets/eventos/happy-hour-irip.jpg";
@@ -113,7 +114,7 @@ export const SEED_EVENTS = [
     tipo: "Webinar/Seminário",
     status: "planejado",
     descricao: "",
-    registro: imgFniSc,
+    registro: imgFniScFlorianopolis,
     createdAt: Date.now(),
   },
   {
@@ -177,6 +178,7 @@ export const FORCE_EVENT_UPDATES = {
     data: "2026-11-12",
     local: "Auditório AEMFLO / CDL SJ",
     horario: "08:00 – 12:00",
+    registro: imgFniScFlorianopolis,
   },
   "Happy Hour IRIP": {
     registro: imgHappyHourIrip,
