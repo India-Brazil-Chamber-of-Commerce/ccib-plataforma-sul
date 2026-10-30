@@ -72,7 +72,7 @@ export default function Certificados({ evento, onChange }) {
             {campo("texto", "Texto do certificado", {
               type: "textarea",
               full: true,
-              hint: "Use {evento}, {funcao}, {data}, {local} e {carga}: a plataforma troca pelos dados acima e pela função de cada pessoa. O nome aparece em destaque logo acima.",
+              hint: "Use {evento}, {funcao}, {data}, {local} e {carga}: a plataforma troca pelos dados acima e pela função de cada pessoa. Para itálico, escreva entre asteriscos (ex.: *on-line*), aqui ou nos campos acima.",
             })}
             {[0, 1].map((i) => (
               <React.Fragment key={i}>

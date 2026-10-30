@@ -1,3 +1,4 @@
+import { TEXTO_PADRAO as TEXTO_CERTIFICADO_PADRAO } from "../lib/certificado.js";
 // Dados iniciais, usados só na primeira vez que a plataforma abre (quando ainda não há nada salvo).
 // Depois disso, valem as edições feitas na própria plataforma.
 
@@ -152,14 +153,22 @@ export function aplicarConvites(eventos) {
 // Ajustes no modelo de certificado pedidos à equipe técnica. Cada ajuste tem um id e é aplicado
 // uma única vez por evento (campo certificadoAjuste); depois disso valem as edições feitas na plataforma.
 export const AJUSTES_CERTIFICADO = {
-  "jornada do compliance": {
-    id: "2026-10-30-nome-data-carga",
-    campos: {
-      nomeEvento: "Jornada do Compliance 2026: Ética na era da Inteligência Artificial",
-      data: "28 de outubro de 2026",
-      carga: "2 horas",
+  "jornada do compliance": [
+    {
+      id: "2026-10-30-nome-data-carga",
+      campos: {
+        nomeEvento: "Jornada do Compliance 2026: Ética na era da Inteligência Artificial",
+        data: "28 de outubro de 2026",
+        carga: "2 horas",
+      },
     },
-  },
+    {
+      // Local "on-line" em itálico; o texto deixa de dizer "em {local}" para não ficar "em on-line"
+      id: "2026-10-30-local-online",
+      campos: { local: "*on-line*" },
+      trocarNoTexto: ["em {local}", "{local}"],
+    },
+  ],
 };
 
 export function aplicarAjustesCertificado(eventos) {
@@ -168,10 +177,24 @@ export function aplicarAjustesCertificado(eventos) {
     const nome = (e.evento || "").toLowerCase();
     const trecho = Object.keys(AJUSTES_CERTIFICADO).find((k) => nome.includes(k));
     if (!trecho) return e;
-    const ajuste = AJUSTES_CERTIFICADO[trecho];
-    if (e.certificadoAjuste === ajuste.id) return e;
+    // certificadoAjuste (texto) era o marcador da primeira versão; agora é uma lista de ids aplicados
+    const aplicados = new Set([...(e.certificadoAjustes || []), ...(e.certificadoAjuste ? [e.certificadoAjuste] : [])]);
+    let certificado = e.certificado || {};
+    let alterou = false;
+    AJUSTES_CERTIFICADO[trecho].forEach((ajuste) => {
+      if (aplicados.has(ajuste.id)) return;
+      certificado = { ...certificado, ...ajuste.campos };
+      if (ajuste.trocarNoTexto) {
+        const [de, para] = ajuste.trocarNoTexto;
+        certificado.texto = (certificado.texto || TEXTO_CERTIFICADO_PADRAO).replace(de, para);
+      }
+      aplicados.add(ajuste.id);
+      alterou = true;
+    });
+    if (!alterou) return e;
     mudou = true;
-    return { ...e, certificado: { ...(e.certificado || {}), ...ajuste.campos }, certificadoAjuste: ajuste.id };
+    const { certificadoAjuste, ...resto } = e;
+    return { ...resto, certificado, certificadoAjustes: [...aplicados] };
   });
   return { lista, mudou };
 }

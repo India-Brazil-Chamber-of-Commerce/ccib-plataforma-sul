@@ -37,11 +37,18 @@ const esc = (s) =>
   String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
 // Troca {campo} pelo valor (em negrito) ou por um marcador visível quando estiver vazio
+// Valor entre asteriscos (ex.: "*on-line*") sai em itálico; os demais saem em negrito
 function preencher(texto, valores) {
-  return esc(texto).replace(/\{(\w+)\}/g, (m, campo) => {
-    const v = valores[campo];
-    return v ? `<strong>${esc(v)}</strong>` : `<span class="falta">[${campo}]</span>`;
-  });
+  return esc(texto)
+    .replace(/\{(\w+)\}/g, (m, campo) => {
+      const v = String(valores[campo] || "").trim();
+      if (!v) return `<span class="falta">[${campo}]</span>`;
+      const italico = v.match(/^\*(.+)\*$/);
+      // Valores curtos ("2 horas", "on-line") não quebram no meio da linha
+      const nw = v.length <= 25 ? ' class="nw"' : "";
+      return italico ? `<em${nw}>${esc(italico[1])}</em>` : `<strong${nw}>${esc(v)}</strong>`;
+    })
+    .replace(/\*([^*]+)\*/g, "<em>$1</em>");
 }
 
 function pagina(modelo, pessoa, valores) {
@@ -90,6 +97,7 @@ body { font-family: 'Inter', Arial, sans-serif; color: #1C2430; }
 .nome { font-family: 'Fraunces', Georgia, serif; font-size: 28pt; font-weight: 600; color: #0B1E3D; margin-top: 3mm; padding: 0 8mm 2mm; border-bottom: 0.5mm solid #F77F1A; min-width: 60%; }
 .texto { font-size: 12.5pt; line-height: 1.6; color: #1C2430; margin-top: 6mm; max-width: 175mm; }
 .texto strong { color: #0B1E3D; }
+.nw { white-space: nowrap; }
 .cidade { font-size: 11pt; color: #4B5563; margin-top: 6mm; }
 .assinaturas { display: flex; justify-content: center; gap: 22mm; margin-top: auto; width: 100%; }
 .ass { width: 70mm; text-align: center; }
