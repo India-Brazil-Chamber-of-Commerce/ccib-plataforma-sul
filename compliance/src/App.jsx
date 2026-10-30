@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { STORAGE } from "./constants";
-import { SEEDS, migrarEventos, aplicarConvites } from "./data/seeds";
+import { SEEDS, migrarEventos, aplicarConvites, aplicarAjustesCertificado } from "./data/seeds";
 import { storage } from "./lib/storage";
 import LOGO_URL from "./assets/logo-ccib.png";
 import VisaoGeralTab from "./tabs/VisaoGeralTab";
@@ -80,8 +80,9 @@ export default function App() {
       }
     }
     const convites = aplicarConvites(dados.eventos);
-    if (convites.mudou) {
-      dados.eventos = convites.lista;
+    const ajustes = aplicarAjustesCertificado(convites.lista);
+    if (convites.mudou || ajustes.mudou) {
+      dados.eventos = ajustes.lista;
       try {
         await storage.set(STORAGE.eventos, JSON.stringify(dados.eventos), true);
       } catch (e) {
