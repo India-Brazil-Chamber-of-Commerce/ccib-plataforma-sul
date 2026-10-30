@@ -528,6 +528,13 @@ export const SEED_PROJECTS = [
     dataPrevista: "2026-11-12",
     horario: "08:00 – 12:00",
     parceiros: "Possível patrocínio: Alexander Advogados (a confirmar)",
+    programacao: [
+      { id: "seed-prog-fni-sc-1", inicio: "08:00", fim: "08:30", titulo: "Painel de Abertura", detalhes: "" },
+      { id: "seed-prog-fni-sc-2", inicio: "08:30", fim: "09:45", titulo: "Painel 1 – Empresas Brasileiras na Índia", detalhes: "" },
+      { id: "seed-prog-fni-sc-3", inicio: "09:45", fim: "10:30", titulo: "Painel de Oportunidades – Santa Catarina e Índia", detalhes: "Secretaria de Estado da Indústria, do Comércio e do Serviço de Santa Catarina (SICOS)\nCâmara de Comércio Índia Brasil (CCIB)" },
+      { id: "seed-prog-fni-sc-4", inicio: "10:30", fim: "11:45", titulo: "Painel 2 – Empresas Indianas no Brasil", detalhes: "" },
+      { id: "seed-prog-fni-sc-5", inicio: "11:45", fim: "12:00", titulo: "Painel de Encerramento", detalhes: "" },
+    ],
     patrocinios: [
       { id: "seed-pat-fni-sc-1", empresa: "Alexander Advogados", cota: "", valor: "", status: "prospeccao", contato: "Possível patrocínio (a confirmar)" },
     ],

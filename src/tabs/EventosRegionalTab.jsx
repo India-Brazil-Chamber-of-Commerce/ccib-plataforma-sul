@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Plus, X, ArrowLeft, ChevronRight, CalendarCheck, Wallet, Receipt, Scale, Users, Handshake, ListChecks, Calculator, CheckSquare, Square, Trash2, Ticket, NotebookPen, Landmark } from "lucide-react";
+import { Plus, X, ArrowLeft, ChevronRight, CalendarCheck, Wallet, Receipt, Scale, Users, Handshake, ListChecks, Calculator, CheckSquare, Square, Trash2, Ticket, NotebookPen, Landmark, ChevronUp, ChevronDown, Copy, Clock } from "lucide-react";
 import { ESTADOS, RESPONSAVEIS, STATUS_PROJETO } from "../constants";
 import { inputStyle, labelStyle, filterInputStyle } from "../styles";
 import { Field } from "../components/ui";
@@ -183,6 +183,71 @@ function EventoResumo({ p, c, abrir }) {
   );
 }
 
+// Programação do evento: horário, título e detalhes (palestrantes, instituições), um item por linha
+function Programacao({ itens, onChange }) {
+  const [copiado, setCopiado] = useState(false);
+  const mudar = (id, mudanca) => onChange(itens.map((x) => (x.id === id ? { ...x, ...mudanca } : x)));
+  const mover = (i, d) => {
+    const j = i + d;
+    if (j < 0 || j >= itens.length) return;
+    const nova = [...itens];
+    [nova[i], nova[j]] = [nova[j], nova[i]];
+    onChange(nova);
+  };
+  const adicionar = () => {
+    const ultimo = itens[itens.length - 1];
+    onChange([...itens, { id: novoId("prog"), inicio: ultimo ? ultimo.fim || "" : "", fim: "", titulo: "", detalhes: "" }]);
+  };
+  const horario = (x) => [x.inicio, x.fim].filter(Boolean).join(" – ");
+  const copiar = async () => {
+    const texto = itens.map((x) => `${horario(x)}${horario(x) ? " | " : ""}${x.titulo}${x.detalhes ? `\n${x.detalhes}` : ""}`).join("\n\n");
+    try { await navigator.clipboard.writeText(texto); setCopiado(true); setTimeout(() => setCopiado(false), 1800); } catch (e) { /* sem área de transferência */ }
+  };
+  const hora = { ...inputLinha, width: 52, fontFamily: mono, fontSize: 12.5, textAlign: "center", color: "#0B2545", fontWeight: 600 };
+  const seta = { background: "transparent", border: "none", cursor: "pointer", color: "#8992A6", padding: 0, display: "flex" };
+  return (
+    <div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 10 }}>
+        {itens.length === 0 && <div style={{ fontSize: 12.5, color: "#8992A6" }}>Nenhum item na programação.</div>}
+        {itens.map((x, i) => (
+          <div key={x.id} style={{ ...linhaItem, alignItems: "flex-start", borderLeft: "3px solid #B8752E" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 2, paddingTop: 2 }}>
+              <button type="button" onClick={() => mover(i, -1)} disabled={i === 0} title="Subir" aria-label="Subir item" style={{ ...seta, opacity: i === 0 ? 0.3 : 1 }}><ChevronUp size={14} /></button>
+              <button type="button" onClick={() => mover(i, 1)} disabled={i === itens.length - 1} title="Descer" aria-label="Descer item" style={{ ...seta, opacity: i === itens.length - 1 ? 0.3 : 1 }}><ChevronDown size={14} /></button>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 4, paddingTop: 2 }}>
+              <input className="ccib-input" value={x.inicio || ""} placeholder="--:--" aria-label="Início" onChange={(e) => mudar(x.id, { inicio: e.target.value })} style={hora} />
+              <span style={{ color: "#8992A6" }}>–</span>
+              <input className="ccib-input" value={x.fim || ""} placeholder="--:--" aria-label="Fim" onChange={(e) => mudar(x.id, { fim: e.target.value })} style={hora} />
+            </div>
+            <div style={{ flex: "1 1 260px", minWidth: 0, display: "flex", flexDirection: "column", gap: 2 }}>
+              <input className="ccib-input" value={x.titulo || ""} placeholder="Título (ex.: Painel de Abertura)" aria-label="Título" onChange={(e) => mudar(x.id, { titulo: e.target.value })} style={{ ...inputLinha, fontWeight: 600, color: "#0B2545" }} />
+              <textarea
+                className="ccib-input"
+                value={x.detalhes || ""}
+                placeholder="Palestrantes, instituições ou observações (um por linha)"
+                aria-label="Detalhes"
+                rows={Math.max(1, (x.detalhes || "").split("\n").length)}
+                onChange={(e) => mudar(x.id, { detalhes: e.target.value })}
+                style={{ ...inputLinha, fontSize: 12.5, color: "#566175", resize: "vertical", lineHeight: 1.45, fontFamily: "inherit" }}
+              />
+            </div>
+            <button onClick={() => { if (!x.titulo || window.confirm(`Remover "${x.titulo}" da programação?`)) onChange(itens.filter((y) => y.id !== x.id)); }} title="Remover item" style={{ ...btnRemover, paddingTop: 4 }}><X size={14} /></button>
+          </div>
+        ))}
+      </div>
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+        <button onClick={adicionar} className="ccib-btn" style={btnLinha}><Plus size={14} /> Item da programação</button>
+        {itens.length > 0 && (
+          <button onClick={copiar} className="ccib-btn" style={{ ...btnLinha, border: "1px solid #D6DAE2", color: "#566175" }}>
+            <Copy size={13} /> {copiado ? "Copiado!" : "Copiar programação"}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function EventoDetalhe({ p, patch, voltar, remover }) {
   const c = calcularEvento(p);
   const status = STATUS_PROJETO[p.status] || STATUS_PROJETO.ideia;
@@ -325,6 +390,12 @@ function EventoDetalhe({ p, patch, voltar, remover }) {
       </div>
 
       <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+        {/* Programação */}
+        <div style={secao}>
+          <TituloSecao icon={Clock} extra={(p.programacao || []).length > 0 && <span style={{ fontFamily: mono, fontSize: 11, color: "#566175" }}>{(p.programacao || []).length} itens</span>}>Programação</TituloSecao>
+          <Programacao itens={p.programacao || []} onChange={(programacao) => patch({ programacao })} />
+        </div>
+
         {/* Público e inscrições */}
         <div style={secao}>
           <TituloSecao icon={Ticket} extra={<span style={{ fontFamily: mono, fontSize: 12, fontWeight: 600, color: "#0B2545" }}>{dinheiro(c.receitaIngressos, c.moeda)}</span>}>Público e inscrições</TituloSecao>
@@ -592,6 +663,7 @@ function novoEvento() {
     dataPrevista: "",
     horario: "",
     parceiros: "",
+    programacao: [],
     etapas: [],
     participantes: [],
     patrocinios: [],
