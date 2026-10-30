@@ -520,6 +520,7 @@ export const SEED_PROJECTS = [
     id: "seed-p-fazendo-negocios-india-sc",
     nome: "Evento Fazendo Negócios com a Índia - Edição Santa Catarina",
     descricao: "",
+    logo: imgFniScFlorianopolis,
     status: "planejamento",
     responsavel: "ambos",
     estado: "SC",
