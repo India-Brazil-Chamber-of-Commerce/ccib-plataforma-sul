@@ -74,7 +74,7 @@ function pagina(modelo, pessoa, valores) {
     <div class="certificamos">Certificamos que</div>
     <div class="nome">${esc(pessoa.nome) || '<span class="falta">[Nome do colaborador]</span>'}</div>
     <p class="texto">${preencher(modelo.texto, v)}</p>
-    <div class="cidade">${esc(modelo.cidadeData) || '<span class="falta">[Cidade], [dia] de [mês] de [ano]</span>'}</div>
+    ${modelo.cidadeData ? `<div class="cidade">${esc(modelo.cidadeData)}</div>` : ""}
     <div class="assinaturas">${assinaturas}</div>
   </div>
   <div class="rodape"></div>
