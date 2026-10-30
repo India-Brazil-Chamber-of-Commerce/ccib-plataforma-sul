@@ -68,7 +68,7 @@ export default function Certificados({ evento, onChange }) {
             {campo("data", "Data (por extenso)", { placeholder: "Ex: 18 de novembro de 2026" })}
             {campo("local", "Local", { placeholder: "Ex: Curitiba (PR) / formato online" })}
             {campo("carga", "Carga horária", { placeholder: "Ex: 4 horas" })}
-            {campo("cidadeData", "Cidade e data de emissão", { placeholder: "Ex: Curitiba, 18 de novembro de 2026" })}
+            {campo("cidadeData", "Cidade e data de emissão (opcional)", { placeholder: "Vazio = a linha não aparece" })}
             {campo("texto", "Texto do certificado", {
               type: "textarea",
               full: true,
