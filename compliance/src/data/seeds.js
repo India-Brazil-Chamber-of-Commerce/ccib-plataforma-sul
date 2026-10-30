@@ -149,6 +149,33 @@ export function aplicarConvites(eventos) {
   return { lista, mudou };
 }
 
+// Ajustes no modelo de certificado pedidos à equipe técnica. Cada ajuste tem um id e é aplicado
+// uma única vez por evento (campo certificadoAjuste); depois disso valem as edições feitas na plataforma.
+export const AJUSTES_CERTIFICADO = {
+  "jornada do compliance": {
+    id: "2026-10-30-nome-data-carga",
+    campos: {
+      nomeEvento: "Jornada do Compliance 2026: Ética na era da Inteligência Artificial",
+      data: "28 de outubro de 2026",
+      carga: "2 horas",
+    },
+  },
+};
+
+export function aplicarAjustesCertificado(eventos) {
+  let mudou = false;
+  const lista = eventos.map((e) => {
+    const nome = (e.evento || "").toLowerCase();
+    const trecho = Object.keys(AJUSTES_CERTIFICADO).find((k) => nome.includes(k));
+    if (!trecho) return e;
+    const ajuste = AJUSTES_CERTIFICADO[trecho];
+    if (e.certificadoAjuste === ajuste.id) return e;
+    mudou = true;
+    return { ...e, certificado: { ...(e.certificado || {}), ...ajuste.campos }, certificadoAjuste: ajuste.id };
+  });
+  return { lista, mudou };
+}
+
 // "18/11/2026" ou "2026-11-18" vira "2026-11-18"; qualquer outro texto ("Novembro/2026") não é data exata
 function paraIso(texto) {
   const s = String(texto || "").trim();
