@@ -216,9 +216,9 @@ function Programacao({ itens, onChange }) {
               <button type="button" onClick={() => mover(i, 1)} disabled={i === itens.length - 1} title="Descer" aria-label="Descer item" style={{ ...seta, opacity: i === itens.length - 1 ? 0.3 : 1 }}><ChevronDown size={14} /></button>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 4, paddingTop: 2 }}>
-              <input className="ccib-input" value={x.inicio || ""} placeholder="--:--" aria-label="Início" onChange={(e) => mudar(x.id, { inicio: e.target.value })} style={hora} />
+              <input className="ccib-input" value={x.inicio || ""} placeholder="início" aria-label="Início" onChange={(e) => mudar(x.id, { inicio: e.target.value })} style={hora} />
               <span style={{ color: "#8992A6" }}>–</span>
-              <input className="ccib-input" value={x.fim || ""} placeholder="--:--" aria-label="Fim" onChange={(e) => mudar(x.id, { fim: e.target.value })} style={hora} />
+              <input className="ccib-input" value={x.fim || ""} placeholder="fim" aria-label="Fim" onChange={(e) => mudar(x.id, { fim: e.target.value })} style={hora} />
             </div>
             <div style={{ flex: "1 1 260px", minWidth: 0, display: "flex", flexDirection: "column", gap: 2 }}>
               <input className="ccib-input" value={x.titulo || ""} placeholder="Título (ex.: Painel de Abertura)" aria-label="Título" onChange={(e) => mudar(x.id, { titulo: e.target.value })} style={{ ...inputLinha, fontWeight: 600, color: "#0B2545" }} />

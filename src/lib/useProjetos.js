@@ -64,7 +64,14 @@ export function useProjetos() {
         const correcoes = CORRIGIR_PROJETOS[p.id];
         if (correcoes) {
           Object.entries(correcoes).forEach(([campo, { de, para }]) => {
-            if (p[campo] === de) { p = { ...p, [campo]: para }; mudou = true; }
+            const igual = Array.isArray(de) ? JSON.stringify(p[campo]) === JSON.stringify(de) : p[campo] === de;
+            if (igual) { p = { ...p, [campo]: para }; mudou = true; }
+            // Lista já editada na plataforma: fica como está, e os itens novos da semente não são acrescentados
+            else if (Array.isArray(para)) {
+              const vistos = new Set(p._seedItens || []);
+              const novos = para.map((x) => x.id).filter((id) => !vistos.has(id));
+              if (novos.length) { p = { ...p, _seedItens: [...vistos, ...novos] }; mudou = true; }
+            }
           });
         }
         const seed = porId.get(p.id);

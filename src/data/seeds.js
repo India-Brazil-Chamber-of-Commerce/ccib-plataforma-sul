@@ -510,8 +510,29 @@ export const SEED_LEMBRETES = [
 
 // Correções pontuais em projetos já salvos: o campo só muda se ainda tiver exatamente o valor antigo
 // (assim uma edição feita na plataforma depois não é sobrescrita).
+// Programação do Fazendo Negócios com a Índia - Edição SC (a primeira versão fica guardada para a troca)
+const PROGRAMACAO_FNI_SC_V1 = [
+      { id: "seed-prog-fni-sc-1", inicio: "08:00", fim: "08:30", titulo: "Painel de Abertura", detalhes: "" },
+      { id: "seed-prog-fni-sc-2", inicio: "08:30", fim: "09:45", titulo: "Painel 1 – Empresas Brasileiras na Índia", detalhes: "" },
+      { id: "seed-prog-fni-sc-3", inicio: "09:45", fim: "10:30", titulo: "Painel de Oportunidades – Santa Catarina e Índia", detalhes: "Secretaria de Estado da Indústria, do Comércio e do Serviço de Santa Catarina (SICOS)\nCâmara de Comércio Índia Brasil (CCIB)" },
+      { id: "seed-prog-fni-sc-4", inicio: "10:30", fim: "11:45", titulo: "Painel 2 – Empresas Indianas no Brasil", detalhes: "" },
+      { id: "seed-prog-fni-sc-5", inicio: "11:45", fim: "12:00", titulo: "Painel de Encerramento", detalhes: "" },
+];
+const PROGRAMACAO_FNI_SC = [
+      { id: "seed-prog-fni-sc-v2-1", inicio: "08:00", fim: "", titulo: "Credenciamento & Welcome Coffee", detalhes: "" },
+      { id: "seed-prog-fni-sc-v2-2", inicio: "09:00", fim: "", titulo: "Abertura Institucional", detalhes: "" },
+      { id: "seed-prog-fni-sc-v2-3", inicio: "09:45", fim: "", titulo: "Painel 1: Empresas Brasileiras na Índia", detalhes: "Experiências, Desafios e Oportunidades" },
+      { id: "seed-prog-fni-sc-v2-4", inicio: "10:30", fim: "", titulo: "Panorama Estratégico: SC & Índia", detalhes: "Secretaria de Estado da Indústria, do Comércio e do Serviço de Santa Catarina (SICOS)\nCâmara de Comércio Índia Brasil (CCIB)" },
+      { id: "seed-prog-fni-sc-v2-5", inicio: "11:00", fim: "", titulo: "Painel 2 – Empresas Indianas no Brasil", detalhes: "" },
+      { id: "seed-prog-fni-sc-v2-6", inicio: "11:50", fim: "", titulo: "Encerramento", detalhes: "" },
+];
+
 export const CORRIGIR_PROJETOS = {
-  "seed-p-fazendo-negocios-india-sc": { local: { de: "Florianópolis/SC", para: "Auditório AEMFLO / CDL SJ" } },
+  "seed-p-fazendo-negocios-india-sc": {
+    local: { de: "Florianópolis/SC", para: "Auditório AEMFLO / CDL SJ" },
+    // Troca a programação só se ela ainda estiver igual à primeira versão (edições feitas na plataforma ficam)
+    programacao: { de: PROGRAMACAO_FNI_SC_V1, para: PROGRAMACAO_FNI_SC },
+  },
 };
 
 // Projetos da Regional Sul. Entram uma vez (por id) e depois podem ser editados livremente na aba Projetos.
@@ -528,13 +549,7 @@ export const SEED_PROJECTS = [
     dataPrevista: "2026-11-12",
     horario: "08:00 – 12:00",
     parceiros: "Possível patrocínio: Alexander Advogados (a confirmar)",
-    programacao: [
-      { id: "seed-prog-fni-sc-1", inicio: "08:00", fim: "08:30", titulo: "Painel de Abertura", detalhes: "" },
-      { id: "seed-prog-fni-sc-2", inicio: "08:30", fim: "09:45", titulo: "Painel 1 – Empresas Brasileiras na Índia", detalhes: "" },
-      { id: "seed-prog-fni-sc-3", inicio: "09:45", fim: "10:30", titulo: "Painel de Oportunidades – Santa Catarina e Índia", detalhes: "Secretaria de Estado da Indústria, do Comércio e do Serviço de Santa Catarina (SICOS)\nCâmara de Comércio Índia Brasil (CCIB)" },
-      { id: "seed-prog-fni-sc-4", inicio: "10:30", fim: "11:45", titulo: "Painel 2 – Empresas Indianas no Brasil", detalhes: "" },
-      { id: "seed-prog-fni-sc-5", inicio: "11:45", fim: "12:00", titulo: "Painel de Encerramento", detalhes: "" },
-    ],
+    programacao: PROGRAMACAO_FNI_SC,
     patrocinios: [
       { id: "seed-pat-fni-sc-1", empresa: "Alexander Advogados", cota: "", valor: "", status: "prospeccao", contato: "Possível patrocínio (a confirmar)" },
     ],
