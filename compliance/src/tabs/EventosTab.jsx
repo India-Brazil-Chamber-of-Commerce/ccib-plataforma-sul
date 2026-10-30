@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Plus, Trash2, CalendarDays, MapPin, Clock, ImagePlus, X } from "lucide-react";
 import SheetTable from "../components/SheetTable";
+import Certificados from "../components/Certificados";
 import { FORMATOS_EVENTO, PARTICIPACOES_EMPRESA, STATUS_EMPRESA_EVENTO, STATUS_EVENTO, TIPOS_EVENTO, tagColor } from "../constants";
 import { newId } from "../lib/format";
 import { reduzirImagem } from "../lib/imagem";
@@ -208,6 +209,7 @@ function EventoAberto({ evento: e, onChange, onFechar, onRemover }) {
     { id: "info", label: "Informações" },
     { id: "programacao", label: "Programação", count: programacao.length },
     { id: "empresas", label: "Empresas", count: empresas.length },
+    { id: "certificados", label: "Certificados", count: (e.certificadoPessoas || []).filter((p) => (p.nome || "").trim()).length },
   ];
 
   return (
@@ -295,6 +297,7 @@ function EventoAberto({ evento: e, onChange, onFechar, onRemover }) {
             minWidth={860}
           />
         )}
+        {aba === "certificados" && <Certificados evento={e} onChange={onChange} />}
       </div>
     </div>
   );
