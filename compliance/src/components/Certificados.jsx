@@ -76,6 +76,10 @@ export default function Certificados({ evento, onChange }) {
             })}
             {[0, 1].map((i) => (
               <React.Fragment key={i}>
+                <div className="field full">
+                  <label htmlFor={`cert-${evento.id}-manuscrita${i}`}>Assinatura {i + 1}: texto em caligrafia (sobre a linha)</label>
+                  <input id={`cert-${evento.id}-manuscrita${i}`} value={modelo.assinaturas[i]?.manuscrita || ""} placeholder={i === 0 ? "Ex: Câmara de Comércio Índia Brasil" : "Opcional"} onChange={(e) => setAssinatura(i, "manuscrita", e.target.value)} />
+                </div>
                 <div className="field">
                   <label htmlFor={`cert-${evento.id}-ass${i}`}>Assinatura {i + 1}: nome</label>
                   <input id={`cert-${evento.id}-ass${i}`} value={modelo.assinaturas[i]?.nome || ""} placeholder={i === 1 ? "Opcional" : "Nome de quem assina"} onChange={(e) => setAssinatura(i, "nome", e.target.value)} />

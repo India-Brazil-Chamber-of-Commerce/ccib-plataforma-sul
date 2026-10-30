@@ -168,6 +168,16 @@ export const AJUSTES_CERTIFICADO = {
       campos: { local: "*on-line*" },
       trocarNoTexto: ["em {local}", "{local}"],
     },
+    {
+      // Uma única assinatura, em caligrafia: "Câmara de Comércio Índia Brasil"
+      id: "2026-10-30-assinatura-ccib",
+      campos: {
+        assinaturas: [
+          { manuscrita: "Câmara de Comércio Índia Brasil", nome: "", cargo: "" },
+          { manuscrita: "", nome: "", cargo: "" },
+        ],
+      },
+    },
   ],
 };
 
