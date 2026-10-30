@@ -178,6 +178,10 @@ export const AJUSTES_CERTIFICADO = {
         ],
       },
     },
+    {
+      id: "2026-10-30-era-maiuscula",
+      campos: { nomeEvento: "Jornada do Compliance 2026: Ética na Era da Inteligência Artificial" },
+    },
   ],
 };
 
