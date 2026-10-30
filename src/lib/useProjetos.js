@@ -63,8 +63,10 @@ export function useProjetos() {
       const lista = salvos.map((p) => {
         const correcoes = CORRIGIR_PROJETOS[p.id];
         if (correcoes) {
-          Object.entries(correcoes).forEach(([campo, { de, para }]) => {
-            const igual = Array.isArray(de) ? JSON.stringify(p[campo]) === JSON.stringify(de) : p[campo] === de;
+          Object.entries(correcoes).forEach(([campo, { de, deVersoes, para }]) => {
+            // deVersoes: aceita qualquer versão anterior publicada pela semente
+            const anteriores = deVersoes || [de];
+            const igual = anteriores.some((v) => (Array.isArray(v) ? JSON.stringify(p[campo]) === JSON.stringify(v) : p[campo] === v));
             if (igual) { p = { ...p, [campo]: para }; mudou = true; }
             // Lista já editada na plataforma: fica como está, e os itens novos da semente não são acrescentados
             else if (Array.isArray(para)) {

@@ -510,7 +510,7 @@ export const SEED_LEMBRETES = [
 
 // Correções pontuais em projetos já salvos: o campo só muda se ainda tiver exatamente o valor antigo
 // (assim uma edição feita na plataforma depois não é sobrescrita).
-// Programação do Fazendo Negócios com a Índia - Edição SC (a primeira versão fica guardada para a troca)
+// Programação do Fazendo Negócios com a Índia - Edição SC (as versões anteriores ficam guardadas para a troca)
 const PROGRAMACAO_FNI_SC_V1 = [
       { id: "seed-prog-fni-sc-1", inicio: "08:00", fim: "08:30", titulo: "Painel de Abertura", detalhes: "" },
       { id: "seed-prog-fni-sc-2", inicio: "08:30", fim: "09:45", titulo: "Painel 1 – Empresas Brasileiras na Índia", detalhes: "" },
@@ -518,7 +518,7 @@ const PROGRAMACAO_FNI_SC_V1 = [
       { id: "seed-prog-fni-sc-4", inicio: "10:30", fim: "11:45", titulo: "Painel 2 – Empresas Indianas no Brasil", detalhes: "" },
       { id: "seed-prog-fni-sc-5", inicio: "11:45", fim: "12:00", titulo: "Painel de Encerramento", detalhes: "" },
 ];
-const PROGRAMACAO_FNI_SC = [
+const PROGRAMACAO_FNI_SC_V2 = [
       { id: "seed-prog-fni-sc-v2-1", inicio: "08:00", fim: "", titulo: "Credenciamento & Welcome Coffee", detalhes: "" },
       { id: "seed-prog-fni-sc-v2-2", inicio: "09:00", fim: "", titulo: "Abertura Institucional", detalhes: "" },
       { id: "seed-prog-fni-sc-v2-3", inicio: "09:45", fim: "", titulo: "Painel 1: Empresas Brasileiras na Índia", detalhes: "Experiências, Desafios e Oportunidades" },
@@ -526,12 +526,20 @@ const PROGRAMACAO_FNI_SC = [
       { id: "seed-prog-fni-sc-v2-5", inicio: "11:00", fim: "", titulo: "Painel 2 – Empresas Indianas no Brasil", detalhes: "" },
       { id: "seed-prog-fni-sc-v2-6", inicio: "11:50", fim: "", titulo: "Encerramento", detalhes: "" },
 ];
+const PROGRAMACAO_FNI_SC = [
+      { id: "seed-prog-fni-sc-v2-1", inicio: "08:00", fim: "", titulo: "Credenciamento & Welcome Coffee", detalhes: "" },
+      { id: "seed-prog-fni-sc-v2-2", inicio: "09:00", fim: "", titulo: "Abertura Institucional", detalhes: "" },
+      { id: "seed-prog-fni-sc-v2-3", inicio: "09:45", fim: "", titulo: "Painel 1: Empresas Brasileiras na Índia", detalhes: "Experiências, Desafios e Oportunidades\nWEG - Ivan Fiamoncini\nNIDEC - Guilherme Figueiredo | Gerente Sênior" },
+      { id: "seed-prog-fni-sc-v2-4", inicio: "10:30", fim: "", titulo: "Panorama Estratégico: SC & Índia", detalhes: "Secretaria de Estado da Indústria, do Comércio e do Serviço de Santa Catarina (SICOS)\nCâmara de Comércio Índia Brasil (CCIB)" },
+      { id: "seed-prog-fni-sc-v2-5", inicio: "11:00", fim: "", titulo: "Painel 2 – Empresas Indianas no Brasil", detalhes: "ZOHO - Rodrigo Vaca | Diretor Geral Zoho Brasil\nNanofeed Animal Health e Nutrition - Lucas São Thiago Soares | CEO (Subsidiária da Indiana Orgonew Private Ltd. para Brasil e LATAM)\nTata Consultancy Services" },
+      { id: "seed-prog-fni-sc-v2-6", inicio: "11:50", fim: "", titulo: "Encerramento", detalhes: "" },
+];
 
 export const CORRIGIR_PROJETOS = {
   "seed-p-fazendo-negocios-india-sc": {
     local: { de: "Florianópolis/SC", para: "Auditório AEMFLO / CDL SJ" },
     // Troca a programação só se ela ainda estiver igual à primeira versão (edições feitas na plataforma ficam)
-    programacao: { de: PROGRAMACAO_FNI_SC_V1, para: PROGRAMACAO_FNI_SC },
+    programacao: { deVersoes: [PROGRAMACAO_FNI_SC_V1, PROGRAMACAO_FNI_SC_V2], para: PROGRAMACAO_FNI_SC },
   },
 };
 
