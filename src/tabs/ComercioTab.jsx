@@ -1,9 +1,10 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Ship, Package, MapPin, BarChart3, FileSpreadsheet, FileText } from "lucide-react";
+import { Ship, Package, MapPin, BarChart3, FileSpreadsheet, FileText, Trophy } from "lucide-react";
 import { filterInputStyle, labelStyle } from "../styles";
 import { COMERCIO_SUL_INDIA } from "../data/comercioSulIndia";
 import { PRODUTOS_SH4, DESCRICOES_SH4 } from "../data/comercioProdutos";
 import { CIDADES, CIDADES_PRODUTOS } from "../data/comercioCidades";
+import { BRASIL_UF } from "../data/comercioBrasilUF";
 
 // Nome curto do SH4 para o ranking (a descrição completa fica no texto ao passar o mouse)
 function nomeCurto(desc) {
@@ -63,12 +64,13 @@ function Titulo({ icon: Icon, children, extra }) {
   );
 }
 
-function Kpi({ label, valor, sub, cor = "#0B2545" }) {
+function Kpi({ label, valor, sub, destaque, cor = "#0B2545" }) {
   return (
     <div style={{ ...card, padding: "14px 16px", borderTop: `3px solid ${cor}`, minWidth: 0 }}>
       <div style={{ ...labelStyle, marginBottom: 6 }}>{label}</div>
       <div style={{ fontFamily: serif, fontWeight: 600, fontSize: 26, color: "#0B2545", lineHeight: 1.1 }}>{valor}</div>
       {sub && <div style={{ fontSize: 11.5, color: "#8992A6", marginTop: 5 }}>{sub}</div>}
+      {destaque && <div style={{ fontSize: 11.5, color: "#0B2545", fontWeight: 600, marginTop: 4 }}>{destaque}</div>}
     </div>
   );
 }
@@ -352,6 +354,105 @@ function Evolucao({ linhas, parciais = [], anoSel, onAno }) {
   );
 }
 
+// Ranking nacional: posição de cada estado no comércio do Brasil com a Índia (total do Brasil inclui as linhas que não são estado)
+function rankingBrasil(ano, fluxo) {
+  const k = BRASIL_UF.anos.indexOf(ano);
+  if (k < 0) return null;
+  const f = fluxo === "exportacao" ? "e" : "i";
+  const lista = BRASIL_UF.ufs.map((u) => ({ uf: u.uf, nome: u.nome, valor: (f === "e" ? u.e : u.i)[k] || 0 })).sort((a, b) => b.valor - a.valor);
+  const total = lista.reduce((s, x) => s + x.valor, 0) + ((f === "e" ? BRASIL_UF.outros.e : BRASIL_UF.outros.i)[k] || 0);
+  return { total, lista: lista.map((x, n) => ({ ...x, pos: n + 1, part: total ? x.valor / total : 0 })) };
+}
+function posicaoNoBrasil(uf, ano, fluxo) {
+  const r = rankingBrasil(ano, fluxo);
+  if (!r) return null;
+  if (uf === "sul") {
+    const v = r.lista.filter((x) => UFS.some((e) => e.uf === x.uf)).reduce((s, x) => s + x.valor, 0);
+    return { pos: null, part: r.total ? v / r.total : 0, de: r.lista.length };
+  }
+  const x = r.lista.find((y) => y.uf === uf);
+  return x ? { pos: x.pos, part: x.part, de: r.lista.length } : null;
+}
+const textoPosicao = (p) => (!p ? "" : p.pos ? `${p.pos}º no Brasil · ${pct(p.part)} do total` : `${pct(p.part)} do total do Brasil`);
+
+// Lista dos 27 estados no ano e fluxo escolhidos, com os do Sul em destaque, e a posição do Sul ano a ano
+function PosicaoBrasil({ ano, fluxo, ufSel, anosParciais, onAno }) {
+  const r = rankingBrasil(ano, fluxo);
+  const [todos, setTodos] = useState(false);
+  if (!r) return <div style={{ fontSize: 13, color: "#8992A6" }}>Sem dados nacionais para este ano.</div>;
+  const ehSul = (uf) => UFS.some((e) => e.uf === uf);
+  const corDe = (uf) => (UFS.find((e) => e.uf === uf) || {}).cor;
+  const max = Math.max(1, ...r.lista.map((x) => x.valor));
+  // Mostra os 10 primeiros e sempre os estados do Sul; "ver todos" abre os 27
+  const visiveis = todos ? r.lista : r.lista.filter((x) => x.pos <= 10 || ehSul(x.uf));
+  const anosTab = BRASIL_UF.anos.slice(-11);
+  return (
+    <div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+        {visiveis.map((x, n) => {
+          const sul = ehSul(x.uf);
+          const sel = ufSel === x.uf;
+          const salto = n > 0 && x.pos - visiveis[n - 1].pos > 1;
+          return (
+            <React.Fragment key={x.uf}>
+              {salto && <div style={{ fontSize: 11, color: "#B7BEC9", paddingLeft: 30 }}>⋯</div>}
+              <div title={`${x.pos}º ${x.nome}: ${usd(x.valor)} (${pct(x.part)} do Brasil)`} style={{ display: "flex", alignItems: "center", gap: 8, padding: "3px 6px", borderRadius: 6, background: sel ? "#FFF3E4" : sul ? "#FAFBFC" : "transparent" }}>
+                <span style={{ fontFamily: mono, fontSize: 11, width: 24, textAlign: "right", color: sul ? "#0B2545" : "#8992A6", fontWeight: sul ? 700 : 400 }}>{x.pos}º</span>
+                <span style={{ width: 150, flexShrink: 0, fontSize: 12.5, color: sul ? "#0B2545" : "#566175", fontWeight: sul ? 700 : 400, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{x.nome}</span>
+                <span style={{ flex: 1, minWidth: 40, height: 8, background: "#F1F3F7", borderRadius: 4 }}>
+                  <span style={{ display: "block", width: `${Math.max(0.8, (x.valor / max) * 100)}%`, height: "100%", borderRadius: 4, background: sul ? corDe(x.uf) : "#C9CED8" }} />
+                </span>
+                <span style={{ fontFamily: mono, fontSize: 11.5, width: 96, textAlign: "right", color: "#1B2438", whiteSpace: "nowrap" }}>{usd(x.valor)}</span>
+                <span style={{ fontFamily: mono, fontSize: 11, width: 48, textAlign: "right", color: "#566175" }}>{x.part < 0.001 ? "<0,1%" : pct(x.part)}</span>
+              </div>
+            </React.Fragment>
+          );
+        })}
+      </div>
+      <button type="button" onClick={() => setTodos(!todos)} style={{ background: "none", border: "none", padding: 0, marginTop: 8, cursor: "pointer", fontSize: 12, color: "#2F6FB0", fontWeight: 500 }}>
+        {todos ? "Mostrar só os 10 primeiros e o Sul" : `Ver os ${r.lista.length} estados`}
+      </button>
+
+      <div style={{ ...labelStyle, marginTop: 16, marginBottom: 6 }}>Posição no ranking nacional ano a ano · {FLUXOS[fluxo].curto.toLowerCase()}</div>
+      <div style={{ overflowX: "auto" }}>
+        <table style={{ borderCollapse: "collapse", fontSize: 12, width: "100%" }}>
+          <thead>
+            <tr>
+              <th style={{ textAlign: "left", padding: "4px 6px", fontWeight: 500, color: "#8992A6", fontSize: 11 }}>Estado</th>
+              {anosTab.map((a) => (
+                <th key={a} onClick={() => onAno(a)} style={{ padding: "4px 6px", fontFamily: mono, fontWeight: a === ano ? 700 : 400, color: a === ano ? "#0B2545" : "#8992A6", fontSize: 11, cursor: "pointer", background: a === ano ? "#FFF3E4" : "transparent" }}>
+                  {`'${String(a).slice(2)}`}{anosParciais.includes(a) ? "*" : ""}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {UFS.map((e) => (
+              <tr key={e.uf}>
+                <td style={{ padding: "4px 6px", whiteSpace: "nowrap", color: "#1B2438" }}>
+                  <span style={{ display: "inline-block", width: 8, height: 8, borderRadius: 2, background: e.cor, marginRight: 6 }} />{e.nome}
+                </td>
+                {anosTab.map((a, i) => {
+                  const p = posicaoNoBrasil(e.uf, a, fluxo);
+                  const ant = i > 0 ? posicaoNoBrasil(e.uf, anosTab[i - 1], fluxo) : null;
+                  const subiu = ant && p && p.pos < ant.pos, caiu = ant && p && p.pos > ant.pos;
+                  return (
+                    <td key={a} title={p ? `${e.nome} em ${a}: ${p.pos}º (${pct(p.part)} do Brasil)` : ""} style={{ padding: "4px 6px", textAlign: "center", fontFamily: mono, fontWeight: a === ano ? 700 : 500, background: a === ano ? "#FFF3E4" : "transparent", color: "#0B2545" }}>
+                      {p ? `${p.pos}º` : "–"}
+                      {(subiu || caiu) && <span style={{ fontSize: 8.5, marginLeft: 1, color: subiu ? COR_EXP : "#C1502E" }}>{subiu ? "▲" : "▼"}</span>}
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <div style={{ fontSize: 11, color: "#8992A6", marginTop: 6 }}>Clique num ano para selecioná-lo. ▲ subiu e ▼ caiu em relação ao ano anterior.{anosParciais.length ? ` * ano parcial (${anosParciais.join(", ")}).` : ""} Base: UF do Produto, {BRASIL_UF.fonte}.</div>
+    </div>
+  );
+}
+
 // Resumo de uma página (estado ou Região Sul) para imprimir ou salvar em PDF, gerado direto dos dados da aba
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 const mi = (v) => (v / 1e6).toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
@@ -419,6 +520,11 @@ function resumoHTML(ufSel, ano) {
   const saldo = L1.e - L1.i;
   const partSul = ufSel === "sul" ? "" : ` O estado responde por ${((L1.e / totalSul(ano, "exportacao")) * 100).toLocaleString("pt-BR", { maximumFractionDigits: 1 })}% das exportações e ${((L1.i / totalSul(ano, "importacao")) * 100).toLocaleString("pt-BR", { maximumFractionDigits: 1 })}% das importações do Sul com a Índia.`;
   const pct2 = (v) => (v * 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const pBE = posicaoNoBrasil(ufSel, ano, "exportacao"), pBI = posicaoNoBrasil(ufSel, ano, "importacao");
+  const pctBr = (v) => (v * 100).toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  const frasePosicao = !pBE || !pBI ? "" : ufSel === "sul"
+    ? ` No Brasil, a Região Sul responde por <b>${pctBr(pBE.part)}%</b> das exportações e <b>${pctBr(pBI.part)}%</b> das importações com a Índia.`
+    : ` No ranking nacional, é o <b>${pBE.pos}º exportador</b> para a Índia (${pctBr(pBE.part)}% do Brasil) e o <b>${pBI.pos}º importador</b> (${pctBr(pBI.part)}%).`;
 
   return `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Resumo ${esc(info.nome)} e Índia ${ano}</title>
 <style>
@@ -452,7 +558,7 @@ td { padding: 3px 4px; border-bottom: 1px solid #F1F3F7; vertical-align: top; }
 <div class="faixa"></div>
 <header><div><div class="org">Câmara de Comércio Índia Brasil (CCIB) · Regional Sul</div><h1>${esc(info.nome)} e Índia: comércio exterior ${ano}${parciais.includes(ano) ? " (parcial)" : ""}</h1></div>
 <div class="meta">Fonte: ${esc(dados.fonte)}<br>US$ FOB · atualizado em ${esc(dados.atualizadoEm)}</div></header>
-<p class="lead">Em ${ano}, ${ufSel === "sul" ? "a Região Sul" : ufSel === "SC" ? info.nome : `o ${info.nome}`} exportou <b>US$ ${mi(L1.e)} mi</b> para a Índia (${varPct(L1.e, L0.e)} sobre ${ant}) e importou <b>US$ ${mi(L1.i)} mi</b> (${varPct(L1.i, L0.i)}), com ${saldo >= 0 ? "superávit" : "déficit"} de <b class="${saldo >= 0 ? "pos" : "neg"}">US$ ${mi(Math.abs(saldo))} mi</b>.${pE != null && pI != null ? ` A Índia representa ${pct2(pE)}% das exportações e ${pct2(pI)}% das importações ${info.de}.` : ""}${partSul}</p>
+<p class="lead">Em ${ano}, ${ufSel === "sul" ? "a Região Sul" : ufSel === "SC" ? info.nome : `o ${info.nome}`} exportou <b>US$ ${mi(L1.e)} mi</b> para a Índia (${varPct(L1.e, L0.e)} sobre ${ant}) e importou <b>US$ ${mi(L1.i)} mi</b> (${varPct(L1.i, L0.i)}), com ${saldo >= 0 ? "superávit" : "déficit"} de <b class="${saldo >= 0 ? "pos" : "neg"}">US$ ${mi(Math.abs(saldo))} mi</b>.${pE != null && pI != null ? ` A Índia representa ${pct2(pE)}% das exportações e ${pct2(pI)}% das importações ${info.de}.` : ""}${partSul}${frasePosicao}</p>
 <div class="kpis">
 <div class="kpi" style="--c:${COR_EXP}"><div class="l">Exportações</div><div class="v">US$ ${mi(L1.e)} mi</div><div class="s">${varPct(L1.e, L0.e)} vs ${ant}</div></div>
 <div class="kpi" style="--c:${COR_IMP}"><div class="l">Importações</div><div class="v">US$ ${mi(L1.i)} mi</div><div class="s">${varPct(L1.i, L0.i)} vs ${ant}</div></div>
@@ -667,8 +773,8 @@ export default function ComercioTab() {
             </div>
           )}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 200px), 1fr))", gap: 14, marginBottom: 22 }}>
-            <Kpi label={`Exportações para a Índia · ${rotuloAno(ano)}`} valor={usd(exp)} cor={COR_EXP} sub={partExp != null ? `${pct(partExp, 2)} das exportações ${deUf}` : nomeUf} />
-            <Kpi label={`Importações da Índia · ${rotuloAno(ano)}`} valor={usd(imp)} cor={COR_IMP} sub={partImp != null ? `${pct(partImp, 2)} das importações ${deUf}` : nomeUf} />
+            <Kpi label={`Exportações para a Índia · ${rotuloAno(ano)}`} valor={usd(exp)} cor={COR_EXP} sub={partExp != null ? `${pct(partExp, 2)} das exportações ${deUf}` : nomeUf} destaque={textoPosicao(posicaoNoBrasil(uf, ano, "exportacao"))} />
+            <Kpi label={`Importações da Índia · ${rotuloAno(ano)}`} valor={usd(imp)} cor={COR_IMP} sub={partImp != null ? `${pct(partImp, 2)} das importações ${deUf}` : nomeUf} destaque={textoPosicao(posicaoNoBrasil(uf, ano, "importacao"))} />
             <Kpi label="Corrente de comércio" valor={usd(exp + imp)} cor="#B8752E" sub="exportações + importações" />
             <Kpi label="Saldo comercial" valor={usd(exp - imp)} cor={exp - imp >= 0 ? COR_EXP : "#C1502E"} sub={`${exp - imp >= 0 ? "superávit" : "déficit"} ${deUf} com a Índia`} />
           </div>
@@ -757,11 +863,22 @@ export default function ComercioTab() {
                         <span style={{ color: e.exp - e.imp >= 0 ? COR_EXP : "#C1502E" }}>saldo {usd(e.exp - e.imp)}</span>
                       </div>
                     )}
+                    {(() => {
+                      const pe = posicaoNoBrasil(e.uf, ano, "exportacao"), pi = posicaoNoBrasil(e.uf, ano, "importacao");
+                      return pe && pi ? <div style={{ fontSize: 11.5, color: "#0B2545", fontWeight: 600, marginTop: 6 }}>Brasil: {pe.pos}º em exportação · {pi.pos}º em importação</div> : null;
+                    })()}
                     <div style={{ fontSize: 11.5, color: "#2F6FB0", marginTop: 8, fontWeight: 500 }}>{ativo ? "Perfil aberto · clique para voltar ao Sul" : "Ver perfil do estado →"}</div>
                   </button>
                 );
               })}
             </div>
+          </div>
+
+          <div style={{ ...card, marginBottom: 18 }}>
+            <Titulo icon={Trophy} extra={<Segmentos rotulo="Fluxo do ranking" opcoes={opcoesFluxo} valor={fluxo} onChange={setFluxo} />}>
+              Posição no Brasil · {FLUXOS[fluxo].curto.toLowerCase()} para a Índia {rotuloAno(ano)}
+            </Titulo>
+            <PosicaoBrasil ano={ano} fluxo={fluxo} ufSel={uf} anosParciais={parciais} onAno={setAno} />
           </div>
 
           <div style={card}>
