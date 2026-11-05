@@ -264,6 +264,7 @@ export const NOMES_HUBSPOT_PROSPECCAO = [
   "Neoking Foods",
   "SoftExpert",
   "TsuruTrading",
+  "Ss Inov",
 ];
 
 export const ESTADOS_CONHECIDOS = {
@@ -297,6 +298,7 @@ export const ESTADOS_CONHECIDOS = {
   "Neoking Foods": "RS",
   "SoftExpert": "SC",
   "TsuruTrading": "SP",
+  "Ss Inov": "PR",
 };
 
 export const FORCE_MEMBER_UPDATES = {
@@ -499,6 +501,7 @@ export const NEGOCIOS_HUBSPOT = [
   { empresa: "SoftExpert", situacao: "negociacao", etapa: "Proposta Enviada / Em negociação", valor: "US$ 2.100", data: "2026-11-27" },
   { empresa: "TsuruTrading", situacao: "negociacao", etapa: "Proposta Enviada / Em negociação", valor: "US$ 4.020", data: "2026-11-27" },
   { empresa: "Vada Agro", situacao: "negociacao", etapa: "Proposta Enviada / Em negociação", valor: "US$ 2.100", data: "2026-10-31" },
+  { empresa: "Ss Inov", situacao: "negociacao", etapa: "Proposta Enviada / Em negociação", valor: "US$ 2.100", data: "2026-11-30" },
 ];
 
 // Lembretes da aba Reuniões. Entram uma vez (por id); depois podem ser editados ou apagados na plataforma.
