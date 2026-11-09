@@ -3,7 +3,7 @@ import {
   Scale, ShieldCheck, Users, Eye, Brain, TriangleAlert, Target, Workflow, Layers, Lock, MessageCircle,
   ChartBar, Handshake, Search, GraduationCap, RefreshCw, Gavel, UserCheck, Ban, Sparkles, Fingerprint,
   Image, HeartHandshake, Landmark, Compass, ListChecks, EyeOff, DollarSign, Quote, Lightbulb, Route,
-  Wrench, CircleHelp, Building2, Globe, KeyRound,
+  Wrench, CircleHelp, Building2, Globe, KeyRound, FileText,
 } from "lucide-react";
 
 // Resumo da Jornada do Compliance 2026, feito a partir do documento
@@ -256,18 +256,24 @@ function Terceiros() {
 }
 
 function GanhosRiscos() {
-  const linhas = [
-    ["Petições estruturadas com auxílio de IA", "Citações fabricadas (\"alucinações\")"],
-    ["Pesquisa jurisprudencial sintetizada em minutos", "Cláusulas mal interpretadas"],
-    ["Análise contratual em escala antes impossível", "Dados de clientes expostos"],
+  const riscos = [
+    ["Citações fabricadas", "as chamadas \"alucinações\"", Brain],
+    ["Cláusulas mal interpretadas", "na análise de contratos", FileText],
+    ["Dados de clientes expostos", "em ferramentas sem proteção", EyeOff],
   ];
   return (
     <div className="sl">
       <Topo secao="Bloco 5 · Andersen Ballão Advogados" titulo="IA é ferramenta, mas implantá-la muda o processo" cor="verde" />
-      <p className="sl-lead">A IA generativa transforma <strong>fluxos, controles e responsabilidades</strong>. Ganhos e riscos andam juntos:</p>
-      <div className="sl-versus">
-        <div className="sl-versus-col ganho"><span className="sl-versus-tit"><Sparkles size={20} /> Ganhos possíveis</span>{linhas.map(([g]) => <div key={g}>{g}</div>)}</div>
-        <div className="sl-versus-col risco"><span className="sl-versus-tit"><TriangleAlert size={20} /> Riscos proporcionais</span>{linhas.map(([, r]) => <div key={r}>{r}</div>)}</div>
+      <p className="sl-lead">A IA generativa transforma <strong>fluxos, controles e responsabilidades</strong>. Os riscos que vêm junto:</p>
+      <div className="sl-riscos">
+        {riscos.map(([t, d, I], i) => (
+          <div key={t} className="sl-risco">
+            <div className="sl-risco-ic"><I size={34} /></div>
+            <span className="sl-risco-n">Risco {i + 1}</span>
+            <strong>{t}</strong>
+            <span className="sl-risco-d">{d}</span>
+          </div>
+        ))}
       </div>
       <div className="sl-destaque verde"><ShieldCheck size={26} /><p><strong>Cada ganho exige um controle correspondente.</strong></p></div>
       <Rodape />
@@ -501,7 +507,7 @@ export const SLIDES = [
   { id: "frase", titulo: "Escolhas difíceis", Slide: Frase },
   { id: "diretrizes", titulo: "Diretrizes para IA", Slide: DiretrizesIA },
   { id: "terceiros", titulo: "Terceiros", Slide: Terceiros },
-  { id: "ganhos", titulo: "Ganhos e riscos", Slide: GanhosRiscos },
+  { id: "ganhos", titulo: "Riscos da IA", Slide: GanhosRiscos },
   { id: "shadow", titulo: "Shadow AI", Slide: ShadowAI },
   { id: "proibir", titulo: "Proibir ou liberar", Slide: ProibirLiberar },
   { id: "fluxos", titulo: "6 etapas", Slide: Fluxos },

@@ -248,3 +248,11 @@
 .sl-contexto{ align-items:start; }
 .sl-licao .sl-licao-n{ color:#fff; font-size:20px; line-height:1; }
 .sl-autor-capa{ font-family:'IBM Plex Mono',monospace; font-size:15px; letter-spacing:0.12em; text-transform:uppercase; color:#E4C784; margin-top:-6px; }
+
+/* Riscos da IA (slide "IA muda o processo") */
+.sl-riscos{ display:grid; grid-template-columns:repeat(3,1fr); gap:20px; margin-top:6px; }
+.sl-risco{ background:#FDEDEC; border-top:6px solid #B23A34; border-radius:0 0 16px 16px; padding:30px 28px 32px; display:flex; flex-direction:column; gap:12px; min-height:270px; }
+.sl-risco-ic{ width:68px; height:68px; border-radius:16px; background:#B23A34; color:#fff; display:flex; align-items:center; justify-content:center; }
+.sl-risco-n{ font-family:'IBM Plex Mono',monospace; font-size:13px; letter-spacing:0.1em; text-transform:uppercase; color:#B23A34; }
+.sl-risco strong{ font-family:'Fraunces',serif; font-size:30px; line-height:1.15; }
+.sl-risco-d{ font-size:18px; color:var(--cinza); }
