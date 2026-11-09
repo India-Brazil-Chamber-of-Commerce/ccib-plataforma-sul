@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { STORAGE_PROJECTS } from "../constants";
 import { storage, EVENTO_ATUALIZADO } from "./storage";
-import { SEED_PROJECTS, CORRIGIR_PROJETOS, CORRIGIR_ITENS, ACRESCENTAR_LINHAS } from "../data/seeds";
+import { SEED_PROJECTS, CORRIGIR_PROJETOS, CORRIGIR_ITENS, ACRESCENTAR_LINHAS, RETIRAR_LINHAS } from "../data/seeds";
 
 // Listas do projeto que recebem itens novos da semente (por id do item)
 const LISTAS_SEMENTE = ["participantes", "empresasVisitadas", "etapas", "custos", "patrocinios", "programacao"];
@@ -115,6 +115,21 @@ export function useProjetos() {
             [regra.lista]: faltam.length ? p[regra.lista].map((x) => (x.id === alvo.id ? { ...x, detalhes } : x)) : p[regra.lista],
             _seedItens: [...(p._seedItens || []), marca],
           };
+          mudou = true;
+        });
+        // Retirada pedida: apaga dos detalhes as linhas que citam o texto (e o item cujo título o cite), uma única vez por regra
+        (RETIRAR_LINHAS[p.id] || []).forEach((regra) => {
+          const marca = `retirar:${regra.chave}`;
+          if ((p._seedItens || []).includes(marca) || !Array.isArray(p[regra.lista])) return;
+          const alvo = normalizarTexto(regra.contem);
+          const nova = p[regra.lista]
+            .filter((x) => !normalizarTexto(x.titulo).includes(alvo))
+            .map((x) => {
+              const linhas = (x.detalhes || "").split("\n");
+              const ficam = linhas.filter((l) => !normalizarTexto(l).includes(alvo));
+              return ficam.length === linhas.length ? x : { ...x, detalhes: ficam.join("\n") };
+            });
+          p = { ...p, [regra.lista]: nova, _seedItens: [...(p._seedItens || []), marca] };
           mudou = true;
         });
         const seed = porId.get(p.id);

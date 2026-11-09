@@ -571,6 +571,13 @@ export const ACRESCENTAR_LINHAS = {
   ],
 };
 
+// Linhas retiradas a pedido de listas de projetos já salvos (o texto é procurado sem diferenciar maiúsculas e acentos)
+export const RETIRAR_LINHAS = {
+  "seed-p-fazendo-negocios-india-sc": [
+    { chave: "fni-sc-sem-preet", lista: "programacao", contem: "Preet" },
+  ],
+};
+
 // Projetos da Regional Sul. Entram uma vez (por id) e depois podem ser editados livremente na aba Projetos.
 export const SEED_PROJECTS = [
   {
