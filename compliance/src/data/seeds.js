@@ -89,7 +89,7 @@ export const PACTO_GLOBAL = [
     id: "ambiente",
     icone: "🌍",
     nome: "Meio Ambiente",
-    participantes: "Endryo, Isadora",
+    participantes: "Endryo",
     textos: [
       "Reflete os princípios 7 a 9 do Pacto Global: apoiar uma abordagem preventiva aos desafios ambientais, promover iniciativas que ampliem a responsabilidade ambiental e incentivar o desenvolvimento e a difusão de tecnologias ambientalmente responsáveis.",
       "Eixos de atuação: incentivo a parcerias com menor impacto ambiental, atenção a critérios de sustentabilidade em missões comerciais e apoio a iniciativas indo-brasileiras de tecnologia limpa.",
