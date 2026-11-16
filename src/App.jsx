@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef, Suspense, lazy } from "react";
-import { Loader2, Building2, CalendarDays, LayoutGrid, Users, Contact, TrendingUp, Plane, CalendarCheck, Ship } from "lucide-react";
+import { Loader2, Building2, CalendarDays, LayoutGrid, Users, Contact, TrendingUp, Plane, CalendarCheck, Ship, ClipboardList } from "lucide-react";
 import { STORAGE_MEMBERS, STORAGE_EVENTS, STORAGE_MEETINGS, STORAGE_PARTNERS, STORAGE_CONTACTS, STORAGE_PROJECTS, ESTADOS, STATUS_MEMBER } from "./constants";
 import { SEED_CONTACTS, REMOVED_CONTACTS, SEED_EVENTS, REMOVED_EVENTS, FORCE_EVENT_UPDATES, FORCE_MEMBER_UPDATES, APPEND_MEMBER_NOTES, MERGE_MEMBERS, NEGOCIOS_HUBSPOT, SEED_MEMBERS, ENSURE_MEMBERS } from "./data/seeds";
 import { SEED_MEETINGS, REMOVED_MEETINGS } from "./data/seedMeetings";
@@ -18,12 +18,15 @@ import PipelineTab from "./tabs/PipelineTab";
 import ContatosTab from "./tabs/ContatosTab";
 import ReunioesTab from "./tabs/ReunioesTab";
 import EventosTab from "./tabs/EventosTab";
+import AtasTab from "./tabs/AtasTab";
 import "./styles.css";
 
 export default function App() {
   useGoogleFonts();
   const [tab, setTab] = useState("visao");
   const [missaoAberta, setMissaoAberta] = useState(null);
+  // Reunião escolhida no botão "Criar ata" da aba Reuniões
+  const [ataDe, setAtaDe] = useState(null);
   const hasAutoSyncedTeams = useRef(false);
   const [members, setMembers] = useState(null);
   const [events, setEvents] = useState(null);
@@ -674,6 +677,7 @@ export default function App() {
     { id: "pipeline", label: "Pipeline", icon: TrendingUp },
     { id: "contatos", label: "Contatos", icon: Contact },
     { id: "reunioes", label: "Reuniões", icon: Users },
+    { id: "atas", label: "Atas de reuniões", icon: ClipboardList },
     { id: "eventos", label: "Eventos", icon: CalendarDays },
     { id: "projetos", label: "Eventos Regional Sul", icon: CalendarCheck },
     { id: "missoes", label: "Missões", icon: Plane },
@@ -793,6 +797,10 @@ export default function App() {
 
         {tab === "projetos" && <EventosRegionalTab />}
 
+        {tab === "atas" && (
+          <AtasTab members={members || []} meetings={meetings || []} abrirEmpresa={abrirEmpresa} novaDe={ataDe} limparNovaDe={() => setAtaDe(null)} />
+        )}
+
         {tab === "comercio" && (
           <Suspense fallback={<div style={{ display: "flex", alignItems: "center", gap: 10, color: "#8992A6", fontSize: 13, padding: "40px 0", justifyContent: "center" }}><Loader2 className="animate-spin" size={18} /> Carregando dados de comércio...</div>}>
             <ComercioTab />
@@ -857,6 +865,7 @@ export default function App() {
         {tab === "reunioes" && (
           <ReunioesTab
             addMeeting={addMeeting}
+            criarAta={(m) => { setAtaDe(m); setTab("atas"); }}
             lastSyncedAt={lastSyncedAt}
             meetingWeeks={meetingWeeks}
             meetings={meetings}

@@ -1,5 +1,5 @@
 import React from "react";
-import { Plus, Trash2, RefreshCw, ChevronLeft, ChevronRight, Clock, MapPin, Video, Users, Bell } from "lucide-react";
+import { Plus, Trash2, ClipboardList, RefreshCw, ChevronLeft, ChevronRight, Clock, MapPin, Video, Users, Bell } from "lucide-react";
 import Lembretes, { useLembretes } from "../components/Lembretes";
 import { RESPONSAVEIS, STATUS_MEETING } from "../constants";
 import { inputStyle } from "../styles";
@@ -46,7 +46,7 @@ function isOnline(local) {
   return /teams|zoom|meet|online|http/i.test(local || "");
 }
 
-function MeetingEditor({ meeting, patchMeeting, removeMeeting, onClose }) {
+function MeetingEditor({ meeting, patchMeeting, removeMeeting, onClose, criarAta }) {
   const statusInfo = STATUS_MEETING[meeting.status] || STATUS_MEETING.agendada;
   return (
     <div className="ccib-fade-in" style={{ marginTop: 10, border: "1px solid #E3E6EC", borderRadius: 10, padding: 18, background: "#FAFBFC" }}>
@@ -89,6 +89,16 @@ function MeetingEditor({ meeting, patchMeeting, removeMeeting, onClose }) {
         <Field label="Notas">
           <input className="ccib-input" style={inputStyle} value={meeting.notas} onChange={(ev) => patchMeeting(meeting.id, { notas: ev.target.value })} />
         </Field>
+        {criarAta && (
+          <button
+            onClick={() => criarAta(meeting)}
+            title="Abre a aba Atas com uma ata desta reunião (ou a ata já registrada)"
+            className="ccib-btn"
+            style={{ display: "flex", alignItems: "center", gap: 6, background: "#0B2545", color: "#FFFFFF", border: "1px solid #0B2545", borderRadius: 6, cursor: "pointer", padding: "8px 12px", fontSize: 12.5, whiteSpace: "nowrap" }}
+          >
+            <ClipboardList size={14} /> Ata da reunião
+          </button>
+        )}
         <button
           onClick={() => { removeMeeting(meeting.id); onClose(); }}
           title="Excluir reunião"
@@ -170,6 +180,7 @@ function MeetingCard({ meeting, selected, onSelect }) {
 
 export default function ReunioesTab({
   addMeeting,
+  criarAta,
   lastSyncedAt,
   meetingWeeks,
   meetings,
@@ -326,7 +337,7 @@ export default function ReunioesTab({
                     <div key={m.id}>
                       <MeetingCard meeting={m} selected={selectedMeetingId === m.id} onSelect={() => toggle(m.id)} />
                       {selectedMeetingId === m.id && (
-                        <MeetingEditor meeting={m} patchMeeting={patchMeeting} removeMeeting={removeMeeting} onClose={() => setSelectedMeetingId(null)} />
+                        <MeetingEditor meeting={m} patchMeeting={patchMeeting} removeMeeting={removeMeeting} criarAta={criarAta} onClose={() => setSelectedMeetingId(null)} />
                       )}
                     </div>
                   ))}
@@ -351,7 +362,7 @@ export default function ReunioesTab({
               <div key={m.id}>
                 <MeetingCard meeting={m} selected={selectedMeetingId === m.id} onSelect={() => toggle(m.id)} />
                 {selectedMeetingId === m.id && (
-                  <MeetingEditor meeting={m} patchMeeting={patchMeeting} removeMeeting={removeMeeting} onClose={() => setSelectedMeetingId(null)} />
+                  <MeetingEditor meeting={m} patchMeeting={patchMeeting} removeMeeting={removeMeeting} criarAta={criarAta} onClose={() => setSelectedMeetingId(null)} />
                 )}
               </div>
             ))}
