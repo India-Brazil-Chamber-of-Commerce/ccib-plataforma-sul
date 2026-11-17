@@ -921,6 +921,7 @@ export const SEED_MEETINGS = [
   { id: "teams-auto-20261210-dim-regional-sul", nome: "DIM x Regional Sul (10/12)", data: "2026-12-10", horario: "14:00 – 14:45", participantes: "Bernardo, Gustavo Bastos, Marília Calheiros, Bianca Guimarães, Luana Ferreira", local: "Microsoft Teams", responsavel: "ambos", status: "agendada", notas: "Importado do Teams (rotina diária)", origem: "teams", createdAt: Date.now() },
   { id: "teams-auto-20261130-reuniao-de-equipe", nome: "INTERNO: Reunião de Equipe (30/11)", data: "2026-11-30", horario: "09:00 – 11:00", participantes: "Equipe CCIB", local: "Microsoft Teams", responsavel: "ambos", status: "confirmada", notas: "Importado do Teams (rotina diária)", origem: "teams", createdAt: Date.now() },
   { id: "teams-auto-20261214-reuniao-de-equipe", nome: "INTERNO: Reunião de Equipe (14/12)", data: "2026-12-14", horario: "09:00 – 11:00", participantes: "Equipe CCIB", local: "Microsoft Teams", responsavel: "ambos", status: "confirmada", notas: "Importado do Teams (rotina diária)", origem: "teams", createdAt: Date.now() },
+  { id: "teams-auto-20261119-ccib-sul-nanofeed", nome: "Reunião: CCIB Sul & Nanofeed", data: "2026-11-19", horario: "10:30 – 11:00", participantes: "Bianca Guimarães, Gustavo Bastos", local: "Microsoft Teams", responsavel: "ambos", status: "confirmada", notas: "Importado do Teams (rotina diária)", origem: "teams", createdAt: Date.now() },
 ];
 
 // Reuniões removidas a pedido. São apagadas também dos dados já salvos nos navegadores.
