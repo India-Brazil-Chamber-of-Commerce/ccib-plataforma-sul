@@ -683,7 +683,12 @@ export default function AtasTab({ members = [], meetings = [], abrirEmpresa, nov
     if (atas === null || sementesAplicadas === null) return;
     const vistas = new Set(sementesAplicadas);
     const ids = new Set(atas.map((a) => a.id));
-    const novas = SEED_ATAS.filter((a) => !vistas.has(a.id) && !ids.has(a.id));
+    const reunioes = new Set(atas.map((a) => a.reuniaoId).filter(Boolean));
+    const novas = SEED_ATAS.filter((a) => {
+      if (vistas.has(a.id) || ids.has(a.id) || (a.reuniaoId && reunioes.has(a.reuniaoId))) return false;
+      if (a.reuniaoId) reunioes.add(a.reuniaoId);
+      return true;
+    });
     const marcar = SEED_ATAS.filter((a) => !vistas.has(a.id)).map((a) => a.id);
     if (novas.length) setAtas([...novas, ...atas]);
     if (marcar.length) setSementesAplicadas([...sementesAplicadas, ...marcar]);
