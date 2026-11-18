@@ -37,14 +37,23 @@ export const SEED_CONTACTS = [
   { id: "seed-c-25", nome: "Marcelo Faria", empresa: "Water Services and Technologies (WST)", cargo: "Geólogo | Desenvolvimento de negócios", email: "marcelo.faria@waterservicestech.com", telefone: "+55 (21) 99584-0457", setor: "Recursos hídricos", tipo: "Empresa", pais: "Brasil", estado: "SC", observacoes: "Participou do Fazendo Negócios com a Índia - Edição SC. Empresa sediada no Sapiens Parque (Florianópolis), consultoria e tecnologia em recursos hídricos; clientes em mineração, indústria e saneamento; escritório no Cazaquistão e projetos na Arábia Saudita e no México. Site: waterservicestech.com. Em 17/11/2026 respondeu ao agradecimento do evento com portfólio e interesse em explorar oportunidades na Índia (cópia para Fernando Zulian, WST).", createdAt: Date.now() },
   { id: "seed-c-26", nome: "Higor Bezerra de Menezes", empresa: "FIEP", cargo: "Gerente de Relações Internacionais", email: "higor.menezes@sistemafiep.org.br", telefone: "+55 (41) 98861-6061", setor: "Indústria", tipo: "Instituição", pais: "Brasil", estado: "PR", createdAt: Date.now() },
   { id: "seed-c-27", nome: "Marcos Dybas da Natividade", empresa: "FIEP", cargo: "Vice-Presidente", email: "marcos@etiquetas.com.br", telefone: "+55 (41) 99121-7874", setor: "Indústria", tipo: "Instituição", pais: "Brasil", estado: "PR", createdAt: Date.now() },
-  { id: "seed-c-28", nome: "Rafael Teixeira Asineli", empresa: "FIEP", cargo: "Coordenador de Cooperação Internacional", email: "rafael.asinelli@sistemafiep.org.br", telefone: "+55 (41) 3271-7992", setor: "Indústria", tipo: "Instituição", pais: "Brasil", estado: "PR", createdAt: Date.now() },
+  { id: "seed-c-28", nome: "Rafael Teixeira Asinelli", empresa: "FIEP", cargo: "Coordenador de Cooperação Internacional", email: "rafael.asinelli@sistemafiep.org.br", telefone: "+55 (41) 3271-7992", setor: "Indústria", tipo: "Instituição", pais: "Brasil", estado: "PR", createdAt: Date.now() },
   { id: "seed-c-29", nome: "Camilla Rocha B. Bonnevialle", empresa: "FIEP", cargo: "Gerência Executiva de Assuntos Internacionais", email: "camilla.bonnevialle@sistemafiep.org.br", telefone: "+55 (41) 3271-9109", setor: "Indústria", tipo: "Instituição", pais: "Brasil", estado: "PR", createdAt: Date.now() },
-  { id: "seed-c-30", nome: "José Carlos de Godoi", empresa: "FIEP", cargo: "Vice-Presidente", email: "godoi.pr@terra.com.br", telefone: "+55 (41) 99682-7528", setor: "Indústria", tipo: "Instituição", pais: "Brasil", estado: "PR", observacoes: "Outro e-mail: negociosinternacionais@sistemafiep.org.br", createdAt: Date.now() },
+  { id: "seed-c-30", nome: "José Carlos de Godoi", empresa: "FIEP", cargo: "Vice-Presidente", email: "negociosinternacionais@sistemafiep.org.br", telefone: "+55 (41) 99682-7528", setor: "Indústria", tipo: "Instituição", pais: "Brasil", estado: "PR", observacoes: "Outro e-mail: godoi.pr@terra.com.br", createdAt: Date.now() },
   { id: "seed-c-31", nome: "Roberta Poletto Camargo", empresa: "FIEP", cargo: "Atração de Investimento Estrangeiro, Gerência de Relações Internacionais", email: "roberta.camargo@sistemafiep.org.br", telefone: "+55 (54) 99963-6790", setor: "Indústria", tipo: "Instituição", pais: "Brasil", estado: "PR", createdAt: Date.now() },
 ];
 
 // Contatos removidos a pedido (planilha "Contatos premium Regional Sul", retirada pela Bianca em 27/10).
 // São apagados também dos dados já salvos (banco compartilhado e navegadores).
+// Correções em contatos já salvos: o campo só muda se ainda estiver com o valor antigo ("de")
+export const CORRIGIR_CONTATOS = {
+  "seed-c-28": { nome: { de: "Rafael Teixeira Asineli", para: "Rafael Teixeira Asinelli" } },
+  "seed-c-30": {
+    email: { de: "godoi.pr@terra.com.br", para: "negociosinternacionais@sistemafiep.org.br" },
+    observacoes: { de: "Outro e-mail: negociosinternacionais@sistemafiep.org.br", para: "Outro e-mail: godoi.pr@terra.com.br" },
+  },
+};
+
 export const REMOVED_CONTACTS = {
   ids: [
     "seed-c-19",
