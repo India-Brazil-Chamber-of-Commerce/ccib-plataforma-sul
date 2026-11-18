@@ -45,8 +45,8 @@ export const SEED_CONTACTS = [
   { id: "seed-c-33", nome: "Carla Adriane Fontana Simão", empresa: "FIEP", cargo: "Pesquisadora", email: "carla.simao@sistemafiep.org.br", telefone: "+55 (41) 99235-6440", setor: "Indústria", tipo: "Instituição", pais: "Brasil", estado: "PR", createdAt: Date.now() },
   { id: "seed-c-34", nome: "Ariane Hinça Schneider", empresa: "FIEP", cargo: "Gerente dos Conselhos Temáticos e Setoriais", email: "ariane.hinca@sistemafiep.org.br", telefone: "+55 (41) 98885-1694", setor: "Indústria", tipo: "Instituição", pais: "Brasil", estado: "PR", createdAt: Date.now() },
   { id: "seed-c-35", nome: "Jorge Edison Ribeiro", empresa: "Fundação Araucária", cargo: "", email: "jorge_edison@terra.com.br", telefone: "+55 (41) 99218-6623", setor: "Ciência e Tecnologia", tipo: "Instituição", pais: "Brasil", estado: "PR", createdAt: Date.now() },
-  { id: "seed-c-36", nome: "Arno Gleisner", empresa: "Federação das Câmaras de Comércio Exterior", cargo: "", email: "arno.gleisner@gmail.com", telefone: "+55 (51) 99981-4896", setor: "Comércio Exterior", tipo: "Instituição", pais: "Brasil", createdAt: Date.now() },
-  { id: "seed-c-37", nome: "Anderson Anthony Linzmeyer", empresa: "Governo do Estado de Santa Catarina", cargo: "Diretor de Indústria", email: "antony.linzmeyer@sicos.sc.gov.br", telefone: "+55 (47) 99967-7800", setor: "Governamental", tipo: "Instituição", pais: "Brasil", estado: "SC", createdAt: Date.now() },
+  { id: "seed-c-36", nome: "Arno Gleisner", empresa: "Federação das Câmaras de Comércio Exterior", cargo: "", email: "arno.gleisner@gmail.com", telefone: "+55 (51) 99981-4896", setor: "Comércio Exterior", tipo: "Instituição", pais: "Brasil", estado: "RS", createdAt: Date.now() },
+  { id: "seed-c-37", nome: "Anderson Anthony Linzmeyer", empresa: "Governo do Estado de Santa Catarina", cargo: "Diretor de Indústria", email: "anthony.linzmeyer@sicos.sc.gov.br", telefone: "+55 (47) 99967-7800", setor: "Governamental", tipo: "Instituição", pais: "Brasil", estado: "SC", createdAt: Date.now() },
   { id: "seed-c-38", nome: "Duílio Malfati", empresa: "Casa Civil da Presidência da República", cargo: "Secretário de Comunicação Integrada", email: "sci@presidencia.gov.br", telefone: "+55 (61) 99274-8096", setor: "Governamental", tipo: "Instituição", pais: "Brasil", estado: "DF", createdAt: Date.now() },
 ];
 
@@ -54,6 +54,7 @@ export const SEED_CONTACTS = [
 // São apagados também dos dados já salvos (banco compartilhado e navegadores).
 // Correções em contatos já salvos: o campo só muda se ainda estiver com o valor antigo ("de")
 export const CORRIGIR_CONTATOS = {
+  "seed-c-37": { email: { de: "antony.linzmeyer@sicos.sc.gov.br", para: "anthony.linzmeyer@sicos.sc.gov.br" } },
   "seed-c-28": { nome: { de: "Rafael Teixeira Asineli", para: "Rafael Teixeira Asinelli" } },
   "seed-c-30": {
     email: { de: "godoi.pr@terra.com.br", para: "negociosinternacionais@sistemafiep.org.br" },
