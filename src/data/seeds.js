@@ -49,14 +49,16 @@ export const SEED_CONTACTS = [
   { id: "seed-cs-37", nome: "Anderson Anthony Linzmeyer", empresa: "Governo do Estado de Santa Catarina", cargo: "Diretor de Indústria", email: "anthony.linzmeyer@sicos.sc.gov.br", telefone: "+55 (47) 99967-7800", setor: "Governamental", tipo: "Instituição", pais: "Brasil", estado: "SC", createdAt: Date.now() },
   { id: "seed-cs-38", nome: "Duílio Malfati", empresa: "Casa Civil da Presidência da República", cargo: "Secretário de Comunicação Integrada", email: "sci@presidencia.gov.br", telefone: "+55 (61) 99274-8096", setor: "Governamental", tipo: "Instituição", pais: "Brasil", estado: "DF", createdAt: Date.now() },
   { id: "seed-cs-39", nome: "Marcos Toscano", empresa: "Prefeitura do Recife", cargo: "Secretário Executivo de Relações Internacionais", email: "marcos.toscano@recife.pe.gov.br", telefone: "+55 (81) 98199-1908", setor: "Governamental", tipo: "Instituição", pais: "Brasil", estado: "PE", observacoes: "Secretaria de Relações Institucionais", createdAt: Date.now() },
-  { id: "seed-cs-40", nome: "Maurício Laranjeira", empresa: "FIEPE", cargo: "Gerente de Política Industrial", email: "mauricio.laranjeira@sistemafiepe.org.br", telefone: "+55 (81) 99149-9555", setor: "Indústria", tipo: "Instituição", pais: "Brasil", estado: "PE", createdAt: Date.now() },
-  { id: "seed-cs-41", nome: "Bruno Salvador Veloso da Silveira", empresa: "FIEPE", cargo: "Presidente", email: "presi@fiepe.org.br", telefone: "+55 (81) 99282-6943", setor: "Indústria", tipo: "Instituição", pais: "Brasil", estado: "PE", createdAt: Date.now() },
+  { id: "seed-cs-40", nome: "Maurício Laranjeira", empresa: "FIEPE", cargo: "Gerente de Política Industrial", email: "mauricio.laranjeira@sistemafiepe.org.br", telefone: "+55 (81) 99149-9555", setor: "Indústria e Governamental", tipo: "Instituição", pais: "Brasil", estado: "PE", createdAt: Date.now() },
+  { id: "seed-cs-41", nome: "Bruno Salvador Veloso da Silveira", empresa: "FIEPE", cargo: "Presidente", email: "presi@fiepe.org.br", telefone: "+55 (81) 99282-6943", setor: "Indústria e Governamental", tipo: "Instituição", pais: "Brasil", estado: "PE", createdAt: Date.now() },
 ];
 
 // Contatos removidos a pedido (planilha "Contatos premium Regional Sul", retirada pela Bianca em 27/10).
 // São apagados também dos dados já salvos (banco compartilhado e navegadores).
 // Correções em contatos já salvos: o campo só muda se ainda estiver com o valor antigo ("de")
 export const CORRIGIR_CONTATOS = {
+  "seed-cs-40": { setor: { de: "Indústria", para: "Indústria e Governamental" } },
+  "seed-cs-41": { setor: { de: "Indústria", para: "Indústria e Governamental" } },
   "seed-cs-37": { email: { de: "antony.linzmeyer@sicos.sc.gov.br", para: "anthony.linzmeyer@sicos.sc.gov.br" } },
   "seed-cs-28": { nome: { de: "Rafael Teixeira Asineli", para: "Rafael Teixeira Asinelli" } },
   "seed-cs-30": {
