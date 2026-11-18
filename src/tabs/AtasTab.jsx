@@ -26,6 +26,7 @@ const SECOES = [
   { id: "pontos", label: "O que foi conversado", curto: "Conversa", icone: MessageSquare, cor: "#0B2545", dica: "Escreva um assunto por linha. Cada linha vira um tópico." },
   { id: "oportunidades", label: "Oportunidades para a Câmara", curto: "Oportunidades", icone: Lightbulb, cor: "#0E7C3A", dica: "Associação, patrocínio, serviços, eventos, missões, contatos na Índia... Uma por linha." },
   { id: "decisoes", label: "O que ficou combinado", curto: "Combinados", icone: Handshake, cor: "#6A5ACD", dica: "Acordos entre as partes. Um por linha." },
+  { id: "proximos", label: "Próximos passos", curto: "Próximos", icone: ListChecks, cor: "#2F6FB0", dica: "Um por linha. Se quiser, comece com quem cuida, ex.: Gustavo: enviar a proposta por e-mail." },
   { id: "observacoes", label: "Anotações internas", curto: "Internas", icone: Lock, cor: "#B8752E", dica: "Só a equipe vê. Não entram no texto copiado nem no PDF." },
 ];
 
@@ -58,6 +59,9 @@ const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<
 const linhas = (t) => (t || "").split("\n").map((l) => l.replace(/^\s*[-•*]\s*/, "").trim()).filter(Boolean);
 const pessoas = (t) => (t || "").split(/[,;\n]/).map((p) => p.trim()).filter(Boolean);
 const acoesValidas = (ata) => (ata.acoes || []).filter((a) => a.texto && a.texto.trim());
+// Atas antigas guardavam os próximos passos como lista de tarefas; aqui viram texto simples
+const comProximos = (ata) =>
+  ata.proximos !== undefined ? ata : { ...ata, proximos: acoesValidas(ata).map((a) => `${a.quem ? `${a.quem}: ` : ""}${a.texto.trim()}`).join("\n") };
 
 export function novaAta(base = {}) {
   return {
@@ -75,8 +79,8 @@ export function novaAta(base = {}) {
     pontos: "",
     oportunidades: "",
     decisoes: "",
+    proximos: "",
     observacoes: "",
-    acoes: [],
     proximoContato: "",
     status: "rascunho",
     reuniaoId: "",
@@ -99,7 +103,6 @@ export function ataDaReuniao(m) {
   });
 }
 
-const acaoAtrasada = (a, hoje) => !a.feito && a.prazo && a.prazo < hoje;
 
 // Texto corrido para colar em e-mail ou Teams (sem as anotações internas)
 function textoAta(ata) {
@@ -120,15 +123,6 @@ function textoAta(ata) {
     L.push(s.label.toUpperCase());
     ls.forEach((l) => L.push(`- ${l}`));
   });
-  const acoes = acoesValidas(ata);
-  if (acoes.length) {
-    L.push("");
-    L.push("PRÓXIMOS PASSOS");
-    acoes.forEach((a) => {
-      const extra = [a.quem ? `responsável: ${a.quem}` : "", a.prazo ? `prazo: ${dataBR(a.prazo)}` : "", a.feito ? "concluído" : ""].filter(Boolean).join("; ");
-      L.push(`- ${a.texto.trim()}${extra ? ` (${extra})` : ""}`);
-    });
-  }
   if (ata.proximoContato) {
     L.push("");
     L.push(`Próximo contato: ${dataBR(ata.proximoContato)}`);
@@ -139,12 +133,6 @@ function textoAta(ata) {
 function htmlAta(ata) {
   const bloco = (titulo, itens) =>
     itens.length ? `<h2>${esc(titulo)}</h2><ul>${itens.map((i) => `<li>${esc(i)}</li>`).join("")}</ul>` : "";
-  const acoes = acoesValidas(ata);
-  const tabelaAcoes = acoes.length
-    ? `<h2>Próximos passos</h2><table><thead><tr><th>Ação</th><th>Responsável</th><th>Prazo</th><th>Situação</th></tr></thead><tbody>${acoes
-        .map((a) => `<tr><td>${esc(a.texto)}</td><td>${esc(a.quem || "")}</td><td>${esc(dataBR(a.prazo))}</td><td>${a.feito ? "Concluída" : "Pendente"}</td></tr>`)
-        .join("")}</tbody></table>`
-    : "";
   const meta = [
     ["Empresa", ata.empresa],
     ["Data", `${dataBR(ata.data)}${ata.horario ? `, ${ata.horario}` : ""}`],
@@ -173,7 +161,6 @@ th { font-size: 8.5pt; text-transform: uppercase; letter-spacing: .06em; color: 
 <h1>Ata de reunião${ata.titulo ? `<br><span style="font-size:13pt;color:#566175">${esc(ata.titulo)}</span>` : ""}</h1>
 <div class="meta">${meta.map(([k, v]) => `<b>${esc(k)}</b><span>${esc(v)}</span>`).join("")}</div>
 ${SECOES.filter((s) => s.id !== "observacoes").map((s) => bloco(s.label, linhas(ata[s.id]))).join("")}
-${tabelaAcoes}
 ${ata.proximoContato ? `<h2>Próximo contato</h2><div>${esc(dataBR(ata.proximoContato))}</div>` : ""}
 <div class="rodape">India Brazil Chamber of Commerce (IBCC) · Regional Sul</div>
 <script>window.onload = () => setTimeout(() => window.print(), 300);</script>
@@ -218,18 +205,6 @@ function Pilula({ cor = "#566175", fundo, icone: Icone, children, title }) {
   );
 }
 
-function Caixa({ marcado, onClick, tamanho = 22, title }) {
-  return (
-    <button
-      onClick={onClick}
-      title={title || (marcado ? "Marcar como pendente" : "Marcar como concluído")}
-      style={{ width: tamanho, height: tamanho, flexShrink: 0, borderRadius: 7, border: `2px solid ${marcado ? "#0E7C3A" : "#C7CCD6"}`, background: marcado ? "#0E7C3A" : "#FFFFFF", color: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", padding: 0, transition: "all 0.15s" }}
-    >
-      {marcado && <Check size={tamanho - 8} strokeWidth={3} />}
-    </button>
-  );
-}
-
 // Caixa de texto que cresce sozinha conforme o conteúdo
 function TextoLivre({ value, onChange, placeholder, fundo = "#FFFFFF", min = 76 }) {
   const ref = useRef(null);
@@ -249,20 +224,6 @@ function TextoLivre({ value, onChange, placeholder, fundo = "#FFFFFF", min = 76 
       rows={3}
       style={{ ...campo, resize: "none", overflow: "hidden", lineHeight: 1.6, fontFamily: sans, background: fundo, padding: "10px 12px" }}
     />
-  );
-}
-
-function Progresso({ feitos, total }) {
-  if (!total) return null;
-  const pct = Math.round((feitos / total) * 100);
-  const cor = feitos === total ? "#0E7C3A" : "#2F6FB0";
-  return (
-    <div title={`${feitos} de ${total} próximos passos concluídos`} style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 130 }}>
-      <div style={{ flex: 1, height: 6, background: "#EEF1F5", borderRadius: 99, overflow: "hidden" }}>
-        <div style={{ width: `${pct}%`, height: "100%", background: cor, borderRadius: 99, transition: "width 0.2s" }} />
-      </div>
-      <span style={{ fontSize: 12, color: "#566175", whiteSpace: "nowrap" }}>{feitos}/{total} passos</span>
-    </div>
   );
 }
 
@@ -304,53 +265,6 @@ function SecaoLeitura({ secao, ata, editar }) {
   );
 }
 
-function PassosLeitura({ ata, hoje, alternar, editar }) {
-  const acoes = acoesValidas(ata);
-  const feitos = acoes.filter((a) => a.feito).length;
-  return (
-    <div style={{ background: "#FFFFFF", border: "1px solid #E8EBF0", borderRadius: 12, padding: "14px 18px" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 12, flexWrap: "wrap" }}>
-        <span style={{ width: 28, height: 28, borderRadius: 8, background: "#2F6FB014", color: "#2F6FB0", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <ListChecks size={15} />
-        </span>
-        <span style={{ fontFamily: serif, fontSize: 16, fontWeight: 500, color: "#0B2545" }}>Próximos passos</span>
-        <span style={{ marginLeft: "auto" }}><Progresso feitos={feitos} total={acoes.length} /></span>
-      </div>
-      {acoes.length === 0 ? (
-        <button onClick={editar} style={{ marginLeft: 37, background: "transparent", border: "none", color: "#8992A6", fontSize: 13, cursor: "pointer", padding: 0, fontFamily: sans }}>
-          Nenhum próximo passo ainda. <span style={{ color: "#2F6FB0", textDecoration: "underline" }}>Adicionar</span>
-        </button>
-      ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          {acoes.map((a, i) => {
-            const atrasada = acaoAtrasada(a, hoje);
-            return (
-              <div key={a.id} style={{ display: "flex", gap: 12, alignItems: "flex-start", padding: "10px 12px", borderRadius: 10, background: a.feito ? "#F4FAF6" : atrasada ? "#FDF4F1" : "#F7F8FA" }}>
-                <Caixa marcado={a.feito} onClick={() => alternar(a.id)} />
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 14, lineHeight: 1.5, color: a.feito ? "#8992A6" : "#1B2438", textDecoration: a.feito ? "line-through" : "none" }}>
-                    {a.texto}
-                  </div>
-                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 6 }}>
-                    {a.quem ? <Pilula icone={User} cor="#0B2545">{a.quem}</Pilula> : <Pilula icone={User} cor="#B8752E" title="Clique em Editar para definir">sem responsável</Pilula>}
-                    {a.prazo ? (
-                      <Pilula icone={atrasada ? AlertTriangle : CalendarDays} cor={atrasada ? "#C1502E" : "#566175"}>{atrasada ? `atrasado · ${dataCurta(a.prazo)}` : `até ${dataCurta(a.prazo)}`}</Pilula>
-                    ) : (
-                      <Pilula icone={CalendarDays} cor="#B8752E" title="Clique em Editar para definir">sem prazo</Pilula>
-                    )}
-                    {a.feito && <Pilula icone={Check} cor="#0E7C3A">concluído</Pilula>}
-                  </div>
-                </div>
-                <span style={{ fontFamily: mono, fontSize: 11, color: "#B7BEC9", paddingTop: 3 }}>{i + 1}</span>
-              </div>
-            );
-          })}
-        </div>
-      )}
-    </div>
-  );
-}
-
 function Pessoas({ titulo, texto, cor }) {
   const lista = pessoas(texto);
   return (
@@ -374,7 +288,7 @@ function Pessoas({ titulo, texto, cor }) {
   );
 }
 
-function LeituraAta({ ata, hoje, editar, alternarPasso }) {
+function LeituraAta({ ata, hoje, editar }) {
   const st = STATUS_ATA[ata.status] || STATUS_ATA.rascunho;
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
@@ -398,7 +312,6 @@ function LeituraAta({ ata, hoje, editar, alternarPasso }) {
         )}
       </div>
       {SECOES.filter((s) => s.id !== "observacoes").map((s) => <SecaoLeitura key={s.id} secao={s} ata={ata} editar={editar} />)}
-      <PassosLeitura ata={ata} hoje={hoje} alternar={alternarPasso} editar={editar} />
       <SecaoLeitura secao={SECOES.find((s) => s.id === "observacoes")} ata={ata} editar={editar} />
     </div>
   );
@@ -424,69 +337,6 @@ function Campo({ label, children, flex = 1, min = 160 }) {
       <span style={rotulo}>{label}</span>
       {children}
     </label>
-  );
-}
-
-function EdicaoPassos({ acoes, mudar, hoje }) {
-  const atualizar = (id, patch) => mudar(acoes.map((a) => (a.id === id ? { ...a, ...patch } : a)));
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-      {acoes.length === 0 && <div style={{ fontSize: 13, color: "#8992A6" }}>Nenhum passo ainda. Use o botão abaixo para incluir.</div>}
-      {acoes.map((a, i) => (
-        <div key={a.id} style={{ border: "1px solid #E8EBF0", borderRadius: 10, padding: 12, background: a.feito ? "#F4FAF6" : "#FAFBFC" }}>
-          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-            <span style={{ fontFamily: mono, fontSize: 12, color: "#8992A6", width: 18 }}>{i + 1}.</span>
-            <input
-              className="ccib-input"
-              style={{ ...campo, flex: 1 }}
-              placeholder="O que precisa ser feito?"
-              value={a.texto}
-              onChange={(e) => atualizar(a.id, { texto: e.target.value })}
-            />
-            <button onClick={() => mudar(acoes.filter((x) => x.id !== a.id))} title="Remover este passo" className="ccib-icon-btn" style={{ background: "transparent", border: "none", color: "#8992A6", cursor: "pointer", padding: 6 }}>
-              <Trash2 size={15} />
-            </button>
-          </div>
-          <div style={{ display: "flex", gap: 14, flexWrap: "wrap", alignItems: "center", marginTop: 10, paddingLeft: 28 }}>
-            <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
-              <span style={{ fontSize: 12, color: "#566175", fontWeight: 600 }}>Quem:</span>
-              {QUEM_SUGESTOES.map((q) => (
-                <button
-                  key={q}
-                  onClick={() => atualizar(a.id, { quem: a.quem === q ? "" : q })}
-                  style={{ fontSize: 12, borderRadius: 99, padding: "4px 11px", cursor: "pointer", fontFamily: sans, border: `1px solid ${a.quem === q ? "#0B2545" : "#D6DAE2"}`, background: a.quem === q ? "#0B2545" : "#FFFFFF", color: a.quem === q ? "#FFFFFF" : "#566175" }}
-                >
-                  {q}
-                </button>
-              ))}
-              {a.quem && !QUEM_SUGESTOES.includes(a.quem) && <Pilula cor="#0B2545">{a.quem}</Pilula>}
-            </div>
-            <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-              <span style={{ fontSize: 12, color: "#566175", fontWeight: 600 }}>Até:</span>
-              <input
-                type="date"
-                className="ccib-input"
-                title="Prazo"
-                style={{ ...campo, width: 160, padding: "5px 10px", colorScheme: "light", borderColor: acaoAtrasada(a, hoje) ? "#C1502E" : "#D6DAE2", color: acaoAtrasada(a, hoje) ? "#C1502E" : "#1B2438" }}
-                value={a.prazo}
-                onChange={(e) => atualizar(a.id, { prazo: e.target.value })}
-              />
-            </div>
-            <label style={{ display: "flex", gap: 6, alignItems: "center", fontSize: 12.5, color: "#566175", cursor: "pointer" }}>
-              <Caixa marcado={a.feito} tamanho={18} onClick={(e) => { e.preventDefault(); atualizar(a.id, { feito: !a.feito }); }} />
-              Concluído
-            </label>
-          </div>
-        </div>
-      ))}
-      <button
-        onClick={() => mudar([...acoes, { id: novoId("acao"), texto: "", quem: "", prazo: somaDias(hoje, 7), feito: false }])}
-        className="ccib-btn"
-        style={{ ...botao, alignSelf: "flex-start" }}
-      >
-        <Plus size={14} /> Adicionar próximo passo
-      </button>
-    </div>
   );
 }
 
@@ -565,9 +415,8 @@ function EdicaoAta({ ata, set, hoje, concluir }) {
         })}
       </Bloco>
 
-      <Bloco numero={3} titulo="Próximos passos">
-        <EdicaoPassos acoes={ata.acoes || []} mudar={(acoes) => set({ acoes })} hoje={hoje} />
-        <Campo label="Próximo contato com a empresa" flex={0} min={170}>
+      <Bloco numero={3} titulo="Próximo contato">
+        <Campo label="Quando falar de novo com a empresa (opcional)" flex={0} min={170}>
           <input type="date" className="ccib-input" style={{ ...campo, colorScheme: "light", width: 180 }} value={ata.proximoContato} onChange={(e) => set({ proximoContato: e.target.value })} />
         </Campo>
       </Bloco>
@@ -586,7 +435,6 @@ function EdicaoAta({ ata, set, hoje, concluir }) {
 function AtaAberta({ ata, mudar, excluir, fechar, hoje, editando, setEditando, abrirEmpresaPorNome }) {
   const [copiado, setCopiado] = useState(false);
   const set = (patch) => mudar({ ...patch, atualizadaEm: Date.now() });
-  const alternarPasso = (id) => set({ acoes: (ata.acoes || []).map((a) => (a.id === id ? { ...a, feito: !a.feito } : a)) });
   const copiar = async () => {
     await copiarTexto(textoAta(ata));
     setCopiado(true);
@@ -644,7 +492,7 @@ function AtaAberta({ ata, mudar, excluir, fechar, hoje, editando, setEditando, a
       {editando ? (
         <EdicaoAta ata={ata} set={set} hoje={hoje} concluir={() => setEditando(false)} />
       ) : (
-        <LeituraAta ata={ata} hoje={hoje} editar={() => setEditando(true)} alternarPasso={alternarPasso} />
+        <LeituraAta ata={ata} hoje={hoje} editar={() => setEditando(true)} />
       )}
     </div>
   );
@@ -662,7 +510,7 @@ export default function AtasTab({ members = [], meetings = [], abrirEmpresa, nov
   const [filtroStatus, setFiltroStatus] = useState("todos");
   const [reuniaoBase, setReuniaoBase] = useState("");
   const hoje = hojeISO();
-  const lista = atas || [];
+  const lista = useMemo(() => (atas || []).map(comProximos), [atas]);
 
   const abrir = (id, emEdicao = false) => {
     setAberta(id);
@@ -730,22 +578,12 @@ export default function AtasTab({ members = [], meetings = [], abrirEmpresa, nov
     return lista
       .filter((a) => filtroResp === "todos" || a.responsavel === filtroResp || a.responsavel === "ambos")
       .filter((a) => filtroStatus === "todos" || a.status === filtroStatus)
-      .filter((a) => !q || normalizar([a.titulo, a.empresa, a.tipo, a.participantesCcib, a.participantesEmpresa, ...SECOES.map((s) => a[s.id]), ...(a.acoes || []).map((x) => x.texto)].join(" ")).includes(q))
+      .filter((a) => !q || normalizar([a.titulo, a.empresa, a.tipo, a.participantesCcib, a.participantesEmpresa, ...SECOES.map((s) => a[s.id])].join(" ")).includes(q))
       .sort((a, b) => (b.data || "").localeCompare(a.data || "") || (b.criadaEm || 0) - (a.criadaEm || 0));
   }, [lista, busca, filtroResp, filtroStatus]);
 
-  const pendentes = useMemo(() => {
-    const r = [];
-    lista.forEach((ata) => acoesValidas(ata).forEach((a) => { if (!a.feito) r.push({ ata, a }); }));
-    return r.sort((x, y) => (x.a.prazo || "9999").localeCompare(y.a.prazo || "9999"));
-  }, [lista]);
-  const atrasadas = pendentes.filter((p) => acaoAtrasada(p.a, hoje)).length;
   const rascunhos = lista.filter((a) => a.status !== "finalizada").length;
-  const marcarAcao = (ataId, acaoId) => {
-    const ata = lista.find((a) => a.id === ataId);
-    if (!ata) return;
-    mudar(ataId, { acoes: ata.acoes.map((a) => (a.id === acaoId ? { ...a, feito: true } : a)), atualizadaEm: Date.now() });
-  };
+
 
   const card = { background: "#FFFFFF", border: "1px solid #E3E6EC", borderRadius: 12 };
 
@@ -784,8 +622,7 @@ export default function AtasTab({ members = [], meetings = [], abrirEmpresa, nov
         {[
           ["atas", lista.length, "#0B2545", ClipboardList],
           ["em rascunho", rascunhos, "#B8752E", Pencil],
-          ["passos pendentes", pendentes.length, "#2F6FB0", ListChecks],
-          ["passos atrasados", atrasadas, atrasadas ? "#C1502E" : "#8992A6", AlertTriangle],
+          ["finalizadas", lista.length - rascunhos, "#0E7C3A", Check],
         ].map(([rot, val, cor, Icone]) => (
           <div key={rot} style={{ ...card, flex: "1 1 170px", padding: "10px 14px", display: "flex", alignItems: "center", gap: 10 }}>
             <span style={{ width: 32, height: 32, borderRadius: 9, background: `${cor}14`, color: cor, display: "flex", alignItems: "center", justifyContent: "center" }}><Icone size={16} /></span>
@@ -794,35 +631,6 @@ export default function AtasTab({ members = [], meetings = [], abrirEmpresa, nov
           </div>
         ))}
       </div>
-
-      {pendentes.length > 0 && (
-        <div style={{ ...card, padding: "14px 16px", marginBottom: 16 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
-            <CalendarClock size={16} color="#2F6FB0" />
-            <span style={{ fontFamily: serif, fontSize: 15.5, color: "#0B2545", fontWeight: 500 }}>O que falta fazer</span>
-            <span style={{ fontSize: 12, color: "#8992A6" }}>próximos passos de todas as atas, por prazo</span>
-          </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-            {pendentes.slice(0, 6).map(({ ata, a }) => {
-              const atrasada = acaoAtrasada(a, hoje);
-              return (
-                <div key={a.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 10px", borderRadius: 9, background: atrasada ? "#FDF4F1" : "#F7F8FA", flexWrap: "wrap" }}>
-                  <Caixa marcado={false} tamanho={20} onClick={() => marcarAcao(ata.id, a.id)} title="Marcar como concluído" />
-                  <span style={{ flex: "1 1 260px", minWidth: 0, fontSize: 13.5, color: "#1B2438" }}>{a.texto}</span>
-                  <span style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
-                    {a.quem && <Pilula icone={User} cor="#0B2545">{a.quem}</Pilula>}
-                    {a.prazo ? <Pilula icone={atrasada ? AlertTriangle : CalendarDays} cor={atrasada ? "#C1502E" : "#566175"}>{dataCurta(a.prazo)}</Pilula> : <Pilula cor="#B8752E">sem prazo</Pilula>}
-                    <button onClick={() => abrir(ata.id)} style={{ background: "transparent", border: "none", color: "#2F6FB0", fontSize: 12.5, cursor: "pointer", padding: 0, fontFamily: sans, display: "inline-flex", alignItems: "center", gap: 2 }}>
-                      {ata.empresa || ata.titulo || "Ata"} <ChevronRight size={13} />
-                    </button>
-                  </span>
-                </div>
-              );
-            })}
-            {pendentes.length > 6 && <div style={{ fontSize: 12.5, color: "#8992A6", paddingTop: 2 }}>e mais {pendentes.length - 6} nas atas abaixo.</div>}
-          </div>
-        </div>
-      )}
 
       <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 12, alignItems: "center" }}>
         <div style={{ position: "relative", flex: "1 1 260px" }}>
@@ -860,8 +668,6 @@ export default function AtasTab({ members = [], meetings = [], abrirEmpresa, nov
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {filtradas.map((ata) => {
             const st = STATUS_ATA[ata.status] || STATUS_ATA.rascunho;
-            const acoes = acoesValidas(ata);
-            const feitos = acoes.filter((a) => a.feito).length;
             const isOpen = aberta === ata.id;
             const resumo = linhas(ata.objetivo)[0] || linhas(ata.pontos)[0] || "";
             const principal = ata.empresa || ata.titulo || "(ata sem título)";
@@ -887,7 +693,6 @@ export default function AtasTab({ members = [], meetings = [], abrirEmpresa, nov
                     )}
                   </div>
                   <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-                    <Progresso feitos={feitos} total={acoes.length} />
                     <ChevronRight size={18} color="#8992A6" style={{ transition: "transform 0.15s", transform: isOpen ? "rotate(90deg)" : "none" }} />
                   </div>
                 </div>
