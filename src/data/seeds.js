@@ -29,6 +29,7 @@ export const SEED_CONTACTS = [
   { id: "seed-c-17", nome: "Parminder Singh", empresa: "VVDN", cargo: "Business Development", email: "parminder.singh@vvdntech.in", telefone: "91 7042520185", setor: "Tecnologia", tipo: "Empresa", pais: "Índia", createdAt: Date.now() },
   { id: "seed-c-18", nome: "Digvijay Bishnoi", empresa: "Medicamen Biotech / Shivalik Rasayan", cargo: "Business Development Executive", email: "digvijay@medicamen.com", telefone: "91 8800839079", setor: "Saúde", tipo: "Empresa", observacoes: "Outro e-mail: digvijay@shivalikrasayan.com\nTelefone do escritório: +91 11 4758 9500\nEndereço: 1506, Chiranjiv Tower, 43, Nehru Place, New Delhi 110019\nSites: www.medicamen.com e www.shivalikrasayan.com\nFollow-up: Bianca", pais: "Índia", createdAt: Date.now() },
   { id: "seed-c-19", nome: "Paulo Arthur M. Koerich", empresa: "FIESC", cargo: "Gerente Executivo de Relações Internacionais", email: "paulo.koerich@fiesc.com.br", telefone: "+55 (48) 98476-6923", setor: "Indústria", tipo: "Instituição", pais: "Brasil", createdAt: Date.now() },
+  { id: "seed-c-20", nome: "Rafael Felipe de Oliveira", empresa: "Nidec Global Appliance", cargo: "Gerente de Relações Institucionais", email: "rafael.f.oliveira@nidec-ga.com", telefone: "+55 (11) 99548-4807", setor: "Indústria", tipo: "Empresa", pais: "Brasil", observacoes: "Joinville (SC)", createdAt: Date.now() },
 ];
 
 // Contatos removidos a pedido (planilha "Contatos premium Regional Sul", retirada pela Bianca em 27/10).
