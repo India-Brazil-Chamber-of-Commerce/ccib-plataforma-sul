@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Plus, Trash2, Copy, Printer, Check, ChevronDown, Search, AlertTriangle, ClipboardList, CalendarClock, Building2 } from "lucide-react";
-import { RESPONSAVEIS, STORAGE_ATAS } from "../constants";
+import { RESPONSAVEIS, STORAGE_ATAS, STORAGE_ATAS_SEMENTES } from "../constants";
+import { SEED_ATAS } from "../data/seedAtas";
 import { filterInputStyle } from "../styles";
 import { SectionTitle } from "../components/ui";
 import { useListaCompartilhada } from "../lib/useListaCompartilhada";
@@ -368,6 +369,7 @@ function EditorAta({ ata, mudar, excluir, fechar, hoje, abrirEmpresaPorNome }) {
 
 export default function AtasTab({ members = [], meetings = [], abrirEmpresa, novaDe, limparNovaDe }) {
   const [atas, setAtas] = useListaCompartilhada(STORAGE_ATAS);
+  const [sementesAplicadas, setSementesAplicadas] = useListaCompartilhada(STORAGE_ATAS_SEMENTES);
   const [aberta, setAberta] = useState(null);
   const [busca, setBusca] = useState("");
   const [filtroResp, setFiltroResp] = useState("todos");
@@ -385,6 +387,17 @@ export default function AtasTab({ members = [], meetings = [], abrirEmpresa, nov
     setAtas(lista.filter((a) => a.id !== id));
     setAberta(null);
   };
+
+  // Atas registradas pela equipe no código entram uma única vez (depois valem as edições e exclusões feitas aqui)
+  useEffect(() => {
+    if (atas === null || sementesAplicadas === null) return;
+    const vistas = new Set(sementesAplicadas);
+    const ids = new Set(atas.map((a) => a.id));
+    const novas = SEED_ATAS.filter((a) => !vistas.has(a.id) && !ids.has(a.id));
+    const marcar = SEED_ATAS.filter((a) => !vistas.has(a.id)).map((a) => a.id);
+    if (novas.length) setAtas([...novas, ...atas]);
+    if (marcar.length) setSementesAplicadas([...sementesAplicadas, ...marcar]);
+  }, [atas, sementesAplicadas]);
 
   // Vindo do botão "Criar ata" da aba Reuniões: abre a ata existente ou cria uma nova
   useEffect(() => {

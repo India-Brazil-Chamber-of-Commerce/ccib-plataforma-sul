@@ -20,6 +20,8 @@ export const STORAGE_SUGESTOES_TRATADAS = "ccib-sul-sugestoes-teams-tratadas";
 
 export const STORAGE_ATAS = "ccib-sul-atas";
 
+export const STORAGE_ATAS_SEMENTES = "ccib-sul-atas-sementes";
+
 export const ESTADOS = ["PR", "SC", "RS", "Outro"];
 
 export const RESPONSAVEIS = [
