@@ -31,6 +31,7 @@ export const SEED_CONTACTS = [
   { id: "seed-c-19", nome: "Paulo Arthur M. Koerich", empresa: "FIESC", cargo: "Gerente Executivo de Relações Internacionais", email: "paulo.koerich@fiesc.com.br", telefone: "+55 (48) 98476-6923", setor: "Indústria", tipo: "Instituição", pais: "Brasil", estado: "SC", createdAt: Date.now() },
   { id: "seed-c-20", nome: "Rafael Felipe de Oliveira", empresa: "Nidec Global Appliance", cargo: "Gerente de Relações Institucionais", email: "rafael.f.oliveira@nidec-ga.com", telefone: "+55 (11) 99548-4807", setor: "Indústria", tipo: "Empresa", pais: "Brasil", estado: "SC", observacoes: "Joinville (SC)", createdAt: Date.now() },
   { id: "seed-c-21", nome: "Guilherme Figueiredo", empresa: "Nidec Global Appliance", cargo: "Sales Senior Manager", email: "guilherme.f.silva@nidec-ga.com", telefone: "+55 (47) 99976-0486", setor: "Indústria", tipo: "Empresa", pais: "Brasil", estado: "SC", observacoes: "Palestrante do Painel 1 do Fazendo Negócios com a Índia - Edição SC (NIDEC).", createdAt: Date.now() },
+  { id: "seed-c-22", nome: "Emerson Pereira", empresa: "Governo do Estado de Santa Catarina", cargo: "Secretário Adjunto de Relações Exteriores", email: "emerson.pereira@sai.sc.gov.br", telefone: "+55 (47) 98851-2823", setor: "Governamental", tipo: "Instituição", pais: "Brasil", estado: "SC", observacoes: "Telefone fixo: +55 (48) 3665-1828", createdAt: Date.now() },
 ];
 
 // Contatos removidos a pedido (planilha "Contatos premium Regional Sul", retirada pela Bianca em 27/10).
