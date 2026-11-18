@@ -10,8 +10,13 @@ const COLUNAS_FILTRO = [
   { campo: "setor", rotulo: "Setor" },
   { campo: "tipo", rotulo: "Tipo" },
   { campo: "pais", rotulo: "País" },
+  { campo: "estado", rotulo: "Estado" },
 ];
-const FILTROS_VAZIOS = { empresa: "", setor: "", tipo: "", pais: "" };
+const FILTROS_VAZIOS = { empresa: "", setor: "", tipo: "", pais: "", estado: "" };
+
+// Sugestões para o campo Estado (siglas do Brasil; o campo aceita texto livre, ex.: estado da Índia)
+const UFS_BRASIL = ["PR", "SC", "RS", "SP", "RJ", "MG", "ES", "BA", "SE", "AL", "PE", "PB", "RN", "CE", "PI", "MA", "PA", "AP", "AM", "RR", "AC", "RO", "TO", "GO", "DF", "MT", "MS"];
+const GRADE = "1fr 1fr 0.7fr 1.2fr 1.4fr 0.7fr 0.6fr 0.45fr 36px";
 
 function filtrarContatos(contacts, contactSearch, filtros = FILTROS_VAZIOS) {
   const q = contactSearch.trim().toLowerCase();
@@ -23,7 +28,7 @@ function filtrarContatos(contacts, contactSearch, filtros = FILTROS_VAZIOS) {
       if (f === VAZIO ? v !== "" : v !== f) return false;
     }
     if (!q) return true;
-    return c.nome.toLowerCase().includes(q) || (c.empresa || "").toLowerCase().includes(q) || (c.cargo || "").toLowerCase().includes(q) || (c.setor || "").toLowerCase().includes(q) || (c.tipo || "").toLowerCase().includes(q) || (c.pais || "").toLowerCase().includes(q) || (c.observacoes || "").toLowerCase().includes(q);
+    return c.nome.toLowerCase().includes(q) || (c.empresa || "").toLowerCase().includes(q) || (c.cargo || "").toLowerCase().includes(q) || (c.setor || "").toLowerCase().includes(q) || (c.tipo || "").toLowerCase().includes(q) || (c.pais || "").toLowerCase().includes(q) || (c.estado || "").toLowerCase().includes(q) || (c.observacoes || "").toLowerCase().includes(q);
   }).sort((a, b) => a.nome.localeCompare(b.nome));
 }
 
@@ -38,10 +43,11 @@ async function baixarExcel(lista) {
     "E-mail": c.email || "",
     Telefone: c.telefone || "",
     "País": c.pais || "",
+    Estado: c.estado || "",
     "Observações": c.observacoes || "",
   }));
-  const ws = XLSX.utils.json_to_sheet(linhas, { header: ["Nome", "Empresa", "Setor", "Tipo", "Cargo", "E-mail", "Telefone", "País", "Observações"] });
-  ws["!cols"] = [{ wch: 32 }, { wch: 30 }, { wch: 18 }, { wch: 14 }, { wch: 28 }, { wch: 34 }, { wch: 18 }, { wch: 14 }, { wch: 60 }];
+  const ws = XLSX.utils.json_to_sheet(linhas, { header: ["Nome", "Empresa", "Setor", "Tipo", "Cargo", "E-mail", "Telefone", "País", "Estado", "Observações"] });
+  ws["!cols"] = [{ wch: 32 }, { wch: 30 }, { wch: 18 }, { wch: 14 }, { wch: 28 }, { wch: 34 }, { wch: 18 }, { wch: 14 }, { wch: 10 }, { wch: 60 }];
   ws["!autofilter"] = { ref: ws["!ref"] };
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, "Contatos");
@@ -78,7 +84,7 @@ export default function ContatosTab({
         />
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 18, alignItems: "center", justifyContent: "space-between" }}>
           <input
-            placeholder="Buscar por nome, empresa, setor, cargo ou país..."
+            placeholder="Buscar por nome, empresa, setor, cargo, país ou estado..."
             value={contactSearch}
             onChange={(e) => setContactSearch(e.target.value)}
             style={{ ...filterInputStyle, flex: "1 1 300px" }}
@@ -173,7 +179,7 @@ export default function ContatosTab({
               <div
                 style={{
                   display: "grid",
-                  gridTemplateColumns: "1fr 1fr 0.7fr 1.2fr 1.4fr 0.7fr 0.6fr 36px",
+                  gridTemplateColumns: GRADE,
                   gap: 0,
                   padding: "9px 14px",
                   background: "#0B2545",
@@ -187,6 +193,7 @@ export default function ContatosTab({
                 <span style={{ ...labelStyle, marginBottom: 0, color: "rgba(255,255,255,0.7)" }}>E-mail</span>
                 <span style={{ ...labelStyle, marginBottom: 0, color: "rgba(255,255,255,0.7)" }}>Telefone</span>
                 <span style={{ ...labelStyle, marginBottom: 0, color: "rgba(255,255,255,0.7)" }}>País</span>
+                <span style={{ ...labelStyle, marginBottom: 0, color: "rgba(255,255,255,0.7)" }}>Estado</span>
                 <span />
               </div>
 
@@ -200,7 +207,7 @@ export default function ContatosTab({
                       className="ccib-row"
                       style={{
                         display: "grid",
-                        gridTemplateColumns: "1fr 1fr 0.7fr 1.2fr 1.4fr 0.7fr 0.6fr 36px",
+                        gridTemplateColumns: GRADE,
                         gap: 0,
                         padding: "10px 14px",
                         cursor: "pointer",
@@ -235,6 +242,9 @@ export default function ContatosTab({
                       </span>
                       <span style={{ fontSize: 12, color: "#8992A6", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", paddingRight: 8 }}>
                         {c.pais || "—"}
+                      </span>
+                      <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 11.5, color: c.estado ? "#0B2545" : "#8992A6", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", paddingRight: 8 }}>
+                        {c.estado || "—"}
                       </span>
                       <ChevronDown
                         size={14}
@@ -292,6 +302,18 @@ export default function ContatosTab({
                           </Field>
                           <Field label="País">
                             <input className="ccib-input" style={inputStyle} value={c.pais || ""} placeholder="Ex.: Índia" onChange={(e) => patchContact(c.id, { pais: e.target.value })} />
+                          </Field>
+                          <Field label="Estado">
+                            <input
+                              className="ccib-input" style={inputStyle}
+                              list="contact-estados"
+                              value={c.estado || ""}
+                              placeholder="Ex.: SC"
+                              onChange={(e) => patchContact(c.id, { estado: e.target.value })}
+                            />
+                            <datalist id="contact-estados">
+                              {UFS_BRASIL.map((uf) => <option key={uf} value={uf} />)}
+                            </datalist>
                           </Field>
                         </div>
                         <div style={{ display: "flex", gap: 14, alignItems: "flex-end", marginTop: 12 }}>

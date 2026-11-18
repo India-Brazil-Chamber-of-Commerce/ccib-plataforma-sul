@@ -332,8 +332,18 @@ export default function App() {
         const pais = paisSemente.get(c.id) || paisPorEmail.get((c.email || "").trim().toLowerCase());
         if (pais) { mergedContacts[i] = { ...c, pais }; paisAdded = true; }
       }
+      // Estado definido depois na semente entra só se o contato salvo ainda não tem o campo preenchido
+      const estadoSemente = new Map(SEED_CONTACTS.filter((s) => s.estado).map((s) => [s.id, s.estado]));
+      const estadoPorEmail = new Map(SEED_CONTACTS.filter((s) => s.estado && s.email).map((s) => [s.email.trim().toLowerCase(), s.estado]));
+      let estadoAdded = false;
+      for (let i = 0; i < mergedContacts.length; i++) {
+        const c = mergedContacts[i];
+        if ((c.estado || "").trim()) continue;
+        const estado = estadoSemente.get(c.id) || estadoPorEmail.get((c.email || "").trim().toLowerCase());
+        if (estado) { mergedContacts[i] = { ...c, estado }; estadoAdded = true; }
+      }
       setContacts(mergedContacts);
-      if (missingContactSeeds.length > 0 || setorAdded || obsAdded || paisAdded || contatosRemovidos) {
+      if (missingContactSeeds.length > 0 || setorAdded || obsAdded || paisAdded || estadoAdded || contatosRemovidos) {
         await persistContacts(mergedContacts);
       }
     } catch (e) {

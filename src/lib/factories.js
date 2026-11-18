@@ -6,6 +6,7 @@ export function blankContact() {
     email: "",
     telefone: "",
     pais: "",
+    estado: "",
     cargo: "",
     setor: "",
     tipo: "",
