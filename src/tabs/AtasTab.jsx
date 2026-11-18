@@ -1,5 +1,8 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { Plus, Trash2, Copy, Printer, Check, ChevronDown, Search, AlertTriangle, ClipboardList, CalendarClock, Building2 } from "lucide-react";
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import {
+  Plus, Trash2, Copy, Printer, Check, ChevronRight, Search, AlertTriangle, ClipboardList, CalendarClock, Building2,
+  Pencil, X, Target, MessageSquare, Lightbulb, Handshake, ListChecks, Lock, CalendarDays, Clock, MapPin, User, Users, RotateCcw,
+} from "lucide-react";
 import { RESPONSAVEIS, STORAGE_ATAS, STORAGE_ATAS_SEMENTES } from "../constants";
 import { SEED_ATAS } from "../data/seedAtas";
 import { filterInputStyle } from "../styles";
@@ -8,6 +11,7 @@ import { useListaCompartilhada } from "../lib/useListaCompartilhada";
 
 const mono = "'IBM Plex Mono', monospace";
 const serif = "'Fraunces', serif";
+const sans = "'IBM Plex Sans', sans-serif";
 
 export const TIPOS_ATA = ["Prospecção", "Associação", "Renovação", "Patrocínio", "Serviços", "Parceria", "Missão / delegação", "Follow-up", "Outro"];
 
@@ -16,14 +20,18 @@ export const STATUS_ATA = {
   finalizada: { label: "Finalizada", color: "#0E7C3A" },
 };
 
-// Seções de texto da ata, na ordem em que aparecem no editor, na cópia e na impressão
+// Seções de texto da ata, na ordem em que aparecem na tela, na cópia e na impressão
 const SECOES = [
-  { id: "objetivo", label: "Objetivo da reunião", dica: "Por que a reunião aconteceu e o que se esperava dela." },
-  { id: "pontos", label: "Pontos discutidos", dica: "Um ponto por linha." },
-  { id: "oportunidades", label: "Oportunidades identificadas", dica: "Associação, patrocínio, serviços, eventos, missões, contatos na Índia..." },
-  { id: "decisoes", label: "Decisões e acordos", dica: "O que ficou combinado entre as partes." },
-  { id: "observacoes", label: "Observações internas", dica: "Não entra no texto copiado para a empresa." },
+  { id: "objetivo", label: "Objetivo da reunião", curto: "Objetivo", icone: Target, cor: "#2F6FB0", dica: "Por que a reunião aconteceu e o que se esperava dela." },
+  { id: "pontos", label: "O que foi conversado", curto: "Conversa", icone: MessageSquare, cor: "#0B2545", dica: "Escreva um assunto por linha. Cada linha vira um tópico." },
+  { id: "oportunidades", label: "Oportunidades para a Câmara", curto: "Oportunidades", icone: Lightbulb, cor: "#0E7C3A", dica: "Associação, patrocínio, serviços, eventos, missões, contatos na Índia... Uma por linha." },
+  { id: "decisoes", label: "O que ficou combinado", curto: "Combinados", icone: Handshake, cor: "#6A5ACD", dica: "Acordos entre as partes. Um por linha." },
+  { id: "observacoes", label: "Anotações internas", curto: "Internas", icone: Lock, cor: "#B8752E", dica: "Só a equipe vê. Não entram no texto copiado nem no PDF." },
 ];
+
+const MESES = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"];
+const DIAS = ["domingo", "segunda-feira", "terça-feira", "quarta-feira", "quinta-feira", "sexta-feira", "sábado"];
+const QUEM_SUGESTOES = ["Bianca", "Gustavo", "Bianca e Gustavo", "Empresa"];
 
 const novoId = (p) => `${p}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
 const normalizar = (s) => (s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim();
@@ -38,10 +46,18 @@ const somaDias = (iso, n) => {
 };
 const dataBR = (iso) => (iso ? `${iso.slice(8, 10)}/${iso.slice(5, 7)}/${iso.slice(0, 4)}` : "");
 const dataCurta = (iso) => (iso ? `${iso.slice(8, 10)}/${iso.slice(5, 7)}` : "");
+const dataLonga = (iso) => {
+  if (!iso) return "";
+  const [a, m, d] = iso.split("-").map(Number);
+  const dia = DIAS[new Date(a, m - 1, d).getDay()];
+  return `${dia}, ${d} de ${["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"][m - 1]} de ${a}`;
+};
 const nomeResp = (id) => (RESPONSAVEIS.find((r) => r.id === id) || {}).label || "";
 const corResp = (id) => (RESPONSAVEIS.find((r) => r.id === id) || {}).accent || "#8992A6";
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 const linhas = (t) => (t || "").split("\n").map((l) => l.replace(/^\s*[-•*]\s*/, "").trim()).filter(Boolean);
+const pessoas = (t) => (t || "").split(/[,;\n]/).map((p) => p.trim()).filter(Boolean);
+const acoesValidas = (ata) => (ata.acoes || []).filter((a) => a.texto && a.texto.trim());
 
 export function novaAta(base = {}) {
   return {
@@ -85,17 +101,16 @@ export function ataDaReuniao(m) {
 
 const acaoAtrasada = (a, hoje) => !a.feito && a.prazo && a.prazo < hoje;
 
-// Texto corrido para colar em e-mail ou Teams (sem as observações internas)
+// Texto corrido para colar em e-mail ou Teams (sem as anotações internas)
 function textoAta(ata) {
   const L = [];
-  L.push("ATA DE REUNIÃO COMERCIAL");
+  L.push("ATA DE REUNIÃO");
   L.push("Câmara de Comércio Índia Brasil (CCIB) · Regional Sul");
   L.push("");
   if (ata.titulo) L.push(`Reunião: ${ata.titulo}`);
   if (ata.empresa) L.push(`Empresa: ${ata.empresa}`);
   L.push(`Data: ${dataBR(ata.data)}${ata.horario ? `, ${ata.horario}` : ""}`);
   if (ata.local) L.push(`Local: ${ata.local}`);
-  if (ata.tipo) L.push(`Tipo: ${ata.tipo}`);
   if (ata.participantesCcib) L.push(`Participantes CCIB: ${ata.participantesCcib}`);
   if (ata.participantesEmpresa) L.push(`Participantes da empresa: ${ata.participantesEmpresa}`);
   SECOES.filter((s) => s.id !== "observacoes").forEach((s) => {
@@ -105,7 +120,7 @@ function textoAta(ata) {
     L.push(s.label.toUpperCase());
     ls.forEach((l) => L.push(`- ${l}`));
   });
-  const acoes = (ata.acoes || []).filter((a) => a.texto && a.texto.trim());
+  const acoes = acoesValidas(ata);
   if (acoes.length) {
     L.push("");
     L.push("PRÓXIMOS PASSOS");
@@ -124,7 +139,7 @@ function textoAta(ata) {
 function htmlAta(ata) {
   const bloco = (titulo, itens) =>
     itens.length ? `<h2>${esc(titulo)}</h2><ul>${itens.map((i) => `<li>${esc(i)}</li>`).join("")}</ul>` : "";
-  const acoes = (ata.acoes || []).filter((a) => a.texto && a.texto.trim());
+  const acoes = acoesValidas(ata);
   const tabelaAcoes = acoes.length
     ? `<h2>Próximos passos</h2><table><thead><tr><th>Ação</th><th>Responsável</th><th>Prazo</th><th>Situação</th></tr></thead><tbody>${acoes
         .map((a) => `<tr><td>${esc(a.texto)}</td><td>${esc(a.quem || "")}</td><td>${esc(dataBR(a.prazo))}</td><td>${a.feito ? "Concluída" : "Pendente"}</td></tr>`)
@@ -134,7 +149,6 @@ function htmlAta(ata) {
     ["Empresa", ata.empresa],
     ["Data", `${dataBR(ata.data)}${ata.horario ? `, ${ata.horario}` : ""}`],
     ["Local", ata.local],
-    ["Tipo", ata.tipo],
     ["Participantes CCIB", ata.participantesCcib],
     ["Participantes da empresa", ata.participantesEmpresa],
   ].filter(([, v]) => v);
@@ -156,7 +170,7 @@ th { font-size: 8.5pt; text-transform: uppercase; letter-spacing: .06em; color: 
 </style></head><body>
 <div class="faixa"></div>
 <div class="org">Câmara de Comércio Índia Brasil (CCIB) · Regional Sul</div>
-<h1>Ata de reunião comercial${ata.titulo ? `<br><span style="font-size:13pt;color:#566175">${esc(ata.titulo)}</span>` : ""}</h1>
+<h1>Ata de reunião${ata.titulo ? `<br><span style="font-size:13pt;color:#566175">${esc(ata.titulo)}</span>` : ""}</h1>
 <div class="meta">${meta.map(([k, v]) => `<b>${esc(k)}</b><span>${esc(v)}</span>`).join("")}</div>
 ${SECOES.filter((s) => s.id !== "observacoes").map((s) => bloco(s.label, linhas(ata[s.id]))).join("")}
 ${tabelaAcoes}
@@ -174,10 +188,235 @@ function imprimirAta(ata) {
   w.document.close();
 }
 
-const campo = { ...filterInputStyle, width: "100%", boxSizing: "border-box", background: "#FFFFFF" };
-const rotulo = { fontFamily: mono, fontSize: 10, letterSpacing: "0.06em", textTransform: "uppercase", color: "#8992A6", marginBottom: 5, display: "block" };
-const botao = { display: "inline-flex", alignItems: "center", gap: 6, background: "#FFFFFF", color: "#0B2545", border: "1px solid #D6DAE2", borderRadius: 7, padding: "6px 12px", fontSize: 12.5, fontWeight: 500, cursor: "pointer" };
+async function copiarTexto(texto) {
+  try {
+    await navigator.clipboard.writeText(texto);
+  } catch (e) {
+    const t = document.createElement("textarea");
+    t.value = texto;
+    document.body.appendChild(t);
+    t.select();
+    document.execCommand("copy");
+    t.remove();
+  }
+}
+
+// ---------- peças visuais ----------
+
+const campo = { ...filterInputStyle, width: "100%", boxSizing: "border-box", background: "#FFFFFF", fontSize: 13.5 };
+const rotulo = { fontSize: 12, fontWeight: 600, color: "#566175", marginBottom: 6, display: "block" };
+const botao = { display: "inline-flex", alignItems: "center", gap: 6, background: "#FFFFFF", color: "#0B2545", border: "1px solid #D6DAE2", borderRadius: 8, padding: "7px 13px", fontSize: 13, fontWeight: 500, cursor: "pointer", fontFamily: sans };
 const botaoPrincipal = { ...botao, background: "#0B2545", color: "#FFFFFF", border: "1px solid #0B2545" };
+const botaoVerde = { ...botao, background: "#0E7C3A", color: "#FFFFFF", border: "1px solid #0E7C3A" };
+
+function Pilula({ cor = "#566175", fundo, icone: Icone, children, title }) {
+  return (
+    <span title={title} style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 12, color: cor, background: fundo || `${cor}14`, borderRadius: 999, padding: "3px 10px", whiteSpace: "nowrap", fontWeight: 500 }}>
+      {Icone && <Icone size={12} />}
+      {children}
+    </span>
+  );
+}
+
+function Caixa({ marcado, onClick, tamanho = 22, title }) {
+  return (
+    <button
+      onClick={onClick}
+      title={title || (marcado ? "Marcar como pendente" : "Marcar como concluído")}
+      style={{ width: tamanho, height: tamanho, flexShrink: 0, borderRadius: 7, border: `2px solid ${marcado ? "#0E7C3A" : "#C7CCD6"}`, background: marcado ? "#0E7C3A" : "#FFFFFF", color: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", padding: 0, transition: "all 0.15s" }}
+    >
+      {marcado && <Check size={tamanho - 8} strokeWidth={3} />}
+    </button>
+  );
+}
+
+// Caixa de texto que cresce sozinha conforme o conteúdo
+function TextoLivre({ value, onChange, placeholder, fundo = "#FFFFFF", min = 76 }) {
+  const ref = useRef(null);
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${Math.max(min, el.scrollHeight + 2)}px`;
+  }, [value, min]);
+  return (
+    <textarea
+      ref={ref}
+      className="ccib-input"
+      value={value}
+      placeholder={placeholder}
+      onChange={onChange}
+      rows={3}
+      style={{ ...campo, resize: "none", overflow: "hidden", lineHeight: 1.6, fontFamily: sans, background: fundo, padding: "10px 12px" }}
+    />
+  );
+}
+
+function Progresso({ feitos, total }) {
+  if (!total) return null;
+  const pct = Math.round((feitos / total) * 100);
+  const cor = feitos === total ? "#0E7C3A" : "#2F6FB0";
+  return (
+    <div title={`${feitos} de ${total} próximos passos concluídos`} style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 130 }}>
+      <div style={{ flex: 1, height: 6, background: "#EEF1F5", borderRadius: 99, overflow: "hidden" }}>
+        <div style={{ width: `${pct}%`, height: "100%", background: cor, borderRadius: 99, transition: "width 0.2s" }} />
+      </div>
+      <span style={{ fontSize: 12, color: "#566175", whiteSpace: "nowrap" }}>{feitos}/{total} passos</span>
+    </div>
+  );
+}
+
+// ---------- leitura da ata ----------
+
+function SecaoLeitura({ secao, ata, editar }) {
+  const Icone = secao.icone;
+  const itens = linhas(ata[secao.id]);
+  const interna = secao.id === "observacoes";
+  if (!itens.length && interna) return null;
+  return (
+    <div style={{ background: interna ? "#FFFBF4" : "#FFFFFF", border: `1px solid ${interna ? "#F1DEC2" : "#E8EBF0"}`, borderRadius: 12, padding: "14px 18px" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: itens.length ? 10 : 4 }}>
+        <span style={{ width: 28, height: 28, borderRadius: 8, background: `${secao.cor}14`, color: secao.cor, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          <Icone size={15} />
+        </span>
+        <span style={{ fontFamily: serif, fontSize: 16, fontWeight: 500, color: "#0B2545" }}>{secao.label}</span>
+        {interna && <span style={{ fontSize: 11.5, color: "#B8752E", marginLeft: 4 }}>só a equipe vê</span>}
+      </div>
+      {itens.length ? (
+        itens.length === 1 && secao.id === "objetivo" ? (
+          <p style={{ margin: "0 0 0 37px", fontSize: 14, lineHeight: 1.6, color: "#1B2438" }}>{itens[0]}</p>
+        ) : (
+          <ul style={{ margin: 0, padding: "0 0 0 37px", listStyle: "none", display: "flex", flexDirection: "column", gap: 7 }}>
+            {itens.map((t, i) => (
+              <li key={i} style={{ position: "relative", fontSize: 14, lineHeight: 1.55, color: "#1B2438" }}>
+                <span style={{ position: "absolute", left: -15, top: 9, width: 6, height: 6, borderRadius: 99, background: secao.cor, opacity: 0.7 }} />
+                {t}
+              </li>
+            ))}
+          </ul>
+        )
+      ) : (
+        <button onClick={editar} style={{ marginLeft: 37, background: "transparent", border: "none", color: "#8992A6", fontSize: 13, cursor: "pointer", padding: 0, fontFamily: sans }}>
+          Nada registrado ainda. <span style={{ color: "#2F6FB0", textDecoration: "underline" }}>Adicionar</span>
+        </button>
+      )}
+    </div>
+  );
+}
+
+function PassosLeitura({ ata, hoje, alternar, editar }) {
+  const acoes = acoesValidas(ata);
+  const feitos = acoes.filter((a) => a.feito).length;
+  return (
+    <div style={{ background: "#FFFFFF", border: "1px solid #E8EBF0", borderRadius: 12, padding: "14px 18px" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 12, flexWrap: "wrap" }}>
+        <span style={{ width: 28, height: 28, borderRadius: 8, background: "#2F6FB014", color: "#2F6FB0", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <ListChecks size={15} />
+        </span>
+        <span style={{ fontFamily: serif, fontSize: 16, fontWeight: 500, color: "#0B2545" }}>Próximos passos</span>
+        <span style={{ marginLeft: "auto" }}><Progresso feitos={feitos} total={acoes.length} /></span>
+      </div>
+      {acoes.length === 0 ? (
+        <button onClick={editar} style={{ marginLeft: 37, background: "transparent", border: "none", color: "#8992A6", fontSize: 13, cursor: "pointer", padding: 0, fontFamily: sans }}>
+          Nenhum próximo passo ainda. <span style={{ color: "#2F6FB0", textDecoration: "underline" }}>Adicionar</span>
+        </button>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          {acoes.map((a, i) => {
+            const atrasada = acaoAtrasada(a, hoje);
+            return (
+              <div key={a.id} style={{ display: "flex", gap: 12, alignItems: "flex-start", padding: "10px 12px", borderRadius: 10, background: a.feito ? "#F4FAF6" : atrasada ? "#FDF4F1" : "#F7F8FA" }}>
+                <Caixa marcado={a.feito} onClick={() => alternar(a.id)} />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 14, lineHeight: 1.5, color: a.feito ? "#8992A6" : "#1B2438", textDecoration: a.feito ? "line-through" : "none" }}>
+                    {a.texto}
+                  </div>
+                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 6 }}>
+                    {a.quem ? <Pilula icone={User} cor="#0B2545">{a.quem}</Pilula> : <Pilula icone={User} cor="#B8752E" title="Clique em Editar para definir">sem responsável</Pilula>}
+                    {a.prazo ? (
+                      <Pilula icone={atrasada ? AlertTriangle : CalendarDays} cor={atrasada ? "#C1502E" : "#566175"}>{atrasada ? `atrasado · ${dataCurta(a.prazo)}` : `até ${dataCurta(a.prazo)}`}</Pilula>
+                    ) : (
+                      <Pilula icone={CalendarDays} cor="#B8752E" title="Clique em Editar para definir">sem prazo</Pilula>
+                    )}
+                    {a.feito && <Pilula icone={Check} cor="#0E7C3A">concluído</Pilula>}
+                  </div>
+                </div>
+                <span style={{ fontFamily: mono, fontSize: 11, color: "#B7BEC9", paddingTop: 3 }}>{i + 1}</span>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Pessoas({ titulo, texto, cor }) {
+  const lista = pessoas(texto);
+  return (
+    <div style={{ flex: "1 1 240px" }}>
+      <div style={{ fontSize: 12, fontWeight: 600, color: "#8992A6", marginBottom: 6 }}>{titulo}</div>
+      {lista.length ? (
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+          {lista.map((p) => (
+            <span key={p} style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, background: "#FFFFFF", border: "1px solid #E3E6EC", borderRadius: 999, padding: "3px 10px 3px 4px", color: "#1B2438" }}>
+              <span style={{ width: 20, height: 20, borderRadius: 99, background: `${cor}1A`, color: cor, fontSize: 10.5, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                {p.replace(/[^A-Za-zÀ-ÿ ]/g, "").split(" ").filter(Boolean).slice(0, 2).map((x) => x[0]).join("").toUpperCase()}
+              </span>
+              {p}
+            </span>
+          ))}
+        </div>
+      ) : (
+        <span style={{ fontSize: 13, color: "#B7BEC9" }}>Não informado</span>
+      )}
+    </div>
+  );
+}
+
+function LeituraAta({ ata, hoje, editar, alternarPasso }) {
+  const st = STATUS_ATA[ata.status] || STATUS_ATA.rascunho;
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+      <div style={{ background: "#FFFFFF", border: "1px solid #E8EBF0", borderRadius: 12, padding: "16px 18px" }}>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 14 }}>
+          {ata.data && <Pilula icone={CalendarDays} cor="#0B2545">{dataLonga(ata.data)}</Pilula>}
+          {ata.horario && <Pilula icone={Clock} cor="#0B2545">{ata.horario}</Pilula>}
+          {ata.local && <Pilula icone={MapPin} cor="#0B2545">{ata.local}</Pilula>}
+          {ata.tipo && <Pilula cor="#6A5ACD">{ata.tipo}</Pilula>}
+          <Pilula cor={corResp(ata.responsavel)}>Responsável: {nomeResp(ata.responsavel)}</Pilula>
+          <Pilula cor={st.color}>{st.label}</Pilula>
+        </div>
+        <div style={{ display: "flex", gap: 18, flexWrap: "wrap" }}>
+          <Pessoas titulo="Pela CCIB" texto={ata.participantesCcib} cor="#0E7C3A" />
+          <Pessoas titulo={ata.empresa ? `Por ${ata.empresa}` : "Pela empresa"} texto={ata.participantesEmpresa} cor="#B8752E" />
+        </div>
+        {ata.proximoContato && (
+          <div style={{ marginTop: 14, display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: ata.proximoContato < hoje ? "#C1502E" : "#0B2545" }}>
+            <CalendarClock size={15} /> Próximo contato: <b>{dataLonga(ata.proximoContato)}</b>
+          </div>
+        )}
+      </div>
+      {SECOES.filter((s) => s.id !== "observacoes").map((s) => <SecaoLeitura key={s.id} secao={s} ata={ata} editar={editar} />)}
+      <PassosLeitura ata={ata} hoje={hoje} alternar={alternarPasso} editar={editar} />
+      <SecaoLeitura secao={SECOES.find((s) => s.id === "observacoes")} ata={ata} editar={editar} />
+    </div>
+  );
+}
+
+// ---------- edição da ata ----------
+
+function Bloco({ numero, titulo, children }) {
+  return (
+    <div style={{ background: "#FFFFFF", border: "1px solid #E8EBF0", borderRadius: 12, padding: "16px 18px" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
+        <span style={{ width: 24, height: 24, borderRadius: 99, background: "#0B2545", color: "#FFFFFF", fontSize: 12, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center" }}>{numero}</span>
+        <span style={{ fontFamily: serif, fontSize: 16, fontWeight: 500, color: "#0B2545" }}>{titulo}</span>
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>{children}</div>
+    </div>
+  );
+}
 
 function Campo({ label, children, flex = 1, min = 160 }) {
   return (
@@ -188,189 +427,236 @@ function Campo({ label, children, flex = 1, min = 160 }) {
   );
 }
 
-function Chip({ cor, children }) {
-  return (
-    <span style={{ fontFamily: mono, fontSize: 10.5, color: cor, border: `1px solid ${cor}55`, background: `${cor}12`, borderRadius: 999, padding: "2px 8px", whiteSpace: "nowrap" }}>
-      {children}
-    </span>
-  );
-}
-
-function Acoes({ acoes, mudar, hoje }) {
+function EdicaoPassos({ acoes, mudar, hoje }) {
   const atualizar = (id, patch) => mudar(acoes.map((a) => (a.id === id ? { ...a, ...patch } : a)));
   return (
-    <div>
-      <span style={rotulo}>Próximos passos</span>
-      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-        {acoes.map((a) => (
-          <div key={a.id} style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-            <button
-              onClick={() => atualizar(a.id, { feito: !a.feito })}
-              title={a.feito ? "Marcar como pendente" : "Marcar como concluída"}
-              style={{ width: 20, height: 20, flexShrink: 0, borderRadius: 5, border: `1.5px solid ${a.feito ? "#0E7C3A" : "#C7CCD6"}`, background: a.feito ? "#0E7C3A" : "#FFFFFF", color: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", padding: 0 }}
-            >
-              {a.feito && <Check size={13} />}
-            </button>
+    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+      {acoes.length === 0 && <div style={{ fontSize: 13, color: "#8992A6" }}>Nenhum passo ainda. Use o botão abaixo para incluir.</div>}
+      {acoes.map((a, i) => (
+        <div key={a.id} style={{ border: "1px solid #E8EBF0", borderRadius: 10, padding: 12, background: a.feito ? "#F4FAF6" : "#FAFBFC" }}>
+          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+            <span style={{ fontFamily: mono, fontSize: 12, color: "#8992A6", width: 18 }}>{i + 1}.</span>
             <input
               className="ccib-input"
-              style={{ ...campo, flex: "3 1 260px", width: "auto", textDecoration: a.feito ? "line-through" : "none", color: a.feito ? "#8992A6" : "#1B2438" }}
-              placeholder="O que precisa ser feito"
+              style={{ ...campo, flex: 1 }}
+              placeholder="O que precisa ser feito?"
               value={a.texto}
               onChange={(e) => atualizar(a.id, { texto: e.target.value })}
             />
-            <input
-              className="ccib-input"
-              style={{ ...campo, flex: "1 1 140px", width: "auto" }}
-              placeholder="Responsável"
-              list="ccib-atas-quem"
-              value={a.quem}
-              onChange={(e) => atualizar(a.id, { quem: e.target.value })}
-            />
-            <input
-              type="date"
-              className="ccib-input"
-              title="Prazo"
-              style={{ ...campo, flex: "0 1 150px", width: "auto", colorScheme: "light", borderColor: acaoAtrasada(a, hoje) ? "#C1502E" : "#D6DAE2", color: acaoAtrasada(a, hoje) ? "#C1502E" : "#1B2438" }}
-              value={a.prazo}
-              onChange={(e) => atualizar(a.id, { prazo: e.target.value })}
-            />
-            <button onClick={() => mudar(acoes.filter((x) => x.id !== a.id))} title="Remover ação" className="ccib-icon-btn" style={{ background: "transparent", border: "none", color: "#8992A6", cursor: "pointer", padding: 4 }}>
-              <Trash2 size={14} />
+            <button onClick={() => mudar(acoes.filter((x) => x.id !== a.id))} title="Remover este passo" className="ccib-icon-btn" style={{ background: "transparent", border: "none", color: "#8992A6", cursor: "pointer", padding: 6 }}>
+              <Trash2 size={15} />
             </button>
           </div>
-        ))}
-      </div>
+          <div style={{ display: "flex", gap: 14, flexWrap: "wrap", alignItems: "center", marginTop: 10, paddingLeft: 28 }}>
+            <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
+              <span style={{ fontSize: 12, color: "#566175", fontWeight: 600 }}>Quem:</span>
+              {QUEM_SUGESTOES.map((q) => (
+                <button
+                  key={q}
+                  onClick={() => atualizar(a.id, { quem: a.quem === q ? "" : q })}
+                  style={{ fontSize: 12, borderRadius: 99, padding: "4px 11px", cursor: "pointer", fontFamily: sans, border: `1px solid ${a.quem === q ? "#0B2545" : "#D6DAE2"}`, background: a.quem === q ? "#0B2545" : "#FFFFFF", color: a.quem === q ? "#FFFFFF" : "#566175" }}
+                >
+                  {q}
+                </button>
+              ))}
+              {a.quem && !QUEM_SUGESTOES.includes(a.quem) && <Pilula cor="#0B2545">{a.quem}</Pilula>}
+            </div>
+            <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+              <span style={{ fontSize: 12, color: "#566175", fontWeight: 600 }}>Até:</span>
+              <input
+                type="date"
+                className="ccib-input"
+                title="Prazo"
+                style={{ ...campo, width: 160, padding: "5px 10px", colorScheme: "light", borderColor: acaoAtrasada(a, hoje) ? "#C1502E" : "#D6DAE2", color: acaoAtrasada(a, hoje) ? "#C1502E" : "#1B2438" }}
+                value={a.prazo}
+                onChange={(e) => atualizar(a.id, { prazo: e.target.value })}
+              />
+            </div>
+            <label style={{ display: "flex", gap: 6, alignItems: "center", fontSize: 12.5, color: "#566175", cursor: "pointer" }}>
+              <Caixa marcado={a.feito} tamanho={18} onClick={(e) => { e.preventDefault(); atualizar(a.id, { feito: !a.feito }); }} />
+              Concluído
+            </label>
+          </div>
+        </div>
+      ))}
       <button
         onClick={() => mudar([...acoes, { id: novoId("acao"), texto: "", quem: "", prazo: somaDias(hoje, 7), feito: false }])}
         className="ccib-btn"
-        style={{ ...botao, marginTop: 8, fontSize: 12 }}
+        style={{ ...botao, alignSelf: "flex-start" }}
       >
-        <Plus size={13} /> Adicionar próximo passo
+        <Plus size={14} /> Adicionar próximo passo
       </button>
-      <datalist id="ccib-atas-quem">
-        <option value="Bianca" />
-        <option value="Gustavo" />
-        <option value="Bianca e Gustavo" />
-        <option value="Empresa" />
-      </datalist>
     </div>
   );
 }
 
-function EditorAta({ ata, mudar, excluir, fechar, hoje, abrirEmpresaPorNome }) {
+function EdicaoAta({ ata, set, hoje, concluir }) {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+      <Bloco numero={1} titulo="Sobre a reunião">
+        <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
+          <Campo label="Empresa ou instituição" flex={1} min={220}>
+            <input className="ccib-input" style={campo} list="ccib-atas-empresas" value={ata.empresa} placeholder="Com quem foi a reunião?" onChange={(e) => set({ empresa: e.target.value })} />
+          </Campo>
+          <Campo label="Título" flex={2} min={240}>
+            <input className="ccib-input" style={campo} value={ata.titulo} placeholder="Ex.: Apresentação da CCIB" onChange={(e) => set({ titulo: e.target.value })} />
+          </Campo>
+        </div>
+        <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
+          <Campo label="Data" min={150} flex={0}>
+            <input type="date" className="ccib-input" style={{ ...campo, colorScheme: "light", width: 170 }} value={ata.data} onChange={(e) => set({ data: e.target.value })} />
+          </Campo>
+          <Campo label="Horário" min={130} flex={0}>
+            <input className="ccib-input" style={{ ...campo, width: 150 }} value={ata.horario} placeholder="10:00 – 11:00" onChange={(e) => set({ horario: e.target.value })} />
+          </Campo>
+          <Campo label="Onde" min={180}>
+            <input className="ccib-input" style={campo} value={ata.local} placeholder="Presencial, Teams..." onChange={(e) => set({ local: e.target.value })} />
+          </Campo>
+        </div>
+        <div>
+          <span style={rotulo}>Tipo de reunião</span>
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+            {TIPOS_ATA.map((t) => (
+              <button
+                key={t}
+                onClick={() => set({ tipo: t })}
+                style={{ fontSize: 12.5, borderRadius: 99, padding: "5px 12px", cursor: "pointer", fontFamily: sans, border: `1px solid ${ata.tipo === t ? "#6A5ACD" : "#D6DAE2"}`, background: ata.tipo === t ? "#6A5ACD" : "#FFFFFF", color: ata.tipo === t ? "#FFFFFF" : "#566175" }}
+              >
+                {t}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div>
+          <span style={rotulo}>Responsável na CCIB</span>
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+            {RESPONSAVEIS.map((r) => (
+              <button
+                key={r.id}
+                onClick={() => set({ responsavel: r.id })}
+                style={{ fontSize: 12.5, borderRadius: 99, padding: "5px 12px", cursor: "pointer", fontFamily: sans, border: `1px solid ${ata.responsavel === r.id ? r.accent : "#D6DAE2"}`, background: ata.responsavel === r.id ? r.accent : "#FFFFFF", color: ata.responsavel === r.id ? "#FFFFFF" : "#566175" }}
+              >
+                {r.label}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
+          <Campo label="Quem participou pela CCIB">
+            <input className="ccib-input" style={campo} value={ata.participantesCcib} placeholder="Bianca Guimarães, Gustavo Bastos" onChange={(e) => set({ participantesCcib: e.target.value })} />
+          </Campo>
+          <Campo label="Quem participou pela empresa">
+            <input className="ccib-input" style={campo} value={ata.participantesEmpresa} placeholder="Nome (cargo), separados por vírgula" onChange={(e) => set({ participantesEmpresa: e.target.value })} />
+          </Campo>
+        </div>
+      </Bloco>
+
+      <Bloco numero={2} titulo="O que aconteceu">
+        {SECOES.map((s) => {
+          const Icone = s.icone;
+          return (
+            <div key={s.id}>
+              <span style={{ ...rotulo, display: "flex", alignItems: "center", gap: 6 }}>
+                <Icone size={14} color={s.cor} /> {s.label}
+              </span>
+              <TextoLivre value={ata[s.id]} placeholder={s.dica} fundo={s.id === "observacoes" ? "#FFFBF4" : "#FFFFFF"} min={s.id === "pontos" ? 110 : 64} onChange={(e) => set({ [s.id]: e.target.value })} />
+            </div>
+          );
+        })}
+      </Bloco>
+
+      <Bloco numero={3} titulo="Próximos passos">
+        <EdicaoPassos acoes={ata.acoes || []} mudar={(acoes) => set({ acoes })} hoje={hoje} />
+        <Campo label="Próximo contato com a empresa" flex={0} min={170}>
+          <input type="date" className="ccib-input" style={{ ...campo, colorScheme: "light", width: 180 }} value={ata.proximoContato} onChange={(e) => set({ proximoContato: e.target.value })} />
+        </Campo>
+      </Bloco>
+
+      <div style={{ display: "flex", justifyContent: "flex-end" }}>
+        <button onClick={concluir} className="ccib-btn" style={botaoPrincipal}>
+          <Check size={15} /> Concluir edição
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ---------- ata aberta ----------
+
+function AtaAberta({ ata, mudar, excluir, fechar, hoje, editando, setEditando, abrirEmpresaPorNome }) {
   const [copiado, setCopiado] = useState(false);
   const set = (patch) => mudar({ ...patch, atualizadaEm: Date.now() });
+  const alternarPasso = (id) => set({ acoes: (ata.acoes || []).map((a) => (a.id === id ? { ...a, feito: !a.feito } : a)) });
   const copiar = async () => {
-    const texto = textoAta(ata);
-    try {
-      await navigator.clipboard.writeText(texto);
-    } catch (e) {
-      const t = document.createElement("textarea");
-      t.value = texto;
-      document.body.appendChild(t);
-      t.select();
-      document.execCommand("copy");
-      t.remove();
-    }
+    await copiarTexto(textoAta(ata));
     setCopiado(true);
     setTimeout(() => setCopiado(false), 1800);
   };
+  const temEmpresa = abrirEmpresaPorNome(ata.empresa, true);
   return (
-    <div className="ccib-fade-in" style={{ borderTop: "1px solid #EEF1F5", padding: "16px 16px 18px", background: "#FAFBFC", display: "flex", flexDirection: "column", gap: 14 }}>
-      <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
-        <Campo label="Título da reunião" flex={2} min={240}>
-          <input className="ccib-input" style={campo} value={ata.titulo} placeholder="Ex.: Apresentação CCIB para a empresa" onChange={(e) => set({ titulo: e.target.value })} />
-        </Campo>
-        <Campo label="Empresa">
-          <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-            <input className="ccib-input" style={campo} list="ccib-atas-empresas" value={ata.empresa} placeholder="Nome da empresa" onChange={(e) => set({ empresa: e.target.value })} />
-            {abrirEmpresaPorNome(ata.empresa, true) && (
-              <button onClick={() => abrirEmpresaPorNome(ata.empresa)} title="Abrir a empresa na aba Empresas" className="ccib-icon-btn-neutral" style={{ background: "transparent", border: "1px solid #D6DAE2", borderRadius: 7, color: "#566175", cursor: "pointer", padding: "7px 8px", display: "flex" }}>
-                <Building2 size={14} />
+    <div className="ccib-fade-in" style={{ borderTop: "1px solid #EEF1F5", padding: "14px 16px 18px", background: "#F6F7F9" }}>
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center", marginBottom: 14 }}>
+        {editando ? (
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, color: "#B8752E", fontWeight: 600 }}>
+            <Pencil size={14} /> Editando a ata (tudo é salvo automaticamente)
+          </span>
+        ) : (
+          <>
+            <button onClick={() => setEditando(true)} className="ccib-btn" style={botaoPrincipal}>
+              <Pencil size={14} /> Editar
+            </button>
+            <button onClick={copiar} className="ccib-btn" style={botao} title="Copia a ata em texto para colar em e-mail ou Teams (sem as anotações internas)">
+              {copiado ? <Check size={14} /> : <Copy size={14} />} {copiado ? "Copiada!" : "Copiar texto"}
+            </button>
+            <button onClick={() => imprimirAta(ata)} className="ccib-btn" style={botao} title="Abre a ata para imprimir ou salvar em PDF (sem as anotações internas)">
+              <Printer size={14} /> PDF
+            </button>
+            {temEmpresa && (
+              <button onClick={() => abrirEmpresaPorNome(ata.empresa)} className="ccib-btn" style={botao} title="Abrir a ficha da empresa na aba Empresas">
+                <Building2 size={14} /> Ver empresa
               </button>
             )}
-          </div>
-        </Campo>
-      </div>
-      <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
-        <Campo label="Data" min={140}>
-          <input type="date" className="ccib-input" style={{ ...campo, colorScheme: "light" }} value={ata.data} onChange={(e) => set({ data: e.target.value })} />
-        </Campo>
-        <Campo label="Horário" min={120}>
-          <input className="ccib-input" style={campo} value={ata.horario} placeholder="10:00 – 11:00" onChange={(e) => set({ horario: e.target.value })} />
-        </Campo>
-        <Campo label="Tipo" min={150}>
-          <select className="ccib-input" style={campo} value={ata.tipo} onChange={(e) => set({ tipo: e.target.value })}>
-            {TIPOS_ATA.map((t) => <option key={t}>{t}</option>)}
-          </select>
-        </Campo>
-        <Campo label="Responsável CCIB" min={150}>
-          <select className="ccib-input" style={{ ...campo, color: corResp(ata.responsavel), fontWeight: 600 }} value={ata.responsavel} onChange={(e) => set({ responsavel: e.target.value })}>
-            {RESPONSAVEIS.map((r) => <option key={r.id} value={r.id}>{r.label}</option>)}
-          </select>
-        </Campo>
-        <Campo label="Local" min={150}>
-          <input className="ccib-input" style={campo} value={ata.local} placeholder="Presencial, Teams..." onChange={(e) => set({ local: e.target.value })} />
-        </Campo>
-      </div>
-      <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
-        <Campo label="Participantes CCIB">
-          <input className="ccib-input" style={campo} value={ata.participantesCcib} placeholder="Bianca Guimarães, Gustavo Bastos" onChange={(e) => set({ participantesCcib: e.target.value })} />
-        </Campo>
-        <Campo label="Participantes da empresa">
-          <input className="ccib-input" style={campo} value={ata.participantesEmpresa} placeholder="Nome (cargo)" onChange={(e) => set({ participantesEmpresa: e.target.value })} />
-        </Campo>
-      </div>
-      {SECOES.map((s) => (
-        <Campo key={s.id} label={s.label}>
-          <textarea
-            className="ccib-input"
-            rows={s.id === "pontos" ? 5 : 3}
-            style={{ ...campo, resize: "vertical", lineHeight: 1.5, fontFamily: "'IBM Plex Sans', sans-serif", background: s.id === "observacoes" ? "#FFFBF5" : "#FFFFFF" }}
-            placeholder={s.dica}
-            value={ata[s.id]}
-            onChange={(e) => set({ [s.id]: e.target.value })}
-          />
-        </Campo>
-      ))}
-      <Acoes acoes={ata.acoes || []} mudar={(acoes) => set({ acoes })} hoje={hoje} />
-      <div style={{ display: "flex", gap: 14, flexWrap: "wrap", alignItems: "flex-end" }}>
-        <Campo label="Próximo contato" flex={0} min={170}>
-          <input type="date" className="ccib-input" style={{ ...campo, colorScheme: "light" }} value={ata.proximoContato} onChange={(e) => set({ proximoContato: e.target.value })} />
-        </Campo>
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginLeft: "auto" }}>
-          <button onClick={copiar} className="ccib-btn" style={botao} title="Copia a ata em texto para colar em e-mail ou Teams (sem as observações internas)">
-            {copiado ? <Check size={14} /> : <Copy size={14} />} {copiado ? "Copiada" : "Copiar ata"}
-          </button>
-          <button onClick={() => imprimirAta(ata)} className="ccib-btn" style={botao} title="Abre a ata para imprimir ou salvar em PDF (sem as observações internas)">
-            <Printer size={14} /> Imprimir / PDF
-          </button>
-          {ata.status === "finalizada" ? (
-            <button onClick={() => set({ status: "rascunho" })} className="ccib-btn" style={botao}>Voltar para rascunho</button>
-          ) : (
-            <button onClick={() => set({ status: "finalizada" })} className="ccib-btn" style={botaoPrincipal}>
-              <Check size={14} /> Finalizar ata
-            </button>
-          )}
+            {ata.status === "finalizada" ? (
+              <button onClick={() => set({ status: "rascunho" })} className="ccib-btn" style={botao} title="Volta a ata para rascunho">
+                <RotateCcw size={14} /> Reabrir
+              </button>
+            ) : (
+              <button onClick={() => set({ status: "finalizada" })} className="ccib-btn" style={botaoVerde} title="Marca a ata como revisada e finalizada">
+                <Check size={14} /> Finalizar
+              </button>
+            )}
+          </>
+        )}
+        <div style={{ marginLeft: "auto", display: "flex", gap: 6 }}>
           <button
             onClick={() => { if (window.confirm("Excluir esta ata? Essa ação não pode ser desfeita.")) excluir(); }}
             title="Excluir ata"
             className="ccib-icon-btn"
-            style={{ ...botao, color: "#8992A6", padding: "6px 9px" }}
+            style={{ ...botao, color: "#8992A6", padding: "7px 9px" }}
           >
             <Trash2 size={14} />
           </button>
-          <button onClick={fechar} className="ccib-btn" style={botao}>Fechar</button>
+          <button onClick={fechar} title="Fechar" className="ccib-btn" style={{ ...botao, padding: "7px 9px" }}>
+            <X size={14} />
+          </button>
         </div>
       </div>
+      {editando ? (
+        <EdicaoAta ata={ata} set={set} hoje={hoje} concluir={() => setEditando(false)} />
+      ) : (
+        <LeituraAta ata={ata} hoje={hoje} editar={() => setEditando(true)} alternarPasso={alternarPasso} />
+      )}
     </div>
   );
 }
+
+// ---------- aba ----------
 
 export default function AtasTab({ members = [], meetings = [], abrirEmpresa, novaDe, limparNovaDe }) {
   const [atas, setAtas] = useListaCompartilhada(STORAGE_ATAS);
   const [sementesAplicadas, setSementesAplicadas] = useListaCompartilhada(STORAGE_ATAS_SEMENTES);
   const [aberta, setAberta] = useState(null);
+  const [editando, setEditando] = useState(false);
   const [busca, setBusca] = useState("");
   const [filtroResp, setFiltroResp] = useState("todos");
   const [filtroStatus, setFiltroStatus] = useState("todos");
@@ -378,14 +664,18 @@ export default function AtasTab({ members = [], meetings = [], abrirEmpresa, nov
   const hoje = hojeISO();
   const lista = atas || [];
 
+  const abrir = (id, emEdicao = false) => {
+    setAberta(id);
+    setEditando(emEdicao);
+  };
   const criar = (ata) => {
     setAtas([ata, ...lista]);
-    setAberta(ata.id);
+    abrir(ata.id, true);
   };
   const mudar = (id, patch) => setAtas(lista.map((a) => (a.id === id ? { ...a, ...patch } : a)));
   const excluir = (id) => {
     setAtas(lista.filter((a) => a.id !== id));
-    setAberta(null);
+    abrir(null);
   };
 
   // Atas registradas pela equipe no código entram uma única vez (depois valem as edições e exclusões feitas aqui)
@@ -399,11 +689,11 @@ export default function AtasTab({ members = [], meetings = [], abrirEmpresa, nov
     if (marcar.length) setSementesAplicadas([...sementesAplicadas, ...marcar]);
   }, [atas, sementesAplicadas]);
 
-  // Vindo do botão "Criar ata" da aba Reuniões: abre a ata existente ou cria uma nova
+  // Vindo do botão "Ata da reunião" da aba Reuniões: abre a ata existente ou cria uma nova
   useEffect(() => {
     if (!novaDe || atas === null) return;
     const existente = lista.find((a) => a.reuniaoId && a.reuniaoId === novaDe.id);
-    if (existente) setAberta(existente.id);
+    if (existente) abrir(existente.id);
     else criar(ataDaReuniao(novaDe));
     if (limparNovaDe) limparNovaDe();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -441,7 +731,7 @@ export default function AtasTab({ members = [], meetings = [], abrirEmpresa, nov
 
   const pendentes = useMemo(() => {
     const r = [];
-    lista.forEach((ata) => (ata.acoes || []).forEach((a) => { if (!a.feito && a.texto && a.texto.trim()) r.push({ ata, a }); }));
+    lista.forEach((ata) => acoesValidas(ata).forEach((a) => { if (!a.feito) r.push({ ata, a }); }));
     return r.sort((x, y) => (x.a.prazo || "9999").localeCompare(y.a.prazo || "9999"));
   }, [lista]);
   const atrasadas = pendentes.filter((p) => acaoAtrasada(p.a, hoje)).length;
@@ -452,16 +742,16 @@ export default function AtasTab({ members = [], meetings = [], abrirEmpresa, nov
     mudar(ataId, { acoes: ata.acoes.map((a) => (a.id === acaoId ? { ...a, feito: true } : a)), atualizadaEm: Date.now() });
   };
 
-  const card = { background: "#FFFFFF", border: "1px solid #E3E6EC", borderRadius: 10 };
+  const card = { background: "#FFFFFF", border: "1px solid #E3E6EC", borderRadius: 12 };
 
   return (
     <div>
-      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, flexWrap: "wrap", marginBottom: 6 }}>
-        <SectionTitle size={17}>Atas de reuniões comerciais</SectionTitle>
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, flexWrap: "wrap", marginBottom: 4 }}>
+        <SectionTitle size={17}>Atas de reuniões</SectionTitle>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
           <select
             className="ccib-input"
-            style={{ ...filterInputStyle, background: "#FFFFFF", maxWidth: 320 }}
+            style={{ ...filterInputStyle, background: "#FFFFFF", maxWidth: 300 }}
             value={reuniaoBase}
             onChange={(e) => {
               const m = meetings.find((x) => x.id === e.target.value);
@@ -481,68 +771,73 @@ export default function AtasTab({ members = [], meetings = [], abrirEmpresa, nov
           </button>
         </div>
       </div>
-      <p style={{ fontSize: 13, color: "#566175", margin: "0 0 18px", lineHeight: 1.5 }}>
-        Registre o que foi discutido com cada empresa, as oportunidades para a Câmara e os próximos passos com responsável e prazo.
-        As atas ficam salvas para toda a equipe e podem ser copiadas para e-mail ou salvas em PDF.
+      <p style={{ fontSize: 13.5, color: "#566175", margin: "0 0 16px", lineHeight: 1.5 }}>
+        O que foi conversado com cada empresa, as oportunidades para a Câmara e os próximos passos. Clique numa ata para ler; use <b>Editar</b> para mudar.
       </p>
 
-      <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 18 }}>
+      <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 16 }}>
         {[
-          ["Atas registradas", lista.length, "#0B2545"],
-          ["Em rascunho", rascunhos, "#B8752E"],
-          ["Próximos passos pendentes", pendentes.length, "#2F6FB0"],
-          ["Passos atrasados", atrasadas, atrasadas ? "#C1502E" : "#8992A6"],
-        ].map(([rot, val, cor]) => (
-          <div key={rot} style={{ ...card, flex: "1 1 180px", padding: "12px 16px" }}>
-            <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: "0.08em", textTransform: "uppercase", color: "#8992A6" }}>{rot}</div>
-            <div style={{ fontFamily: serif, fontSize: 26, fontWeight: 500, color: cor, marginTop: 4 }}>{atas === null ? "…" : val}</div>
+          ["atas", lista.length, "#0B2545", ClipboardList],
+          ["em rascunho", rascunhos, "#B8752E", Pencil],
+          ["passos pendentes", pendentes.length, "#2F6FB0", ListChecks],
+          ["passos atrasados", atrasadas, atrasadas ? "#C1502E" : "#8992A6", AlertTriangle],
+        ].map(([rot, val, cor, Icone]) => (
+          <div key={rot} style={{ ...card, flex: "1 1 170px", padding: "10px 14px", display: "flex", alignItems: "center", gap: 10 }}>
+            <span style={{ width: 32, height: 32, borderRadius: 9, background: `${cor}14`, color: cor, display: "flex", alignItems: "center", justifyContent: "center" }}><Icone size={16} /></span>
+            <span style={{ fontFamily: serif, fontSize: 22, fontWeight: 500, color: cor }}>{atas === null ? "…" : val}</span>
+            <span style={{ fontSize: 13, color: "#566175" }}>{rot}</span>
           </div>
         ))}
       </div>
 
       {pendentes.length > 0 && (
-        <div style={{ ...card, padding: "14px 16px", marginBottom: 18 }}>
+        <div style={{ ...card, padding: "14px 16px", marginBottom: 16 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
-            <CalendarClock size={15} color="#2F6FB0" />
-            <span style={{ fontFamily: serif, fontSize: 15, color: "#0B2545", fontWeight: 500 }}>Próximos passos em aberto</span>
+            <CalendarClock size={16} color="#2F6FB0" />
+            <span style={{ fontFamily: serif, fontSize: 15.5, color: "#0B2545", fontWeight: 500 }}>O que falta fazer</span>
+            <span style={{ fontSize: 12, color: "#8992A6" }}>próximos passos de todas as atas, por prazo</span>
           </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-            {pendentes.slice(0, 8).map(({ ata, a }) => {
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            {pendentes.slice(0, 6).map(({ ata, a }) => {
               const atrasada = acaoAtrasada(a, hoje);
               return (
-                <div key={a.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "5px 0", borderBottom: "1px solid #F1F3F7", fontSize: 13 }}>
-                  <button onClick={() => marcarAcao(ata.id, a.id)} title="Marcar como concluída" style={{ width: 18, height: 18, flexShrink: 0, borderRadius: 5, border: "1.5px solid #C7CCD6", background: "#FFFFFF", cursor: "pointer", padding: 0 }} />
-                  <span style={{ fontFamily: mono, fontSize: 11, color: atrasada ? "#C1502E" : "#8992A6", minWidth: 44, display: "flex", alignItems: "center", gap: 3 }}>
-                    {atrasada && <AlertTriangle size={11} />}
-                    {a.prazo ? dataCurta(a.prazo) : "s/ prazo"}
+                <div key={a.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 10px", borderRadius: 9, background: atrasada ? "#FDF4F1" : "#F7F8FA", flexWrap: "wrap" }}>
+                  <Caixa marcado={false} tamanho={20} onClick={() => marcarAcao(ata.id, a.id)} title="Marcar como concluído" />
+                  <span style={{ flex: "1 1 260px", minWidth: 0, fontSize: 13.5, color: "#1B2438" }}>{a.texto}</span>
+                  <span style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
+                    {a.quem && <Pilula icone={User} cor="#0B2545">{a.quem}</Pilula>}
+                    {a.prazo ? <Pilula icone={atrasada ? AlertTriangle : CalendarDays} cor={atrasada ? "#C1502E" : "#566175"}>{dataCurta(a.prazo)}</Pilula> : <Pilula cor="#B8752E">sem prazo</Pilula>}
+                    <button onClick={() => abrir(ata.id)} style={{ background: "transparent", border: "none", color: "#2F6FB0", fontSize: 12.5, cursor: "pointer", padding: 0, fontFamily: sans, display: "inline-flex", alignItems: "center", gap: 2 }}>
+                      {ata.empresa || ata.titulo || "Ata"} <ChevronRight size={13} />
+                    </button>
                   </span>
-                  <span style={{ flex: 1, minWidth: 0, color: "#1B2438" }}>{a.texto}</span>
-                  {a.quem && <span style={{ fontSize: 12, color: "#566175" }}>{a.quem}</span>}
-                  <button onClick={() => setAberta(ata.id)} style={{ background: "transparent", border: "none", color: "#2F6FB0", fontSize: 12, cursor: "pointer", padding: 0, whiteSpace: "nowrap", maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis" }}>
-                    {ata.empresa || ata.titulo || "Ata"}
-                  </button>
                 </div>
               );
             })}
-            {pendentes.length > 8 && <div style={{ fontSize: 12, color: "#8992A6", paddingTop: 4 }}>e mais {pendentes.length - 8} nas atas abaixo.</div>}
+            {pendentes.length > 6 && <div style={{ fontSize: 12.5, color: "#8992A6", paddingTop: 2 }}>e mais {pendentes.length - 6} nas atas abaixo.</div>}
           </div>
         </div>
       )}
 
       <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 12, alignItems: "center" }}>
         <div style={{ position: "relative", flex: "1 1 260px" }}>
-          <Search size={14} style={{ position: "absolute", left: 10, top: 10, color: "#8992A6" }} />
-          <input className="ccib-input" style={{ ...filterInputStyle, width: "100%", boxSizing: "border-box", paddingLeft: 30 }} placeholder="Buscar por empresa, assunto, participante..." value={busca} onChange={(e) => setBusca(e.target.value)} />
+          <Search size={14} style={{ position: "absolute", left: 11, top: 11, color: "#8992A6" }} />
+          <input className="ccib-input" style={{ ...filterInputStyle, width: "100%", boxSizing: "border-box", paddingLeft: 32, background: "#FFFFFF" }} placeholder="Buscar por empresa, assunto ou pessoa..." value={busca} onChange={(e) => setBusca(e.target.value)} />
         </div>
-        <select className="ccib-input" style={filterInputStyle} value={filtroResp} onChange={(e) => setFiltroResp(e.target.value)}>
-          <option value="todos">Todos os responsáveis</option>
-          <option value="bianca">Bianca</option>
-          <option value="gustavo">Gustavo</option>
-        </select>
-        <select className="ccib-input" style={filterInputStyle} value={filtroStatus} onChange={(e) => setFiltroStatus(e.target.value)}>
-          <option value="todos">Todas as situações</option>
-          {Object.entries(STATUS_ATA).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
-        </select>
+        <div style={{ display: "flex", gap: 6 }}>
+          {[["todos", "Todos"], ["bianca", "Bianca"], ["gustavo", "Gustavo"]].map(([id, label]) => (
+            <button key={id} onClick={() => setFiltroResp(id)} style={{ fontSize: 12.5, borderRadius: 99, padding: "6px 12px", cursor: "pointer", fontFamily: sans, border: `1px solid ${filtroResp === id ? "#0B2545" : "#D6DAE2"}`, background: filtroResp === id ? "#0B2545" : "#FFFFFF", color: filtroResp === id ? "#FFFFFF" : "#566175" }}>
+              {label}
+            </button>
+          ))}
+        </div>
+        <div style={{ display: "flex", gap: 6 }}>
+          {[["todos", "Todas"], ["rascunho", "Rascunhos"], ["finalizada", "Finalizadas"]].map(([id, label]) => (
+            <button key={id} onClick={() => setFiltroStatus(id)} style={{ fontSize: 12.5, borderRadius: 99, padding: "6px 12px", cursor: "pointer", fontFamily: sans, border: `1px solid ${filtroStatus === id ? "#0B2545" : "#D6DAE2"}`, background: filtroStatus === id ? "#0B2545" : "#FFFFFF", color: filtroStatus === id ? "#FFFFFF" : "#566175" }}>
+              {label}
+            </button>
+          ))}
+        </div>
       </div>
 
       <datalist id="ccib-atas-empresas">
@@ -552,7 +847,7 @@ export default function AtasTab({ members = [], meetings = [], abrirEmpresa, nov
       {atas === null ? (
         <div style={{ color: "#8992A6", fontSize: 13, padding: "30px 0", textAlign: "center" }}>Carregando atas...</div>
       ) : filtradas.length === 0 ? (
-        <div style={{ ...card, padding: "36px 24px", textAlign: "center", color: "#566175", fontSize: 13.5 }}>
+        <div style={{ ...card, padding: "36px 24px", textAlign: "center", color: "#566175", fontSize: 14 }}>
           <ClipboardList size={28} color="#B8752E" style={{ marginBottom: 8 }} />
           <div>{lista.length ? "Nenhuma ata encontrada com esses filtros." : "Nenhuma ata registrada ainda. Clique em \"Nova ata\" ou crie a partir de uma reunião."}</div>
         </div>
@@ -560,40 +855,46 @@ export default function AtasTab({ members = [], meetings = [], abrirEmpresa, nov
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {filtradas.map((ata) => {
             const st = STATUS_ATA[ata.status] || STATUS_ATA.rascunho;
-            const abertas = (ata.acoes || []).filter((a) => !a.feito && a.texto && a.texto.trim());
-            const atrasadasAta = abertas.filter((a) => acaoAtrasada(a, hoje)).length;
+            const acoes = acoesValidas(ata);
+            const feitos = acoes.filter((a) => a.feito).length;
             const isOpen = aberta === ata.id;
+            const resumo = linhas(ata.objetivo)[0] || linhas(ata.pontos)[0] || "";
+            const principal = ata.empresa || ata.titulo || "(ata sem título)";
+            const secundario = ata.empresa && ata.titulo && normalizar(ata.titulo) !== normalizar(ata.empresa) ? ata.titulo : "";
             return (
-              <div key={ata.id} className="ccib-card" style={{ ...card, borderLeft: `4px solid ${corResp(ata.responsavel)}`, overflow: "hidden", borderColor: isOpen ? "#0B2545" : "#E3E6EC", borderLeftColor: corResp(ata.responsavel) }}>
-                <div onClick={() => setAberta(isOpen ? null : ata.id)} style={{ display: "flex", gap: 14, alignItems: "center", padding: "12px 14px", cursor: "pointer", flexWrap: "wrap" }}>
-                  <div style={{ minWidth: 54, textAlign: "center", borderRight: "1px solid #EEF1F5", paddingRight: 12 }}>
-                    <div style={{ fontFamily: serif, fontSize: 20, color: "#0B2545", lineHeight: 1 }}>{ata.data ? ata.data.slice(8, 10) : "--"}</div>
-                    <div style={{ fontFamily: mono, fontSize: 10, color: "#8992A6", textTransform: "uppercase", marginTop: 3 }}>
-                      {ata.data ? ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"][Number(ata.data.slice(5, 7)) - 1] + "/" + ata.data.slice(2, 4) : ""}
+              <div key={ata.id} className="ccib-card" style={{ ...card, overflow: "hidden", borderColor: isOpen ? "#0B2545" : "#E3E6EC", boxShadow: isOpen ? "0 4px 18px rgba(11,37,69,0.08)" : "none" }}>
+                <div onClick={() => (isOpen ? abrir(null) : abrir(ata.id))} style={{ display: "flex", gap: 14, alignItems: "center", padding: "14px 16px", cursor: "pointer", flexWrap: "wrap" }}>
+                  <div style={{ width: 54, textAlign: "center", background: `${corResp(ata.responsavel)}12`, borderRadius: 10, padding: "6px 0", flexShrink: 0 }}>
+                    <div style={{ fontFamily: serif, fontSize: 21, color: "#0B2545", lineHeight: 1 }}>{ata.data ? ata.data.slice(8, 10) : "--"}</div>
+                    <div style={{ fontSize: 11, color: "#566175", marginTop: 3 }}>
+                      {ata.data ? `${MESES[Number(ata.data.slice(5, 7)) - 1]}/${ata.data.slice(2, 4)}` : ""}
                     </div>
                   </div>
-                  <div style={{ flex: "1 1 260px", minWidth: 0 }}>
-                    <div style={{ fontSize: 14, fontWeight: 600, color: "#1B2438", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                      {ata.titulo || ata.empresa || "(ata sem título)"}
+                  <div style={{ flex: "1 1 280px", minWidth: 0 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                      <span style={{ fontSize: 15, fontWeight: 600, color: "#0B2545" }}>{principal}</span>
+                      {ata.tipo && <Pilula cor="#6A5ACD">{ata.tipo}</Pilula>}
+                      <Pilula cor={st.color}>{st.label}</Pilula>
                     </div>
-                    <div style={{ fontSize: 12.5, color: "#566175", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                      {[ata.empresa && ata.titulo ? ata.empresa : "", ata.tipo, nomeResp(ata.responsavel)].filter(Boolean).join(" · ")}
-                    </div>
+                    {secundario && <div style={{ fontSize: 13, color: "#566175", marginTop: 2 }}>{secundario}</div>}
+                    {resumo && !isOpen && (
+                      <div style={{ fontSize: 13, color: "#8992A6", marginTop: 4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{resumo}</div>
+                    )}
                   </div>
-                  <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
-                    {abertas.length > 0 && <Chip cor={atrasadasAta ? "#C1502E" : "#2F6FB0"}>{abertas.length} {abertas.length === 1 ? "passo pendente" : "passos pendentes"}</Chip>}
-                    {ata.proximoContato && <Chip cor={ata.proximoContato < hoje ? "#C1502E" : "#566175"}>Próx. contato {dataCurta(ata.proximoContato)}</Chip>}
-                    <Chip cor={st.color}>{st.label}</Chip>
-                    <ChevronDown size={15} color="#8992A6" style={{ transition: "transform 0.15s", transform: isOpen ? "rotate(180deg)" : "none" }} />
+                  <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+                    <Progresso feitos={feitos} total={acoes.length} />
+                    <ChevronRight size={18} color="#8992A6" style={{ transition: "transform 0.15s", transform: isOpen ? "rotate(90deg)" : "none" }} />
                   </div>
                 </div>
                 {isOpen && (
-                  <EditorAta
+                  <AtaAberta
                     ata={ata}
                     hoje={hoje}
+                    editando={editando}
+                    setEditando={setEditando}
                     mudar={(patch) => mudar(ata.id, patch)}
                     excluir={() => excluir(ata.id)}
-                    fechar={() => setAberta(null)}
+                    fechar={() => abrir(null)}
                     abrirEmpresaPorNome={abrirEmpresaPorNome}
                   />
                 )}
