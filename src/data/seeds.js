@@ -28,6 +28,7 @@ export const SEED_CONTACTS = [
   { id: "seed-c-16", nome: "Ethirajan Magesh", empresa: "CDAC", cargo: "General Director", email: "dg@cdac.in", telefone: "91 9884184667", setor: "Governamental", tipo: "Instituição", pais: "Índia", createdAt: Date.now() },
   { id: "seed-c-17", nome: "Parminder Singh", empresa: "VVDN", cargo: "Business Development", email: "parminder.singh@vvdntech.in", telefone: "91 7042520185", setor: "Tecnologia", tipo: "Empresa", pais: "Índia", createdAt: Date.now() },
   { id: "seed-c-18", nome: "Digvijay Bishnoi", empresa: "Medicamen Biotech / Shivalik Rasayan", cargo: "Business Development Executive", email: "digvijay@medicamen.com", telefone: "91 8800839079", setor: "Saúde", tipo: "Empresa", observacoes: "Outro e-mail: digvijay@shivalikrasayan.com\nTelefone do escritório: +91 11 4758 9500\nEndereço: 1506, Chiranjiv Tower, 43, Nehru Place, New Delhi 110019\nSites: www.medicamen.com e www.shivalikrasayan.com\nFollow-up: Bianca", pais: "Índia", createdAt: Date.now() },
+  { id: "seed-c-19", nome: "Paulo Arthur M. Koerich", empresa: "FIESC", cargo: "Gerente Executivo de Relações Internacionais", email: "paulo.koerich@fiesc.com.br", telefone: "+55 (48) 98476-6923", setor: "Indústria", tipo: "Instituição", pais: "Brasil", createdAt: Date.now() },
 ];
 
 // Contatos removidos a pedido (planilha "Contatos premium Regional Sul", retirada pela Bianca em 27/10).
