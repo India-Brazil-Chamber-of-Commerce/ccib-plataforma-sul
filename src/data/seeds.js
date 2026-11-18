@@ -41,6 +41,9 @@ export const SEED_CONTACTS = [
   { id: "seed-c-29", nome: "Camilla Rocha B. Bonnevialle", empresa: "FIEP", cargo: "Gerência Executiva de Assuntos Internacionais", email: "camilla.bonnevialle@sistemafiep.org.br", telefone: "+55 (41) 3271-9109", setor: "Indústria", tipo: "Instituição", pais: "Brasil", estado: "PR", createdAt: Date.now() },
   { id: "seed-c-30", nome: "José Carlos de Godoi", empresa: "FIEP", cargo: "Vice-Presidente", email: "negociosinternacionais@sistemafiep.org.br", telefone: "+55 (41) 99682-7528", setor: "Indústria", tipo: "Instituição", pais: "Brasil", estado: "PR", observacoes: "Outro e-mail: godoi.pr@terra.com.br", createdAt: Date.now() },
   { id: "seed-c-31", nome: "Roberta Poletto Camargo", empresa: "FIEP", cargo: "Atração de Investimento Estrangeiro, Gerência de Relações Internacionais", email: "roberta.camargo@sistemafiep.org.br", telefone: "+55 (54) 99963-6790", setor: "Indústria", tipo: "Instituição", pais: "Brasil", estado: "PR", createdAt: Date.now() },
+  { id: "seed-c-32", nome: "Andressa de Figueiredo", empresa: "FIEP", cargo: "Conselhos Temáticos, Setoriais e Regionais", email: "andressa.figueiredo@sistemafiep.org.br", telefone: "+55 (41) 98750-7635", setor: "Indústria", tipo: "Instituição", pais: "Brasil", estado: "PR", createdAt: Date.now() },
+  { id: "seed-c-33", nome: "Carla Adriane Fontana Simão", empresa: "FIEP", cargo: "Pesquisadora", email: "carla.simao@sistemafiep.org.br", telefone: "+55 (41) 99235-6440", setor: "Indústria", tipo: "Instituição", pais: "Brasil", estado: "PR", createdAt: Date.now() },
+  { id: "seed-c-34", nome: "Ariane Hinça Schneider", empresa: "FIEP", cargo: "Gerente dos Conselhos Temáticos e Setoriais", email: "ariane.hinca@sistemafiep.org.br", telefone: "+55 (41) 98885-1694", setor: "Indústria", tipo: "Instituição", pais: "Brasil", estado: "PR", createdAt: Date.now() },
 ];
 
 // Contatos removidos a pedido (planilha "Contatos premium Regional Sul", retirada pela Bianca em 27/10).
