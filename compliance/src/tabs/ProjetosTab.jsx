@@ -1,8 +1,9 @@
 import React, { useState } from "react";
-import { Plus, Trash2, X, FolderKanban, CalendarDays, User, CheckSquare, ImagePlus } from "lucide-react";
+import { Plus, Trash2, X, FolderKanban, CalendarDays, User, CheckSquare, ImagePlus, Building2 } from "lucide-react";
 import { PRIORIDADES_PROJETO, STATUS_PROJETO } from "../constants";
 import { newId } from "../lib/format";
 import { reduzirImagem } from "../lib/imagem";
+import Documentos from "../components/Documentos";
 
 const STATUS = Object.keys(STATUS_PROJETO);
 const FILTROS = [
@@ -130,6 +131,7 @@ function ProjetoCartao({ projeto: p, onAbrir }) {
         {p.etapaAtual && <div className="projeto-etapa">{p.etapaAtual}</div>}
         {p.responsavel && <div className="evento-info"><User size={12} />{p.responsavel}</div>}
         {p.prazo && <div className="evento-info"><CalendarDays size={12} />Prazo {formatarData(p.prazo)}</div>}
+        {p.fornecedor && <div className="evento-info"><Building2 size={12} />{p.fornecedor}</div>}
         <Barra projeto={p} />
         </div>
       </div>
@@ -201,6 +203,7 @@ function ProjetoAberto({ projeto: p, onChange, onFechar, onRemover }) {
           {campo("etapaAtual", "Etapa atual", { placeholder: "Ex: Fase de captação" })}
           {campo("inicio", "Início", { type: "date" })}
           {campo("prazo", "Prazo", { type: "date" })}
+          {campo("fornecedor", "Parceiro / fornecedor", { full: true, placeholder: "Ex: editora, gráfica, consultoria" })}
           {campo("descricao", "Objetivo / descrição", { type: "textarea", full: true })}
           <div className="field full">
             <label>Imagem do projeto (capa, arte, logo)</label>
@@ -232,6 +235,8 @@ function ProjetoAberto({ projeto: p, onChange, onFechar, onRemover }) {
             <button className="btn primary" type="submit">Adicionar</button>
           </form>
         </div>
+
+        <Documentos documentos={p.documentos || []} onChange={(l) => set("documentos", l)} />
 
         <div className="form-grid" style={{ marginTop: 18 }}>
           {campo("notas", "Notas internas", { type: "textarea", full: true, placeholder: "Decisões, contatos, links de documentos..." })}
