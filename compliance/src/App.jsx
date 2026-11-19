@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { STORAGE } from "./constants";
-import { SEEDS, migrarEventos, aplicarConvites, aplicarAjustesCertificado } from "./data/seeds";
+import { SEEDS, migrarEventos, aplicarConvites, aplicarAjustesCertificado, aplicarAjustesProjetos } from "./data/seeds";
 import { storage } from "./lib/storage";
 import LOGO_URL from "./assets/logo-ccib.png";
 import VisaoGeralTab from "./tabs/VisaoGeralTab";
@@ -89,6 +89,15 @@ export default function App() {
         await storage.set(STORAGE.eventos, JSON.stringify(dados.eventos), true);
       } catch (e) {
         console.error("Falha ao gravar convites dos eventos", e);
+      }
+    }
+    const projetos = aplicarAjustesProjetos(dados.projetos);
+    if (projetos.mudou) {
+      dados.projetos = projetos.lista;
+      try {
+        await storage.set(STORAGE.projetos, JSON.stringify(dados.projetos), true);
+      } catch (e) {
+        console.error("Falha ao gravar projetos", e);
       }
     }
     setDb(dados);
