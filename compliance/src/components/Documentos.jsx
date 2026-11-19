@@ -84,8 +84,8 @@ export default function Documentos({ documentos = [], onChange }) {
   };
 
   return (
-    <div className="projeto-tarefas" style={{ marginTop: 18 }}>
-      <div className="section-title" style={{ display: "flex", alignItems: "center", gap: 6 }}><Paperclip size={13} /> Documentos anexados</div>
+    <div className="pj-bloco pj-docs">
+      <div className="pj-bloco-titulo"><Paperclip size={15} /> Documentos</div>
       <ul className="tasklist">
         {documentos.length === 0 && <li><div className="txt"><span>Nenhum documento anexado.</span></div></li>}
         {documentos.map((d) => (

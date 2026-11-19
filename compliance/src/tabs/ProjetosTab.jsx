@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Plus, Trash2, X, FolderKanban, CalendarDays, User, CheckSquare, ImagePlus, Building2 } from "lucide-react";
+import { Plus, Trash2, X, FolderKanban, CalendarDays, User, CheckSquare, ImagePlus, Building2, Flag, Pencil, Check, StickyNote } from "lucide-react";
 import { PRIORIDADES_PROJETO, STATUS_PROJETO } from "../constants";
 import { newId } from "../lib/format";
 import { reduzirImagem } from "../lib/imagem";
@@ -139,10 +139,40 @@ function ProjetoCartao({ projeto: p, onAbrir }) {
   );
 }
 
+function Anel({ pct, cor }) {
+  const r = 34, c = 2 * Math.PI * r;
+  return (
+    <svg className="pj-anel" viewBox="0 0 84 84" aria-label={`${pct}% concluído`}>
+      <circle cx="42" cy="42" r={r} fill="none" stroke="#EEECE3" strokeWidth="8" />
+      <circle cx="42" cy="42" r={r} fill="none" stroke={cor} strokeWidth="8" strokeLinecap="round"
+        strokeDasharray={c} strokeDashoffset={c * (1 - pct / 100)} transform="rotate(-90 42 42)" />
+      <text x="42" y="47" textAnchor="middle">{pct}%</text>
+    </svg>
+  );
+}
+
 function ProjetoAberto({ projeto: p, onChange, onFechar, onRemover }) {
   const [novaTarefa, setNovaTarefa] = useState("");
+  const [editando, setEditando] = useState(!p.nome);
+  const [erroImagem, setErroImagem] = useState("");
   const set = (campo, valor) => onChange({ ...p, [campo]: valor });
   const tarefas = p.tarefas || [];
+  const cor = STATUS_PROJETO[p.status] || "#8A93A3";
+  const pr = progresso(p);
+  const pct = pr ? Math.round((pr.feitas / pr.total) * 100) : 0;
+  const atual = tarefas.findIndex((x) => !x.feito);
+
+  const enviarImagem = async (ev) => {
+    const file = ev.target.files && ev.target.files[0];
+    ev.target.value = "";
+    if (!file) return;
+    try {
+      setErroImagem("");
+      set("imagem", await reduzirImagem(file, 700));
+    } catch (err) {
+      setErroImagem(err.message);
+    }
+  };
 
   const campo = (nome, label, props = {}) => (
     <div className={`field${props.full ? " full" : ""}`}>
@@ -159,19 +189,6 @@ function ProjetoAberto({ projeto: p, onChange, onFechar, onRemover }) {
     </div>
   );
 
-  const [erroImagem, setErroImagem] = useState("");
-  const enviarImagem = async (ev) => {
-    const file = ev.target.files && ev.target.files[0];
-    ev.target.value = "";
-    if (!file) return;
-    try {
-      setErroImagem("");
-      set("imagem", await reduzirImagem(file, 700));
-    } catch (err) {
-      setErroImagem(err.message);
-    }
-  };
-
   const addTarefa = (e) => {
     e.preventDefault();
     if (!novaTarefa.trim()) return;
@@ -179,67 +196,116 @@ function ProjetoAberto({ projeto: p, onChange, onFechar, onRemover }) {
     setNovaTarefa("");
   };
 
+  const dados = [
+    { icone: Flag, rotulo: "Etapa atual", valor: p.etapaAtual },
+    { icone: CalendarDays, rotulo: "Prazo", valor: formatarData(p.prazo) },
+    { icone: Building2, rotulo: "Parceiro / fornecedor", valor: p.fornecedor },
+    { icone: User, rotulo: "Responsável", valor: p.responsavel },
+  ];
+
   return (
-    <div className="card evento-aberto ccib-fade-in" style={{ borderTop: `4px solid ${STATUS_PROJETO[p.status] || "#8A93A3"}` }}>
-      <div className="projeto-topo">
-        {p.imagem && <img className="projeto-imagem grande" src={p.imagem} alt={p.nome} />}
-        <div style={{ minWidth: 0, flex: 1 }}>
-          <StatusLinha projeto={p} />
-          <div className="evento-nome grande">{p.nome || "(sem nome)"}</div>
-          <Barra projeto={p} />
+    <div className="card evento-aberto pj ccib-fade-in">
+      {/* Cabeçalho visual */}
+      <div className="pj-hero" style={{ "--pj-cor": cor }}>
+        <div className="pj-hero-capa">
+          {p.imagem ? <img src={p.imagem} alt={p.nome} /> : <div className="pj-hero-sem"><FolderKanban size={40} /></div>}
         </div>
-        <div className="evento-aberto-acoes">
-          <button className="icon-btn" title="Remover projeto" onClick={onRemover}><Trash2 size={15} /></button>
-          <button className="btn ghost" onClick={onFechar} style={{ display: "flex", alignItems: "center", gap: 6 }}><X size={14} /> Fechar</button>
+        <div className="pj-hero-texto">
+          <div className="pj-hero-tags">
+            <span className="pj-tag" style={{ background: cor }}>{p.status}</span>
+            {p.prioridade && <span className="pj-tag claro" style={{ color: COR_PRIORIDADE[p.prioridade], borderColor: COR_PRIORIDADE[p.prioridade] }}>Prioridade {p.prioridade.toLowerCase()}</span>}
+          </div>
+          <h2 className="pj-hero-titulo">{p.nome || "(sem nome)"}</h2>
+          {p.descricao && <p className="pj-hero-desc">{p.descricao}</p>}
+          <div className="pj-dados">
+            {dados.map((d) => (
+              <div key={d.rotulo} className="pj-dado">
+                <d.icone size={15} />
+                <div><span>{d.rotulo}</span><strong>{d.valor || "A definir"}</strong></div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="pj-hero-lado">
+          <div className="pj-hero-acoes">
+            <button className="btn ghost" onClick={() => setEditando(!editando)} style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+              <Pencil size={13} /> {editando ? "Concluir edição" : "Editar"}
+            </button>
+            <button className="icon-btn" title="Remover projeto" onClick={onRemover}><Trash2 size={15} /></button>
+            <button className="btn ghost" onClick={onFechar} style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><X size={14} /> Fechar</button>
+          </div>
+          {pr && (
+            <div className="pj-progresso">
+              <Anel pct={pct} cor={cor} />
+              <span>{pr.feitas} de {pr.total} etapas</span>
+            </div>
+          )}
         </div>
       </div>
 
-      <div className="projeto-corpo">
-        <div className="form-grid">
-          {campo("nome", "Nome do projeto", { full: true, placeholder: "Ex: Revisão da Política de Brindes" })}
-          {campo("status", "Status", { type: "select", options: STATUS })}
-          {campo("prioridade", "Prioridade", { type: "select", options: PRIORIDADES_PROJETO })}
-          {campo("responsavel", "Responsável", { placeholder: "Quem lidera" })}
-          {campo("etapaAtual", "Etapa atual", { placeholder: "Ex: Fase de captação" })}
-          {campo("inicio", "Início", { type: "date" })}
-          {campo("prazo", "Prazo", { type: "date" })}
-          {campo("fornecedor", "Parceiro / fornecedor", { full: true, placeholder: "Ex: editora, gráfica, consultoria" })}
-          {campo("descricao", "Objetivo / descrição", { type: "textarea", full: true })}
-          <div className="field full">
-            <label>Imagem do projeto (capa, arte, logo)</label>
-            <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
-              <label className="btn ghost" style={{ display: "inline-flex", alignItems: "center", gap: 6, cursor: "pointer" }}>
-                <ImagePlus size={14} /> {p.imagem ? "Trocar imagem" : "Enviar imagem"}
-                <input type="file" accept="image/*" onChange={enviarImagem} style={{ display: "none" }} />
-              </label>
-              {p.imagem && <button className="btn ghost" onClick={() => set("imagem", "")}>Remover imagem</button>}
-              {erroImagem && <span style={{ color: "var(--red)", fontSize: 12.5 }}>{erroImagem}</span>}
+      {/* Edição (recolhida por padrão) */}
+      {editando && (
+        <div className="pj-edicao ccib-fade-in">
+          <div className="form-grid">
+            {campo("nome", "Nome do projeto", { full: true, placeholder: "Ex: Revisão da Política de Brindes" })}
+            {campo("status", "Status", { type: "select", options: STATUS })}
+            {campo("prioridade", "Prioridade", { type: "select", options: PRIORIDADES_PROJETO })}
+            {campo("responsavel", "Responsável", { placeholder: "Quem lidera" })}
+            {campo("etapaAtual", "Etapa atual", { placeholder: "Ex: Captação de recursos" })}
+            {campo("inicio", "Início", { type: "date" })}
+            {campo("prazo", "Prazo", { type: "date" })}
+            {campo("fornecedor", "Parceiro / fornecedor", { full: true, placeholder: "Ex: editora, gráfica, consultoria" })}
+            {campo("descricao", "Objetivo / descrição", { type: "textarea", full: true })}
+            <div className="field full">
+              <label>Imagem do projeto (capa, arte, logo)</label>
+              <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+                <label className="btn ghost" style={{ display: "inline-flex", alignItems: "center", gap: 6, cursor: "pointer" }}>
+                  <ImagePlus size={14} /> {p.imagem ? "Trocar imagem" : "Enviar imagem"}
+                  <input type="file" accept="image/*" onChange={enviarImagem} style={{ display: "none" }} />
+                </label>
+                {p.imagem && <button className="btn ghost" onClick={() => set("imagem", "")}>Remover imagem</button>}
+                {erroImagem && <span style={{ color: "var(--red)", fontSize: 12.5 }}>{erroImagem}</span>}
+              </div>
             </div>
           </div>
         </div>
+      )}
 
-        <div className="projeto-tarefas">
-          <div className="section-title" style={{ display: "flex", alignItems: "center", gap: 6 }}><CheckSquare size={13} /> Próximos passos</div>
-          <ul className="tasklist">
-            {tarefas.length === 0 && <li><div className="txt"><span>Nenhum passo cadastrado.</span></div></li>}
-            {tarefas.map((t) => (
-              <li key={t.id}>
-                <input type="checkbox" className="check" checked={!!t.feito} onChange={() => set("tarefas", tarefas.map((x) => (x.id === t.id ? { ...x, feito: !x.feito } : x)))} />
-                <div className="txt grow"><strong style={t.feito ? { textDecoration: "line-through", color: "var(--ink-400)", fontWeight: 500 } : { fontWeight: 500 }}>{t.texto}</strong></div>
-                <button className="icon-btn" title="Remover" onClick={() => set("tarefas", tarefas.filter((x) => x.id !== t.id))}><Trash2 size={13} /></button>
-              </li>
-            ))}
-          </ul>
-          <form className="add-inline" onSubmit={addTarefa}>
-            <input placeholder="Novo passo..." value={novaTarefa} onChange={(e) => setNovaTarefa(e.target.value)} />
-            <button className="btn primary" type="submit">Adicionar</button>
+      <div className="pj-corpo">
+        {/* Linha do tempo das etapas */}
+        <div className="pj-bloco">
+          <div className="pj-bloco-titulo"><CheckSquare size={15} /> Etapas do projeto</div>
+          {tarefas.length === 0 && <p className="pj-vazio">Nenhuma etapa cadastrada ainda.</p>}
+          <ol className="pj-linha">
+            {tarefas.map((t, i) => {
+              const estado = t.feito ? "feito" : i === atual ? "atual" : "pendente";
+              return (
+                <li key={t.id} className={`pj-etapa ${estado}`} style={{ "--pj-cor": cor }}>
+                  <button className="pj-marcador" title={t.feito ? "Marcar como pendente" : "Marcar como concluída"}
+                    onClick={() => set("tarefas", tarefas.map((x) => (x.id === t.id ? { ...x, feito: !x.feito } : x)))}>
+                    {t.feito ? <Check size={14} /> : i + 1}
+                  </button>
+                  <div className="pj-etapa-texto">
+                    <span>{t.texto}</span>
+                    {estado === "atual" && <em>Em andamento</em>}
+                  </div>
+                  <button className="icon-btn pj-etapa-remover" title="Remover etapa" onClick={() => set("tarefas", tarefas.filter((x) => x.id !== t.id))}><Trash2 size={13} /></button>
+                </li>
+              );
+            })}
+          </ol>
+          <form className="pj-nova" onSubmit={addTarefa}>
+            <input placeholder="Adicionar etapa..." value={novaTarefa} onChange={(e) => setNovaTarefa(e.target.value)} />
+            <button className="btn primary" type="submit"><Plus size={14} /></button>
           </form>
         </div>
 
-        <Documentos documentos={p.documentos || []} onChange={(l) => set("documentos", l)} />
-
-        <div className="form-grid" style={{ marginTop: 18 }}>
-          {campo("notas", "Notas internas", { type: "textarea", full: true, placeholder: "Decisões, contatos, links de documentos..." })}
+        <div className="pj-coluna">
+          <Documentos documentos={p.documentos || []} onChange={(l) => set("documentos", l)} />
+          <div className="pj-bloco pj-notas">
+            <div className="pj-bloco-titulo"><StickyNote size={15} /> Notas internas</div>
+            <textarea value={p.notas || ""} placeholder="Decisões, contatos, combinados..." onChange={(e) => set("notas", e.target.value)} />
+          </div>
         </div>
       </div>
     </div>
