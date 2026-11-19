@@ -228,6 +228,46 @@ export function aplicarAjustesCertificado(eventos) {
   return { lista, mudou };
 }
 
+// Ajustes em projetos pedidos à equipe técnica: aplicados uma única vez (campo ajustes do projeto).
+// Se o projeto não existir mais, ele é recriado com os dados do ajuste.
+const ETAPAS_CODIGO_ETICA = [
+  ["Organizar ideias para o Código de Ética", true],
+  ["Escrever o Código de Ética", true],
+  ["Revisar o Código de Ética", true],
+  ["Fazer orçamentos para publicação com diferentes editoras", true],
+  ["Escolher uma editora para a publicação", true],
+  ["Elaboração de recursos para financiar a publicação e eventos de lançamento", true],
+  ["Captação de recursos", false],
+  ["Publicação do Código de Ética", false],
+];
+
+export const AJUSTES_PROJETOS = [
+  {
+    id: "2026-11-19-publicacao-codigo-etica",
+    projetoId: "pj-seed-codigo-etica-india",
+    campos: {
+      nome: "Publicação do Código de Ética com características indianas",
+      status: "Em andamento",
+      etapaAtual: "Captação de recursos",
+      tarefas: ETAPAS_CODIGO_ETICA.map(([texto, feito], i) => ({ id: `tf-codigo-etica-${i + 1}`, texto, feito })),
+    },
+  },
+];
+
+export function aplicarAjustesProjetos(projetos = []) {
+  let mudou = false;
+  let lista = projetos;
+  AJUSTES_PROJETOS.forEach((ajuste) => {
+    const atual = lista.find((p) => p.id === ajuste.projetoId);
+    if (atual && (atual.ajustes || []).includes(ajuste.id)) return;
+    mudou = true;
+    const base = atual || { id: ajuste.projetoId, descricao: "", prioridade: "Média", responsavel: "", inicio: "", prazo: "", notas: "" };
+    const novo = { ...base, ...ajuste.campos, ajustes: [...((atual && atual.ajustes) || []), ajuste.id] };
+    lista = atual ? lista.map((p) => (p.id === ajuste.projetoId ? novo : p)) : [novo, ...lista];
+  });
+  return { lista, mudou };
+}
+
 // "18/11/2026" ou "2026-11-18" vira "2026-11-18"; qualquer outro texto ("Novembro/2026") não é data exata
 function paraIso(texto) {
   const s = String(texto || "").trim();
