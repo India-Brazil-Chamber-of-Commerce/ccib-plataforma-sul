@@ -502,6 +502,15 @@ ul.tasklist li:hover .icon-btn{ opacity:1; }
 .projeto-tarefas{ border:1px solid var(--line); border-radius:var(--radius); margin-top:6px; }
 .projeto-tarefas .section-title{ padding:16px 20px 4px; margin:0; }
 
+/* Imagem dos projetos (capa em pé, ex.: livro) */
+.evento-card-corpo.com-imagem{ display:flex; gap:14px; align-items:flex-start; }
+.projeto-card-texto{ flex:1; min-width:0; }
+.projeto-card-texto .evento-status{ flex-wrap:wrap; row-gap:2px; }
+.projeto-card-texto .evento-status-txt, .projeto-card-texto .evento-tipo{ white-space:nowrap; }
+.projeto-imagem{ width:92px; aspect-ratio:2/3; object-fit:cover; border-radius:6px; box-shadow:0 4px 12px rgba(11,30,61,0.18); flex-shrink:0; background:#fff; }
+.projeto-imagem.grande{ width:150px; }
+@media (max-width:600px){ .projeto-imagem.grande{ width:100px; } }
+
 /* Duas colunas iguais */
 .two-col.even{ grid-template-columns:1fr 1fr; }
 .add-inline{ flex-wrap:wrap; }
