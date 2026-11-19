@@ -257,6 +257,13 @@ export const AJUSTES_PROJETOS = [
     projetoId: "pj-seed-codigo-etica-india",
     campos: { imagem: "/projetos/codigo-de-etica-capa.png" },
   },
+  {
+    // Editora escolhida; o prazo é a entrega dos exemplares prevista no contrato de edição.
+    // O contrato em si é anexado pela plataforma (fica no banco), nunca no código.
+    id: "2026-11-19-editora-literissima",
+    projetoId: "pj-seed-codigo-etica-india",
+    campos: { fornecedor: "Literíssima Editora", prazo: "2026-11-30" },
+  },
 ];
 
 export function aplicarAjustesProjetos(projetos = []) {
