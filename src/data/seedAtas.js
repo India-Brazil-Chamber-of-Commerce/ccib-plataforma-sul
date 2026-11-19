@@ -159,3 +159,10 @@ export const SEED_ATAS = [
     atualizadaEm: 1795093200000,
   },
 ];
+
+// Pontos acrescentados depois a atas já registradas (entram uma vez, sem repetir linhas que já existem)
+export const ACRESCENTAR_ATAS = [
+  { chave: "nanofeed-20261119-pontos-2", reuniaoId: "teams-auto-20261119-ccib-sul-nanofeed", campo: "pontos", linhas: ["Lucas é o CEO da Nanofeed Brasil e LATAM.", "A Nanofeed tem uma boa estrutura na Índia (IFFCO).", "O papel dele no Brasil é gerar autoridade: eles querem o carimbo da CCIB, a chancela, e a autoridade de estar na CCIB.", "Também quer a apresentação ao mercado, para a Nanofeed ser conhecida.", "Nanofert (nanofertilizantes): o foco é fazer marca (Ritesh).", "Nanofeed: B2B, atender grandes corporações, ir direto na veia.", "Quer aproximação com grandes empresas, por exemplo BRF e Cargill."] },
+  { chave: "nanofeed-20261119-oportunidades-2", reuniaoId: "teams-auto-20261119-ccib-sul-nanofeed", campo: "oportunidades", linhas: ["Associação da Nanofeed à CCIB (interesse no plano Standard).", "Apresentação da Nanofeed ao mercado e a grandes corporações, como BRF e Cargill."] },
+  { chave: "nanofeed-20261119-decisoes-2", reuniaoId: "teams-auto-20261119-ccib-sul-nanofeed", campo: "decisoes", linhas: ["Lucas tem interesse na associação Standard e vai ver o preço."] },
+];

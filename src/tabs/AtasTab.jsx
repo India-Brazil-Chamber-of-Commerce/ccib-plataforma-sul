@@ -4,7 +4,7 @@ import {
   Pencil, X, Target, MessageSquare, Lightbulb, Handshake, ListChecks, Lock, CalendarDays, Clock, MapPin, User, Users, RotateCcw,
 } from "lucide-react";
 import { RESPONSAVEIS, STORAGE_ATAS, STORAGE_ATAS_SEMENTES } from "../constants";
-import { SEED_ATAS } from "../data/seedAtas";
+import { SEED_ATAS, ACRESCENTAR_ATAS } from "../data/seedAtas";
 import { filterInputStyle } from "../styles";
 import { SectionTitle } from "../components/ui";
 import { useListaCompartilhada } from "../lib/useListaCompartilhada";
@@ -538,7 +538,24 @@ export default function AtasTab({ members = [], meetings = [], abrirEmpresa, nov
       return true;
     });
     const marcar = SEED_ATAS.filter((a) => !vistas.has(a.id)).map((a) => a.id);
-    if (novas.length) setAtas([...novas, ...atas]);
+    // Linhas acrescentadas depois a uma ata já salva: entram uma vez, só as que ainda não estão lá
+    let lista = novas.length ? [...novas, ...atas] : atas;
+    let mudou = novas.length > 0;
+    ACRESCENTAR_ATAS.forEach(({ chave, reuniaoId, campo, linhas: novasLinhas }) => {
+      const marca = `linhas:${chave}`;
+      if (vistas.has(marca)) return;
+      marcar.push(marca);
+      lista = lista.map((a) => {
+        if (a.reuniaoId !== reuniaoId) return a;
+        const atual = a[campo] || "";
+        const existentes = new Set(linhas(atual).map(normalizar));
+        const faltam = novasLinhas.filter((l) => !existentes.has(normalizar(l)));
+        if (!faltam.length) return a;
+        mudou = true;
+        return { ...a, [campo]: [atual.trim(), ...faltam].filter(Boolean).join("\n"), atualizadaEm: Date.now() };
+      });
+    });
+    if (mudou) setAtas(lista);
     if (marcar.length) setSementesAplicadas([...sementesAplicadas, ...marcar]);
   }, [atas, sementesAplicadas]);
 
