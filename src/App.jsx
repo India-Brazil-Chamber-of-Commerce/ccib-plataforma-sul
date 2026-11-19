@@ -349,7 +349,7 @@ export default function App() {
         const regras = CORRIGIR_CONTATOS[c.id];
         if (!regras) continue;
         const patch = {};
-        for (const [campo, { de, para }] of Object.entries(regras)) if ((c[campo] || "") === de) patch[campo] = para;
+        for (const [campo, { de, para }] of Object.entries(regras)) if ([].concat(de).includes(c[campo] || "") && (c[campo] || "") !== para) patch[campo] = para;
         if (Object.keys(patch).length) { mergedContacts[i] = { ...c, ...patch }; contatoCorrigido = true; }
       }
       setContacts(mergedContacts);
