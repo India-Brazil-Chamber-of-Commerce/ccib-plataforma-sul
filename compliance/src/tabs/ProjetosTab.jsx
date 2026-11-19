@@ -1,7 +1,8 @@
 import React, { useState } from "react";
-import { Plus, Trash2, X, FolderKanban, CalendarDays, User, Flag, CheckSquare } from "lucide-react";
+import { Plus, Trash2, X, FolderKanban, CalendarDays, User, CheckSquare, ImagePlus } from "lucide-react";
 import { PRIORIDADES_PROJETO, STATUS_PROJETO } from "../constants";
 import { newId } from "../lib/format";
+import { reduzirImagem } from "../lib/imagem";
 
 const STATUS = Object.keys(STATUS_PROJETO);
 const FILTROS = [
@@ -121,13 +122,16 @@ function Barra({ projeto }) {
 function ProjetoCartao({ projeto: p, onAbrir }) {
   return (
     <button className="card evento-card projeto-card" onClick={onAbrir} style={{ borderTop: `4px solid ${STATUS_PROJETO[p.status] || "#8A93A3"}` }}>
-      <div className="evento-card-corpo">
+      <div className={`evento-card-corpo${p.imagem ? " com-imagem" : ""}`}>
+        {p.imagem && <img className="projeto-imagem" src={p.imagem} alt={p.nome} />}
+        <div className="projeto-card-texto">
         <StatusLinha projeto={p} />
         <div className="evento-nome">{p.nome || "(sem nome)"}</div>
         {p.etapaAtual && <div className="projeto-etapa">{p.etapaAtual}</div>}
         {p.responsavel && <div className="evento-info"><User size={12} />{p.responsavel}</div>}
         {p.prazo && <div className="evento-info"><CalendarDays size={12} />Prazo {formatarData(p.prazo)}</div>}
         <Barra projeto={p} />
+        </div>
       </div>
     </button>
   );
@@ -153,6 +157,19 @@ function ProjetoAberto({ projeto: p, onChange, onFechar, onRemover }) {
     </div>
   );
 
+  const [erroImagem, setErroImagem] = useState("");
+  const enviarImagem = async (ev) => {
+    const file = ev.target.files && ev.target.files[0];
+    ev.target.value = "";
+    if (!file) return;
+    try {
+      setErroImagem("");
+      set("imagem", await reduzirImagem(file, 700));
+    } catch (err) {
+      setErroImagem(err.message);
+    }
+  };
+
   const addTarefa = (e) => {
     e.preventDefault();
     if (!novaTarefa.trim()) return;
@@ -163,7 +180,8 @@ function ProjetoAberto({ projeto: p, onChange, onFechar, onRemover }) {
   return (
     <div className="card evento-aberto ccib-fade-in" style={{ borderTop: `4px solid ${STATUS_PROJETO[p.status] || "#8A93A3"}` }}>
       <div className="projeto-topo">
-        <div style={{ minWidth: 0 }}>
+        {p.imagem && <img className="projeto-imagem grande" src={p.imagem} alt={p.nome} />}
+        <div style={{ minWidth: 0, flex: 1 }}>
           <StatusLinha projeto={p} />
           <div className="evento-nome grande">{p.nome || "(sem nome)"}</div>
           <Barra projeto={p} />
@@ -184,6 +202,17 @@ function ProjetoAberto({ projeto: p, onChange, onFechar, onRemover }) {
           {campo("inicio", "Início", { type: "date" })}
           {campo("prazo", "Prazo", { type: "date" })}
           {campo("descricao", "Objetivo / descrição", { type: "textarea", full: true })}
+          <div className="field full">
+            <label>Imagem do projeto (capa, arte, logo)</label>
+            <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+              <label className="btn ghost" style={{ display: "inline-flex", alignItems: "center", gap: 6, cursor: "pointer" }}>
+                <ImagePlus size={14} /> {p.imagem ? "Trocar imagem" : "Enviar imagem"}
+                <input type="file" accept="image/*" onChange={enviarImagem} style={{ display: "none" }} />
+              </label>
+              {p.imagem && <button className="btn ghost" onClick={() => set("imagem", "")}>Remover imagem</button>}
+              {erroImagem && <span style={{ color: "var(--red)", fontSize: 12.5 }}>{erroImagem}</span>}
+            </div>
+          </div>
         </div>
 
         <div className="projeto-tarefas">

@@ -252,6 +252,11 @@ export const AJUSTES_PROJETOS = [
       tarefas: ETAPAS_CODIGO_ETICA.map(([texto, feito], i) => ({ id: `tf-codigo-etica-${i + 1}`, texto, feito })),
     },
   },
+  {
+    id: "2026-11-19-capa-codigo-etica",
+    projetoId: "pj-seed-codigo-etica-india",
+    campos: { imagem: "/projetos/codigo-de-etica-capa.png" },
+  },
 ];
 
 export function aplicarAjustesProjetos(projetos = []) {
