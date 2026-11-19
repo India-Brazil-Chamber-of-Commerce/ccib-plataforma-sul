@@ -127,6 +127,21 @@ export const SEEDS = {
   eventosFuturos: SEED_EVENTOS_FUTUROS,
   eventosPassados: SEED_EVENTOS_PASSADOS,
   duvidas: [],
+  projetos: [
+    {
+      id: "pj-seed-codigo-etica-india",
+      nome: "Código de Ética com características indianas",
+      descricao: "",
+      status: "Em planejamento",
+      prioridade: "Média",
+      responsavel: "",
+      inicio: "",
+      prazo: "",
+      etapaAtual: "Fase de captação",
+      tarefas: [],
+      notas: "",
+    },
+  ],
 };
 
 // Convites colocados pela equipe técnica: aplicados uma única vez por evento (campo conviteAplicado),
