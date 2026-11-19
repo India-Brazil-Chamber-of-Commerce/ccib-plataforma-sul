@@ -15,6 +15,7 @@ export const STORAGE = {
   eventosFuturos: "ccib-compliance-eventos-futuros",
   eventosPassados: "ccib-compliance-eventos-passados",
   duvidas: "ccib-compliance-duvidas",
+  projetos: "ccib-compliance-projetos",
 };
 
 // Chave pública do Web3Forms: os formulários enviam um e-mail para a caixa cadastrada nessa conta.
@@ -37,6 +38,15 @@ export const DIRECOES_BRINDE = ["Recebido", "Oferecido"];
 export const SIM_NAO = ["Não", "Sim"];
 export const TIPOS_EVENTO = ["Jornada/Semana de compliance", "Webinar", "Treinamento", "Evento institucional", "Outro"];
 export const STATUS_EVENTO = ["Previsto", "Confirmado", "Realizado", "Cancelado"];
+// Projetos: status (com a cor do cartão) e prioridade
+export const STATUS_PROJETO = {
+  "Ideia": "#8A93A3",
+  "Em planejamento": "#B8862E",
+  "Em andamento": "#10309A",
+  "Pausado": "#B23A34",
+  "Concluído": "#2F7A4F",
+};
+export const PRIORIDADES_PROJETO = ["Alta", "Média", "Baixa"];
 export const STATUS_DUVIDA = ["Aberta", "Respondida"];
 export const FORMATOS_EVENTO = ["Presencial", "Online", "Híbrido"];
 export const PARTICIPACOES_EMPRESA = ["Palestrante", "Patrocinador", "Apoiador", "Expositor", "Participante"];

@@ -12,6 +12,7 @@ import BrindesTab from "./tabs/BrindesTab";
 import AgentesPublicosTab from "./tabs/AgentesPublicosTab";
 import PactoGlobalTab from "./tabs/PactoGlobalTab";
 import EventosTab from "./tabs/EventosTab";
+import ProjetosTab from "./tabs/ProjetosTab";
 import DuvidasTab from "./tabs/DuvidasTab";
 import DenunciasTab from "./tabs/DenunciasTab";
 import "./styles.css";
@@ -28,6 +29,7 @@ const MENU = [
       { id: "agentes", label: "Agentes Públicos", Tab: AgentesPublicosTab },
       { id: "pacto", label: "Pacto Global da ONU", Tab: PactoGlobalTab },
       { id: "eventos", label: "Eventos", Tab: EventosTab },
+      { id: "projetos", label: "Projetos", Tab: ProjetosTab },
     ],
   },
   {

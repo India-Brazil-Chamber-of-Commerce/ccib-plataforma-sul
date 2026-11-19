@@ -485,6 +485,23 @@ ul.tasklist li:hover .icon-btn{ opacity:1; }
 .banner.navy svg{ color:var(--gold-300); }
 @media (max-width:900px){ .cert-grid{ grid-template-columns:1fr; } }
 
+/* Projetos */
+.projetos-resumo{ display:flex; flex-wrap:wrap; gap:10px; margin-bottom:18px; }
+.projetos-resumo-item{ display:flex; align-items:center; gap:7px; background:#fff; border:1px solid var(--line); border-radius:20px; padding:6px 14px; font-size:13px; color:var(--ink-600); }
+.projetos-resumo-item strong{ color:var(--navy-900); font-size:14px; }
+.projetos-resumo-item .dot{ width:8px; height:8px; border-radius:50%; }
+.projeto-card{ min-height:150px; }
+.projeto-etapa{ font-size:12.5px; color:var(--ink-600); background:var(--cream-50); border:1px solid var(--line); border-radius:6px; padding:3px 8px; display:inline-block; margin:2px 0 6px; }
+.projeto-barra{ margin-top:12px; display:flex; flex-direction:column; gap:5px; }
+.projeto-barra span{ font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--ink-400); }
+.projeto-barra-trilho{ height:6px; background:#EEECE3; border-radius:4px; overflow:hidden; }
+.projeto-barra-trilho div{ height:100%; border-radius:4px; transition:width 0.2s ease; }
+.projeto-topo{ display:flex; justify-content:space-between; align-items:flex-start; gap:16px; padding:20px; border-bottom:1px solid var(--line); }
+.projeto-topo .projeto-barra{ max-width:360px; }
+.projeto-corpo{ padding:20px; }
+.projeto-tarefas{ border:1px solid var(--line); border-radius:var(--radius); margin-top:6px; }
+.projeto-tarefas .section-title{ padding:16px 20px 4px; margin:0; }
+
 /* Duas colunas iguais */
 .two-col.even{ grid-template-columns:1fr 1fr; }
 .add-inline{ flex-wrap:wrap; }
