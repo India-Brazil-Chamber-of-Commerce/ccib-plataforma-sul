@@ -8,6 +8,7 @@ import imgHappyHourIrip from "../assets/eventos/happy-hour-irip.jpg";
 import imgSaoJoseDasNacoes from "../assets/eventos/sao-jose-das-nacoes.webp";
 import imgCafeDasNacoes from "../assets/eventos/cafe-das-nacoes.jpg";
 import imgCafeDasNacoesInovaWeek from "../assets/eventos/cafe-das-nacoes-inovaweek-maringa.jpg";
+import imgSeminarioArgentoBrasileira from "../assets/eventos/seminario-anual-negocios-camara-argento-brasileira-pr.png";
 
 export const SEED_CONTACTS = [
   { id: "seed-c-1", nome: "Nipun Jain", empresa: "PHARMCHEM/IPHEX", cargo: "Chairman IPHEX", email: "nipun@phrmchem.net", telefone: "91 98108 20562", setor: "Saúde", pais: "Índia", createdAt: Date.now() },
@@ -204,6 +205,18 @@ export const SEED_EVENTS = [
     status: "realizado",
     descricao: "",
     registro: "https://drive.google.com/file/d/1veQbyNYRNB5IzTAKPFfZXYDefYz21gyW/view?usp=drive_link",
+    createdAt: Date.now(),
+  },
+  {
+    id: "seed-e-6-seminario-anual-negocios-camara-argento-brasileira-pr",
+    nome: "6º Seminário Anual de Negócios - Câmara Argento Brasileira do Paraná",
+    data: "2026-11-25",
+    horario: "08:00 – 14:00",
+    local: "Correios, Curitiba/PR (presencial)",
+    tipo: "Webinar/Seminário",
+    status: "planejado",
+    descricao: "Realização: Câmara Argento Brasileira do Paraná. Evento presencial, inscrições gratuitas e vagas limitadas. Inscrições: https://www.sympla.com.br/evento/6-seminario-anual-de-negocios-camara-argento-brasileira-do-parana/3640305. Apoio institucional: Consulado Argentino em Curitiba, Correios e Instituto de Relações Internacionais do Paraná (IRIP). Patrocinadores: Miara-Schuarts Tomasczeski Advogados, Ademicon, Barbieri e Orbis.",
+    registro: imgSeminarioArgentoBrasileira,
     createdAt: Date.now(),
   },
 ];
