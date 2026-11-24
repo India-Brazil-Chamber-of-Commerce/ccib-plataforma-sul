@@ -4,7 +4,7 @@ import {
   Pencil, X, Target, MessageSquare, Lightbulb, Handshake, ListChecks, Lock, CalendarDays, Clock, MapPin, User, Users, RotateCcw,
 } from "lucide-react";
 import { RESPONSAVEIS, STORAGE_ATAS, STORAGE_ATAS_SEMENTES } from "../constants";
-import { SEED_ATAS, ACRESCENTAR_ATAS } from "../data/seedAtas";
+import { SEED_ATAS, ACRESCENTAR_ATAS, SUBSTITUIR_ATAS } from "../data/seedAtas";
 import { filterInputStyle } from "../styles";
 import { SectionTitle } from "../components/ui";
 import { useListaCompartilhada } from "../lib/useListaCompartilhada";
@@ -553,6 +553,16 @@ export default function AtasTab({ members = [], meetings = [], abrirEmpresa, nov
         if (!faltam.length) return a;
         mudou = true;
         return { ...a, [campo]: [atual.trim(), ...faltam].filter(Boolean).join("\n"), atualizadaEm: Date.now() };
+      });
+    });
+    SUBSTITUIR_ATAS.forEach(({ chave, reuniaoId, campo, de, para }) => {
+      const marca = `troca:${chave}`;
+      if (vistas.has(marca)) return;
+      marcar.push(marca);
+      lista = lista.map((a) => {
+        if (a.reuniaoId !== reuniaoId || !(a[campo] || "").includes(de)) return a;
+        mudou = true;
+        return { ...a, [campo]: a[campo].split(de).join(para), atualizadaEm: Date.now() };
       });
     });
     if (mudou) setAtas(lista);

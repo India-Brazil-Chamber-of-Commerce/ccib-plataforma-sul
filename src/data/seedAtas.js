@@ -170,7 +170,7 @@ export const SEED_ATAS = [
     participantesEmpresa: "Marcelo Cesar da Costa Duarte (ILS - International Lumber Service), Andreza (Diretora)",
     local: "Microsoft Teams",
     objetivo: "",
-    pontos: "A Blue Forest é uma empresa madeireira.\nAinda não exporta para a Índia, mas já exporta para outros países.\nNo início, exportava apenas para os EUA. Com as tarifas dos EUA, reorganizou as vendas para a Europa, principalmente Turquia e Espanha, e quer explorar a Índia.\nProdutos: madeira serrada, madeira para embalagem e LVL (madeira para construção civil).\nMarcelo trouxe que o Porto de São Francisco faz break bulk e fumigação.",
+    pontos: "A Blue Forest é uma empresa madeireira.\nAinda não exporta para a Índia, mas já exporta para outros países.\nNo início, exportava apenas para os EUA. Com as tarifas dos EUA, reorganizou as vendas para a Europa, principalmente Turquia e Espanha, e quer explorar a Índia.\nProdutos: madeira serrada, madeira para embalagem e LVL (madeira para construção civil).\nMarcelo trouxe que o Porto de São Francisco do Sul faz break bulk e fumigação.",
     oportunidades: "Entrada da Blue Forest no mercado indiano, que ainda não atende.",
     decisoes: "",
     proximos: "",
@@ -190,4 +190,9 @@ export const ACRESCENTAR_ATAS = [
   { chave: "nanofeed-20261119-oportunidades-2", reuniaoId: "teams-auto-20261119-ccib-sul-nanofeed", campo: "oportunidades", linhas: ["Associação da Nanofeed à CCIB (interesse no plano Standard).", "Apresentação da Nanofeed ao mercado e a grandes corporações, como BRF e Cargill."] },
   { chave: "nanofeed-20261119-decisoes-2", reuniaoId: "teams-auto-20261119-ccib-sul-nanofeed", campo: "decisoes", linhas: ["Lucas tem interesse na associação Standard e vai ver o preço."] },
   { chave: "nanofeed-20261119-proximos-1", reuniaoId: "teams-auto-20261119-ccib-sul-nanofeed", campo: "proximos", linhas: ["Gustavo: enviar ao Lucas, nesta semana, o valor e os benefícios do plano Standard.", "Na proposta, destacar a chancela da CCIB e a visibilidade institucional.", "Oferecer as apresentações a grandes corporações (BRF, Cargill) como serviço de agenda de negócios, à parte ou em pacote acima do Standard.", "Tratar a Nanofert (Ritesh) como uma frente de associação separada da Nanofeed."] },
+];
+
+// Trechos corrigidos depois em atas já salvas (troca uma vez, só se o texto antigo ainda estiver lá)
+export const SUBSTITUIR_ATAS = [
+  { chave: "blue-forest-20261124-porto", reuniaoId: "teams-auto-20261124-ccib-sul-blue-forest", campo: "pontos", de: "Porto de São Francisco faz", para: "Porto de São Francisco do Sul faz" },
 ];
