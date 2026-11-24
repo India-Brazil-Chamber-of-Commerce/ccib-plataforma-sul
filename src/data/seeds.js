@@ -8,6 +8,7 @@ import imgHappyHourIrip from "../assets/eventos/happy-hour-irip.jpg";
 import imgSaoJoseDasNacoes from "../assets/eventos/sao-jose-das-nacoes.webp";
 import imgCafeDasNacoes from "../assets/eventos/cafe-das-nacoes.jpg";
 import imgCafeDasNacoesInovaWeek from "../assets/eventos/cafe-das-nacoes-inovaweek-maringa.jpg";
+import imgInvestRs2Anos from "../assets/eventos/invest-rs-2-anos-sao-paulo.png";
 import imgSeminarioArgentoBrasileira from "../assets/eventos/seminario-anual-negocios-camara-argento-brasileira-pr.png";
 
 export const SEED_CONTACTS = [
@@ -217,6 +218,18 @@ export const SEED_EVENTS = [
     status: "planejado",
     descricao: "Realização: Câmara Argento Brasileira do Paraná. Evento presencial, inscrições gratuitas e vagas limitadas. Inscrições: https://www.sympla.com.br/evento/6-seminario-anual-de-negocios-camara-argento-brasileira-do-parana/3640305. Apoio institucional: Consulado Argentino em Curitiba, Correios e Instituto de Relações Internacionais do Paraná (IRIP). Patrocinadores: Miara-Schuarts Tomasczeski Advogados, Ademicon, Barbieri e Orbis.",
     registro: imgSeminarioArgentoBrasileira,
+    createdAt: Date.now(),
+  },
+  {
+    id: "seed-e-invest-rs-2-anos-sao-paulo",
+    nome: "Invest RS 2 Anos - Conexões, Oportunidades e Perspectivas (São Paulo)",
+    data: "2026-12-01",
+    horario: "09:30 – 12:30 (recepção às 09:30, brunch às 12:30)",
+    local: "Aya Hub - Alameda Rio Claro, 28, 6º andar, São Paulo/SP",
+    tipo: "Webinar/Seminário",
+    status: "confirmado",
+    descricao: "Participante da Regional Sul: Gustavo Bastos. Evento da Invest RS com a presença do Governador Eduardo Leite e do Presidente da Invest RS, Rafael Prikladnicki; bate-papo de Carlos Souto com William Ling; apresentação de resultados da Invest RS.",
+    registro: imgInvestRs2Anos,
     createdAt: Date.now(),
   },
 ];
