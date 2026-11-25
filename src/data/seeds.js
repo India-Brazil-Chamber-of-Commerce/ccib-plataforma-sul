@@ -344,6 +344,7 @@ export const NOMES_HUBSPOT_PROSPECCAO = [
   "SoftExpert",
   "TsuruTrading",
   "Ss Inov",
+  "Nano Feed",
 ];
 
 export const ESTADOS_CONHECIDOS = {
@@ -575,13 +576,15 @@ export const NEGOCIOS_HUBSPOT = [
   { empresa: "Universidade Positivo", situacao: "perdido", etapa: "Negócio perdido", valor: "US$ 2.100", data: "2025-10-09" },
   { empresa: "Cotton Baby", situacao: "perdido", etapa: "Negócio perdido", valor: "", data: "2025-06-17" },
   { empresa: "iCities", situacao: "perdido", etapa: "Negócio perdido", valor: "US$ 2.100", data: "2026-11-09", anterior: { situacao: ["negociacao"], etapa: ["Proposta Enviada / Em negociação"], data: ["2026-10-31"] } },
-  { empresa: "United Carbon Solutions", situacao: "negociacao", etapa: "Proposta Enviada / Em negociação", valor: "US$ 2.100", data: "2026-11-20", anterior: { data: ["2026-10-31"] } },
-  { empresa: "Neoking Foods", situacao: "negociacao", etapa: "Proposta Enviada / Em negociação", valor: "US$ 2.100", data: "2026-11-13" },
+  { empresa: "United Carbon Solutions", situacao: "ativo", etapa: "Negócio fechado", valor: "US$ 2.100", data: "2026-11-24", anterior: { data: ["2026-10-31", "2026-11-20"], situacao: ["negociacao"], etapa: ["Proposta Enviada / Em negociação"] } },
+  { empresa: "Neoking Foods", situacao: "perdido", etapa: "Negócio perdido", valor: "US$ 2.100", data: "2026-11-24", anterior: { data: ["2026-11-13"], situacao: ["negociacao"], etapa: ["Proposta Enviada / Em negociação"] } },
   { empresa: "SoftExpert", situacao: "negociacao", etapa: "Proposta Enviada / Em negociação", valor: "US$ 2.100", data: "2026-11-27" },
-  { empresa: "TsuruTrading", situacao: "negociacao", etapa: "Proposta Enviada / Em negociação", valor: "US$ 4.020", data: "2026-11-27" },
+  { empresa: "TsuruTrading", situacao: "perdido", etapa: "Negócio perdido", valor: "US$ 4.020", data: "2026-11-24", anterior: { data: ["2026-11-27"], situacao: ["negociacao"], etapa: ["Proposta Enviada / Em negociação"] } },
   { empresa: "Vada Agro", situacao: "negociacao", etapa: "Proposta Enviada / Em negociação", valor: "US$ 2.100", data: "2026-10-31" },
-  { empresa: "Ss Inov", situacao: "negociacao", etapa: "Proposta Enviada / Em negociação", valor: "US$ 2.100", data: "2026-11-30" },
+  { empresa: "Ss Inov", situacao: "perdido", etapa: "Negócio perdido", valor: "US$ 2.100", data: "2026-11-24", anterior: { data: ["2026-11-30"], situacao: ["negociacao"], etapa: ["Proposta Enviada / Em negociação"] } },
   { empresa: "Zoho", situacao: "negociacao", etapa: "Proposta Enviada / Em negociação (Renovações)", valor: "US$ 2.500", data: "2026-12-11" },
+  { empresa: "Blue Forest", situacao: "negociacao", etapa: "Proposta Enviada (serviços)", valor: "US$ 800", data: "2026-12-11" },
+  { empresa: "Nano Feed", situacao: "negociacao", etapa: "Proposta Enviada / Em negociação (Renovações)", valor: "US$ 4.205", data: "2026-12-18" },
 ];
 
 // Lembretes da aba Reuniões. Entram uma vez (por id); depois podem ser editados ou apagados na plataforma.
